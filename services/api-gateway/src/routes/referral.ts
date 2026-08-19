@@ -129,7 +129,7 @@ referralRouter.post('/register-with-code', async (req: Request, res: Response) =
        (referrer_id, referred_user_id, referral_code, referrer_bonus, referee_bonus, created_at)
        VALUES ($1, $2, $3, 2500, 5000, NOW())
        RETURNING id`,
-      [referralLink.referrer_id, newUser.id, referralCode]
+      [referralLink.referrer_id, newUser.id, referral_code]
     );
 
     // Add bonus to referee's wallet (usable as credit)

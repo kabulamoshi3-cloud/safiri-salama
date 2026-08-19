@@ -73,28 +73,5 @@
     "error": "Error",
     "success": "Success",
     "ok": "OK"
-  },
-  "payment": {
-    "collectPayment": "Collect Payment",
-    "totalFare": "Total Fare",
-    "selectPaymentMethod": "Select Payment Method",
-    "cash": "Cash",
-    "cashPayment": "Traditional cash payment",
-    "mobileMoneyPayment": "Mobile money payment",
-    "transactionId": "Transaction ID",
-    "optional": "Optional",
-    "enterTransactionId": "Enter transaction ID",
-    "confirmPayment": "Confirm Payment",
-    "paymentConfirmed": "Payment Confirmed",
-    "paymentReceived": "Payment Received",
-    "method": "Method",
-    "tripCompleted": "Trip Completed",
-    "tripStarted": "Trip Started",
-    "navigateToDestination": "Navigate to destination",
-    "arrived": "Arrived",
-    "completeTrip": "Complete the trip to collect payment",
-    "activeTrip": "Active Trip",
-    "estimatedTime": "Est. Time",
-    "arrivedAtDestination": "Arrived at Destination"
   }
 }

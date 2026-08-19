@@ -7,7 +7,6 @@ import { createLogger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { authMiddleware } from './middleware/auth';
 import { rateLimiter } from './middleware/rateLimiter';
-import { validationMiddleware } from './middleware/validation';
 import routes from './routes';
 import authRouter from './routes/auth';
 
