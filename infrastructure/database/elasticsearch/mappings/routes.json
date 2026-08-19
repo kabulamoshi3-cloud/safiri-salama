@@ -1,0 +1,180 @@
+{
+  "settings": {
+    "number_of_shards": 2,
+    "number_of_replicas": 1,
+    "analysis": {
+      "analyzer": {
+        "swahili_english_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "swahili_english_stop",
+            "swahili_english_synonym"
+          ]
+        },
+        "autocomplete_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "edge_ngram_filter"
+          ]
+        },
+        "autocomplete_search_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "asciifolding"
+          ]
+        }
+      },
+      "filter": {
+        "swahili_english_stop": {
+          "type": "stop",
+          "stopwords": ["na", "ya", "wa", "kwa", "la", "za", "the", "a", "an", "of", "in", "to"]
+        },
+        "swahili_english_synonym": {
+          "type": "synonym",
+          "synonyms": [
+            "daladala, minibus, bus",
+            "brt, mwendo kasi, rapid transit",
+            "bodaboda, boda, motorcycle taxi, pikipiki",
+            "dsm, dar es salaam, dar",
+            "kariakoo, kariakoo market",
+            "posta, post office, gpo",
+            "ubungo, ubungo terminal",
+            "kivukoni, ferry terminal",
+            "mlimani, mlimani city"
+          ]
+        },
+        "edge_ngram_filter": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 20
+        }
+      }
+    }
+  },
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "id": {
+        "type": "keyword",
+        "doc_values": true
+      },
+      "name": {
+        "type": "text",
+        "analyzer": "swahili_english_analyzer",
+        "search_analyzer": "swahili_english_analyzer",
+        "fields": {
+          "autocomplete": {
+            "type": "text",
+            "analyzer": "autocomplete_analyzer",
+            "search_analyzer": "autocomplete_search_analyzer"
+          },
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "name_swahili": {
+        "type": "text",
+        "analyzer": "swahili_english_analyzer",
+        "search_analyzer": "swahili_english_analyzer",
+        "fields": {
+          "autocomplete": {
+            "type": "text",
+            "analyzer": "autocomplete_analyzer",
+            "search_analyzer": "autocomplete_search_analyzer"
+          },
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "type": {
+        "type": "keyword"
+      },
+      "safety_rating": {
+        "type": "float"
+      },
+      "accessibility_features": {
+        "type": "keyword"
+      },
+      "fare_table_id": {
+        "type": "keyword"
+      },
+      "flat_fare_tzs": {
+        "type": "integer"
+      },
+      "stops": {
+        "type": "nested",
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "text",
+            "analyzer": "swahili_english_analyzer",
+            "search_analyzer": "swahili_english_analyzer",
+            "fields": {
+              "autocomplete": {
+                "type": "text",
+                "analyzer": "autocomplete_analyzer",
+                "search_analyzer": "autocomplete_search_analyzer"
+              },
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "name_swahili": {
+            "type": "text",
+            "analyzer": "swahili_english_analyzer",
+            "search_analyzer": "swahili_english_analyzer",
+            "fields": {
+              "autocomplete": {
+                "type": "text",
+                "analyzer": "autocomplete_analyzer",
+                "search_analyzer": "autocomplete_search_analyzer"
+              },
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "location": {
+            "type": "geo_point"
+          },
+          "accessibility_features": {
+            "type": "keyword"
+          }
+        }
+      },
+      "polyline": {
+        "type": "geo_shape",
+        "index": true
+      },
+      "bounding_box": {
+        "type": "geo_shape",
+        "index": true
+      },
+      "created_at": {
+        "type": "date",
+        "format": "strict_date_optional_time"
+      },
+      "updated_at": {
+        "type": "date",
+        "format": "strict_date_optional_time"
+      }
+    }
+  }
+}

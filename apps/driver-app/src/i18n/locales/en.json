@@ -1,0 +1,100 @@
+{
+  "tabs": {
+    "home": "Home",
+    "trips": "Trips",
+    "earnings": "Earnings",
+    "profile": "Profile"
+  },
+  "auth": {
+    "welcome": "Welcome Driver",
+    "tagline": "Start earning with DalaSmart",
+    "login": "Login",
+    "register": "Register as Driver",
+    "phoneNumber": "Phone Number",
+    "password": "Password",
+    "vehicleNumber": "Vehicle Number",
+    "licenseNumber": "License Number"
+  },
+  "status": {
+    "offline": "Offline",
+    "available": "Available",
+    "on-trip": "On Trip",
+    "break": "On Break",
+    "goOnline": "Go Online",
+    "goOffline": "Go Offline"
+  },
+  "home": {
+    "todayEarnings": "Today's Earnings",
+    "totalTrips": "Total Trips",
+    "rating": "Rating",
+    "acceptanceRate": "Acceptance Rate",
+    "newTripRequest": "New Trip Request",
+    "accept": "Accept",
+    "decline": "Decline",
+    "navigation": "Navigate"
+  },
+  "trip": {
+    "currentTrip": "Current Trip",
+    "startTrip": "Start Trip",
+    "completeTrip": "Complete Trip",
+    "cancelTrip": "Cancel Trip",
+    "passenger": "Passenger",
+    "pickup": "Pickup",
+    "destination": "Destination",
+    "fare": "Fare",
+    "distance": "Distance",
+    "duration": "Duration",
+    "arrivedAtPickup": "Arrived at Pickup",
+    "waitingForPassenger": "Waiting for Passenger"
+  },
+  "earnings": {
+    "todayEarnings": "Today",
+    "weekEarnings": "This Week",
+    "monthEarnings": "This Month",
+    "totalEarnings": "Total Earnings",
+    "cashCollected": "Cash Collected",
+    "digitalPayments": "Digital Payments",
+    "pendingPayment": "Pending Payment",
+    "transactionHistory": "Transaction History"
+  },
+  "vehicle": {
+    "vehicleInfo": "Vehicle Information",
+    "plateNumber": "Plate Number",
+    "capacity": "Capacity",
+    "status": "Status",
+    "lastMaintenance": "Last Maintenance",
+    "nextMaintenance": "Next Maintenance"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "ok": "OK"
+  },
+  "payment": {
+    "collectPayment": "Collect Payment",
+    "totalFare": "Total Fare",
+    "selectPaymentMethod": "Select Payment Method",
+    "cash": "Cash",
+    "cashPayment": "Traditional cash payment",
+    "mobileMoneyPayment": "Mobile money payment",
+    "transactionId": "Transaction ID",
+    "optional": "Optional",
+    "enterTransactionId": "Enter transaction ID",
+    "confirmPayment": "Confirm Payment",
+    "paymentConfirmed": "Payment Confirmed",
+    "paymentReceived": "Payment Received",
+    "method": "Method",
+    "tripCompleted": "Trip Completed",
+    "tripStarted": "Trip Started",
+    "navigateToDestination": "Navigate to destination",
+    "arrived": "Arrived",
+    "completeTrip": "Complete the trip to collect payment",
+    "activeTrip": "Active Trip",
+    "estimatedTime": "Est. Time",
+    "arrivedAtDestination": "Arrived at Destination"
+  }
+}

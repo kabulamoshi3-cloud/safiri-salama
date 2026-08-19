@@ -1,0 +1,12 @@
+{
+  "name": "@dalasmart/fleet-tracker",
+  "version": "1.0.0",
+  "description": "DalaSmart Fleet Tracker Service — Go (GPS ingestion, SSE, deviation detection)",
+  "private": true,
+  "scripts": {
+    "build": "go build -o bin/fleet-tracker ./cmd/server",
+    "test": "go test ./...",
+    "lint": "golangci-lint run"
+  },
+  "notes": "This workspace entry exists for monorepo tooling. The primary build system is Go (go.mod). See go.mod for Go dependencies."
+}

@@ -1,0 +1,6 @@
+{
+  "_comment": "Trip Planner is implemented in Python. This file exists only for monorepo tooling compatibility.",
+  "files": [],
+  "include": [],
+  "exclude": ["**/*"]
+}

@@ -1,0 +1,179 @@
+{
+  "settings": {
+    "number_of_shards": 3,
+    "number_of_replicas": 1,
+    "index.lifecycle.name": "dalasmart-logs-policy",
+    "index.lifecycle.rollover_alias": "dalasmart-logs",
+    "analysis": {
+      "analyzer": {
+        "log_message_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "asciifolding"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "dynamic": "false",
+    "properties": {
+      "@timestamp": {
+        "type": "date",
+        "format": "strict_date_optional_time||epoch_millis"
+      },
+      "level": {
+        "type": "keyword",
+        "doc_values": true
+      },
+      "service": {
+        "type": "keyword",
+        "doc_values": true
+      },
+      "environment": {
+        "type": "keyword",
+        "doc_values": true
+      },
+      "message": {
+        "type": "text",
+        "analyzer": "log_message_analyzer",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 1024
+          }
+        }
+      },
+      "error": {
+        "properties": {
+          "type": {
+            "type": "keyword"
+          },
+          "message": {
+            "type": "text",
+            "analyzer": "log_message_analyzer",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 1024
+              }
+            }
+          },
+          "stack_trace": {
+            "type": "text",
+            "index": false
+          },
+          "code": {
+            "type": "keyword"
+          }
+        }
+      },
+      "http": {
+        "properties": {
+          "method": {
+            "type": "keyword"
+          },
+          "url": {
+            "type": "keyword",
+            "ignore_above": 2048
+          },
+          "status_code": {
+            "type": "short"
+          },
+          "response_time_ms": {
+            "type": "integer"
+          },
+          "user_agent": {
+            "type": "text",
+            "index": false,
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 512
+              }
+            }
+          }
+        }
+      },
+      "user": {
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "type": {
+            "type": "keyword"
+          }
+        }
+      },
+      "vehicle": {
+        "properties": {
+          "id": {
+            "type": "keyword"
+          }
+        }
+      },
+      "transaction": {
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "type": {
+            "type": "keyword"
+          },
+          "amount_tzs": {
+            "type": "long"
+          }
+        }
+      },
+      "incident": {
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "severity": {
+            "type": "keyword"
+          }
+        }
+      },
+      "trace": {
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "span_id": {
+            "type": "keyword"
+          }
+        }
+      },
+      "host": {
+        "properties": {
+          "name": {
+            "type": "keyword"
+          },
+          "ip": {
+            "type": "ip"
+          }
+        }
+      },
+      "kubernetes": {
+        "properties": {
+          "pod": {
+            "type": "keyword"
+          },
+          "namespace": {
+            "type": "keyword"
+          },
+          "container": {
+            "type": "keyword"
+          }
+        }
+      },
+      "labels": {
+        "type": "object",
+        "dynamic": true
+      }
+    }
+  }
+}

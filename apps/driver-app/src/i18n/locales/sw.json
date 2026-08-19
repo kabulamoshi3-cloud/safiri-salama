@@ -1,0 +1,100 @@
+{
+  "tabs": {
+    "home": "Nyumbani",
+    "trips": "Safari",
+    "earnings": "Mapato",
+    "profile": "Wasifu"
+  },
+  "auth": {
+    "welcome": "Karibu Dereva",
+    "tagline": "Anza kupata mapato na DalaSmart",
+    "login": "Ingia",
+    "register": "Jisajili kama Dereva",
+    "phoneNumber": "Namba ya Simu",
+    "password": "Nywila",
+    "vehicleNumber": "Namba ya Gari",
+    "licenseNumber": "Namba ya Leseni"
+  },
+  "status": {
+    "offline": "Nje ya Mkondoni",
+    "available": "Ipo",
+    "on-trip": "Kwenye Safari",
+    "break": "Mapumziko",
+    "goOnline": "Ingia Mtandaoni",
+    "goOffline": "Toka Mtandaoni"
+  },
+  "home": {
+    "todayEarnings": "Mapato ya Leo",
+    "totalTrips": "Jumla ya Safari",
+    "rating": "Ukadiriaji",
+    "acceptanceRate": "Kiwango cha Kukubali",
+    "newTripRequest": "Ombi la Safari Mpya",
+    "accept": "Kubali",
+    "decline": "Kataa",
+    "navigation": "Ongoza"
+  },
+  "trip": {
+    "currentTrip": "Safari ya Sasa",
+    "startTrip": "Anza Safari",
+    "completeTrip": "Maliza Safari",
+    "cancelTrip": "Ghairi Safari",
+    "passenger": "Abiria",
+    "pickup": "Mahali pa Kuchukua",
+    "destination": "Marudio",
+    "fare": "Nauli",
+    "distance": "Umbali",
+    "duration": "Muda",
+    "arrivedAtPickup": "Umefika Mahali pa Kuchukua",
+    "waitingForPassenger": "Unasubiri Abiria"
+  },
+  "earnings": {
+    "todayEarnings": "Leo",
+    "weekEarnings": "Wiki Hii",
+    "monthEarnings": "Mwezi Huu",
+    "totalEarnings": "Jumla ya Mapato",
+    "cashCollected": "Pesa Taslimu Zilizokusanywa",
+    "digitalPayments": "Malipo ya Kidijitali",
+    "pendingPayment": "Malipo Yanayosubiri",
+    "transactionHistory": "Historia ya Shughuli"
+  },
+  "vehicle": {
+    "vehicleInfo": "Taarifa za Gari",
+    "plateNumber": "Namba ya Bamba",
+    "capacity": "Uwezo",
+    "status": "Hali",
+    "lastMaintenance": "Matengenezo ya Mwisho",
+    "nextMaintenance": "Matengenezo Yanayofuata"
+  },
+  "common": {
+    "cancel": "Ghairi",
+    "save": "Hifadhi",
+    "confirm": "Thibitisha",
+    "loading": "Inapakia...",
+    "error": "Hitilafu",
+    "success": "Mafanikio",
+    "ok": "Sawa"
+  },
+  "payment": {
+    "collectPayment": "Kusanya Malipo",
+    "totalFare": "Jumla ya Nauli",
+    "selectPaymentMethod": "Chagua Njia ya Malipo",
+    "cash": "Pesa Taslimu",
+    "cashPayment": "Malipo ya kawaida kwa pesa taslimu",
+    "mobileMoneyPayment": "Malipo ya pesa ya simu",
+    "transactionId": "Kitambulisho cha Muamala",
+    "optional": "Si Lazima",
+    "enterTransactionId": "Weka kitambulisho cha muamala",
+    "confirmPayment": "Thibitisha Malipo",
+    "paymentConfirmed": "Malipo Yamethibitishwa",
+    "paymentReceived": "Malipo Yamepokelewa",
+    "method": "Njia",
+    "tripCompleted": "Safari Imekamilika",
+    "tripStarted": "Safari Imeanza",
+    "navigateToDestination": "Ongoza kwenda marudio",
+    "arrived": "Umefika",
+    "completeTrip": "Maliza safari ili kukusanya malipo",
+    "activeTrip": "Safari Inayoendelea",
+    "estimatedTime": "Muda Wa Kadiri",
+    "arrivedAtDestination": "Umefika Marudio"
+  }
+}

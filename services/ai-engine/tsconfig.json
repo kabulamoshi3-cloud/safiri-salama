@@ -1,0 +1,6 @@
+{
+  "_comment": "AI Engine is implemented in Python. This file exists only for monorepo tooling compatibility.",
+  "files": [],
+  "include": [],
+  "exclude": ["**/*"]
+}

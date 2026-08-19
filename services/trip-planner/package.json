@@ -1,0 +1,14 @@
+{
+  "name": "@dalasmart/trip-planner",
+  "version": "1.0.0",
+  "description": "DalaSmart Trip Planner Service — Python / FastAPI (multi-modal routing, schedules)",
+  "private": true,
+  "scripts": {
+    "install:python": "pip install -r requirements.txt",
+    "start": "uvicorn app.main:app --host 0.0.0.0 --port 8002",
+    "dev": "uvicorn app.main:app --reload --port 8002",
+    "test": "pytest --tb=short",
+    "lint": "ruff check app tests"
+  },
+  "notes": "This workspace entry exists for monorepo tooling. The primary build system is Python (requirements.txt / pyproject.toml)."
+}

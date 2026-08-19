@@ -1,0 +1,6 @@
+{
+  "_comment": "Fleet Tracker is implemented in Go. This file exists only for monorepo tooling compatibility.",
+  "files": [],
+  "include": [],
+  "exclude": ["**/*"]
+}

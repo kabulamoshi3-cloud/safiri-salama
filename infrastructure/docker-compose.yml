@@ -1,0 +1,290 @@
+version: "3.9"
+
+# =============================================================================
+# DalaSmart AI-Powered Mobility Platform — Local Development Stack
+#
+# Services:
+#   postgres      — PostgreSQL 16 + TimescaleDB 2.x + PostGIS
+#   redis         — Redis 7 (single-node for local dev)
+#   elasticsearch — Elasticsearch 8.x
+#   kibana        — Kibana 8.x (Elasticsearch UI)
+#   minio         — MinIO (S3-compatible object storage)
+#   minio-init    — One-shot container that creates S3 buckets
+#
+# Usage:
+#   docker compose up -d
+#   docker compose down -v   # also removes volumes
+#
+# Ports exposed on localhost:
+#   5432  — PostgreSQL / TimescaleDB
+#   6379  — Redis
+#   9200  — Elasticsearch HTTP
+#   9300  — Elasticsearch transport
+#   5601  — Kibana
+#   9000  — MinIO S3 API
+#   9001  — MinIO Console
+# =============================================================================
+
+networks:
+  dalasmart-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  elasticsearch_data:
+  minio_data:
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16 + TimescaleDB 2 + PostGIS
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: timescale/timescaledb-ha:pg16-latest
+    container_name: dalasmart-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dalasmart
+      POSTGRES_USER: dalasmart
+      POSTGRES_PASSWORD: dalasmart_dev_password
+      # TimescaleDB telemetry off for local dev
+      TIMESCALEDB_TELEMETRY: "off"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/home/postgres/pgdata/data
+      # Auto-run migrations on first start (alphabetical order)
+      - ./database/postgres/migrations:/docker-entrypoint-initdb.d/postgres:ro
+      - ./database/timescaledb/migrations:/docker-entrypoint-initdb.d/timescale:ro
+      - ./database/postgres/seed.sql:/docker-entrypoint-initdb.d/zzz_seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dalasmart -d dalasmart"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - dalasmart-net
+    command: >
+      postgres
+        -c shared_preload_libraries=timescaledb
+        -c max_connections=200
+        -c shared_buffers=256MB
+        -c effective_cache_size=768MB
+        -c work_mem=4MB
+        -c maintenance_work_mem=64MB
+        -c log_min_duration_statement=1000
+        -c log_statement=ddl
+
+  # ---------------------------------------------------------------------------
+  # Redis 7 (single-node for local dev; use Redis Cluster in production)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7.2-alpine
+    container_name: dalasmart-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+        --maxmemory 512mb
+        --maxmemory-policy allkeys-lru
+        --save ""
+        --appendonly no
+        --hz 20
+        --tcp-keepalive 300
+        --loglevel notice
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dalasmart-net
+
+  # ---------------------------------------------------------------------------
+  # Elasticsearch 8
+  # Single-node cluster for local dev (production uses 3-node cluster).
+  # Security is disabled for local dev convenience.
+  # ---------------------------------------------------------------------------
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: dalasmart-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - cluster.name=dalasmart-local
+      - node.name=es-node-1
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health | grep -qE '\"status\":\"(green|yellow)\"'"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - dalasmart-net
+
+  # ---------------------------------------------------------------------------
+  # Kibana 8 (Elasticsearch UI)
+  # ---------------------------------------------------------------------------
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.4
+    container_name: dalasmart-kibana
+    restart: unless-stopped
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - xpack.security.enabled=false
+    ports:
+      - "5601:5601"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:5601/api/status | grep -q '\"level\":\"available\"'"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - dalasmart-net
+
+  # ---------------------------------------------------------------------------
+  # Elasticsearch index initialiser
+  # Creates the routes and logs indexes with their mappings after ES is ready.
+  # ---------------------------------------------------------------------------
+  elasticsearch-init:
+    image: curlimages/curl:8.7.1
+    container_name: dalasmart-es-init
+    restart: "no"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ./database/elasticsearch/mappings:/mappings:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Creating Elasticsearch indexes..."
+        curl -sf -X PUT "http://elasticsearch:9200/dalasmart-routes" \
+          -H "Content-Type: application/json" \
+          -d @/mappings/routes.json && echo "routes index created"
+        curl -sf -X PUT "http://elasticsearch:9200/dalasmart-logs-000001" \
+          -H "Content-Type: application/json" \
+          -d @/mappings/logs.json && echo "logs index created"
+        curl -sf -X PUT "http://elasticsearch:9200/dalasmart-logs-000001/_alias/dalasmart-logs" \
+          && echo "logs alias created"
+        echo "Elasticsearch initialisation complete."
+    networks:
+      - dalasmart-net
+
+  # ---------------------------------------------------------------------------
+  # MinIO (S3-compatible object storage)
+  # ---------------------------------------------------------------------------
+  minio:
+    image: minio/minio:RELEASE.2024-05-10T01-41-38Z
+    container_name: dalasmart-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - dalasmart-net
+
+  # ---------------------------------------------------------------------------
+  # MinIO bucket initialiser
+  # Creates all required S3 buckets after MinIO is ready.
+  # ---------------------------------------------------------------------------
+  minio-init:
+    image: minio/mc:RELEASE.2024-05-09T17-04-24Z
+    container_name: dalasmart-minio-init
+    restart: "no"
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Configuring MinIO buckets..."
+        mc alias set local http://minio:9000 minioadmin minioadmin
+
+        # Create buckets
+        mc mb --ignore-existing local/dalasmart-incident-media
+        mc mb --ignore-existing local/dalasmart-emergency-audio
+        mc mb --ignore-existing local/dalasmart-driver-documents
+        mc mb --ignore-existing local/dalasmart-exports
+
+        # Enforce private access (no anonymous reads/writes)
+        mc anonymous set none local/dalasmart-incident-media
+        mc anonymous set none local/dalasmart-emergency-audio
+        mc anonymous set none local/dalasmart-driver-documents
+        mc anonymous set none local/dalasmart-exports
+
+        # Enable versioning on sensitive buckets
+        mc version enable local/dalasmart-incident-media
+        mc version enable local/dalasmart-emergency-audio
+        mc version enable local/dalasmart-driver-documents
+
+        echo "MinIO bucket initialisation complete."
+    networks:
+      - dalasmart-net
+
+  # ---------------------------------------------------------------------------
+  # OSRM — Open Source Routing Machine (NEW from RoadPulse)
+  # Self-hosted routing engine using OpenStreetMap data for Dar es Salaam.
+  # Provides offline routing without external API dependencies.
+  # ---------------------------------------------------------------------------
+  osrm:
+    image: osrm/osrm-backend:v5.27.1
+    container_name: dalasmart-osrm
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      # Mount the preprocessed OSRM data directory
+      # You must download and preprocess Tanzania OSM data first:
+      # 1. Download: wget https://download.geofabrik.de/africa/tanzania-latest.osm.pbf
+      # 2. Extract: docker run -t -v "$PWD/osrm-data:/data" osrm/osrm-backend osrm-extract -p /opt/car.lua /data/tanzania-latest.osm.pbf
+      # 3. Partition: docker run -t -v "$PWD/osrm-data:/data" osrm/osrm-backend osrm-partition /data/tanzania-latest.osrm
+      # 4. Customize: docker run -t -v "$PWD/osrm-data:/data" osrm/osrm-backend osrm-customize /data/tanzania-latest.osrm
+      - ./osrm-data:/data:ro
+    command: osrm-routed --algorithm mld /data/tanzania-latest.osrm --max-table-size 10000
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5000/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    networks:
+      - dalasmart-net
+

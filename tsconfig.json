@@ -1,0 +1,9 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/shared-types" },
+    { "path": "./services/payment-service" },
+    { "path": "./services/safety-module" },
+    { "path": "./services/notification-service" }
+  ]
+}

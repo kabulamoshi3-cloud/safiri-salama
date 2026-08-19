@@ -1,0 +1,19 @@
+{
+  "name": "@dalasmart/test-scripts",
+  "version": "1.0.0",
+  "description": "Testing and simulation scripts for DalaSmart platform",
+  "private": true,
+  "scripts": {
+    "simulate": "node fake-driver-simulator.js",
+    "simulate:many": "NUM_VEHICLES=20 node fake-driver-simulator.js",
+    "simulate:boda": "TRANSPORT_MODE=boda-boda node fake-driver-simulator.js",
+    "simulate:brt": "TRANSPORT_MODE=brt node fake-driver-simulator.js"
+  },
+  "dependencies": {
+    "ws": "^8.16.0",
+    "axios": "^1.6.7"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

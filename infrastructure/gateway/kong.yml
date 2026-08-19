@@ -1,0 +1,309 @@
+_format_version: "3.0"
+_transform: true
+
+# ---------------------------------------------------------------------------
+# DalaSmart API Gateway — Kong Declarative Configuration (deck format)
+# ---------------------------------------------------------------------------
+# Covers: JWT auth, RBAC via consumer groups, rate limiting, CORS, and
+# routing for all six backend services.
+# ---------------------------------------------------------------------------
+
+services:
+  # -------------------------------------------------------------------------
+  # Fleet Tracker Service (Go — WebSocket + SSE)
+  # -------------------------------------------------------------------------
+  - name: fleet-tracker
+    url: http://fleet-tracker:8080
+    connect_timeout: 5000
+    read_timeout: 60000
+    write_timeout: 60000
+    routes:
+      - name: fleet-tracker-positions
+        paths:
+          - /api/v1/fleet
+        methods:
+          - GET
+          - POST
+        strip_path: false
+        preserve_host: false
+      - name: fleet-tracker-ws
+        paths:
+          - /ws/fleet
+        protocols:
+          - http
+          - https
+          - ws
+          - wss
+        strip_path: false
+
+  # -------------------------------------------------------------------------
+  # Payment Service (Node.js / TypeScript)
+  # -------------------------------------------------------------------------
+  - name: payment-service
+    url: http://payment-service:3001
+    connect_timeout: 5000
+    read_timeout: 30000
+    write_timeout: 30000
+    routes:
+      - name: payment-routes
+        paths:
+          - /api/v1/payments
+          - /api/v1/wallets
+          - /api/v1/transactions
+        methods:
+          - GET
+          - POST
+          - PUT
+          - PATCH
+          - DELETE
+        strip_path: false
+
+  # -------------------------------------------------------------------------
+  # Safety Module (Node.js / TypeScript)
+  # -------------------------------------------------------------------------
+  - name: safety-module
+    url: http://safety-module:3002
+    connect_timeout: 5000
+    read_timeout: 30000
+    write_timeout: 30000
+    routes:
+      - name: safety-routes
+        paths:
+          - /api/v1/safety
+          - /api/v1/incidents
+          - /api/v1/emergency
+        methods:
+          - GET
+          - POST
+          - PUT
+          - PATCH
+        strip_path: false
+
+  # -------------------------------------------------------------------------
+  # Notification Service (Node.js / TypeScript)
+  # -------------------------------------------------------------------------
+  - name: notification-service
+    url: http://notification-service:3003
+    connect_timeout: 5000
+    read_timeout: 15000
+    write_timeout: 15000
+    routes:
+      - name: notification-routes
+        paths:
+          - /api/v1/notifications
+        methods:
+          - GET
+          - POST
+          - DELETE
+        strip_path: false
+
+  # -------------------------------------------------------------------------
+  # Trip Planner Service (Python / FastAPI)
+  # -------------------------------------------------------------------------
+  - name: trip-planner
+    url: http://trip-planner:8000
+    connect_timeout: 5000
+    read_timeout: 15000
+    write_timeout: 15000
+    routes:
+      - name: trip-planner-routes
+        paths:
+          - /api/v1/trips
+          - /api/v1/routes
+          - /api/v1/stops
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+        strip_path: false
+
+  # -------------------------------------------------------------------------
+  # AI Engine (Python / FastAPI)
+  # -------------------------------------------------------------------------
+  - name: ai-engine
+    url: http://ai-engine:8001
+    connect_timeout: 5000
+    read_timeout: 10000
+    write_timeout: 10000
+    routes:
+      - name: ai-engine-routes
+        paths:
+          - /api/v1/ai
+          - /api/v1/predictions
+          - /api/v1/search
+        methods:
+          - GET
+          - POST
+        strip_path: false
+
+# ---------------------------------------------------------------------------
+# Consumers and Consumer Groups
+# ---------------------------------------------------------------------------
+# Consumer groups map to the four platform roles. Rate limits are applied
+# per group. Individual consumers are created per user/device and assigned
+# to the appropriate group.
+# ---------------------------------------------------------------------------
+
+consumer_groups:
+  - name: passenger-group
+  - name: driver-group
+  - name: operator-group
+  - name: admin-group
+
+consumers:
+  # Placeholder consumers — real consumers are provisioned dynamically by the
+  # auth service when users register. These serve as templates / test accounts.
+  - username: passenger-template
+    custom_id: passenger-template
+    groups:
+      - name: passenger-group
+
+  - username: driver-template
+    custom_id: driver-template
+    groups:
+      - name: driver-group
+
+  - username: operator-template
+    custom_id: operator-template
+    groups:
+      - name: operator-group
+
+  - username: admin-template
+    custom_id: admin-template
+    groups:
+      - name: admin-group
+
+# ---------------------------------------------------------------------------
+# Global Plugins
+# ---------------------------------------------------------------------------
+
+plugins:
+  # -------------------------------------------------------------------------
+  # JWT Authentication — applied globally to all routes
+  # -------------------------------------------------------------------------
+  - name: jwt
+    config:
+      key_claim_name: kid
+      claims_to_verify:
+        - exp
+      header_names:
+        - Authorization
+      uri_param_names:
+        - jwt
+      cookie_names: []
+      # RS256 is enforced at the application middleware layer (auth.ts).
+      # Kong validates the token structure and expiry; signature verification
+      # uses the public key registered per consumer credential.
+      secret_is_base64: false
+      run_on_preflight: false
+      maximum_expiration: 86400  # 24 hours max token lifetime
+
+  # -------------------------------------------------------------------------
+  # CORS — applied globally
+  # -------------------------------------------------------------------------
+  - name: cors
+    config:
+      origins:
+        - "https://operator.dalasmart.co.tz"
+        - "https://admin.dalasmart.co.tz"
+        - "http://localhost:3000"
+        - "http://localhost:3001"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+        - HEAD
+      headers:
+        - Accept
+        - Accept-Version
+        - Content-Length
+        - Content-MD5
+        - Content-Type
+        - Date
+        - Authorization
+        - X-Request-ID
+        - X-Consumer-Groups
+      exposed_headers:
+        - X-Auth-Token
+        - X-Request-ID
+        - Retry-After
+      credentials: true
+      max_age: 3600
+      preflight_continue: false
+
+  # -------------------------------------------------------------------------
+  # Rate Limiting — Passenger group: 100 req/min
+  # -------------------------------------------------------------------------
+  - name: rate-limiting
+    consumer_group: passenger-group
+    config:
+      minute: 100
+      policy: redis
+      redis_host: redis
+      redis_port: 6379
+      redis_database: 1
+      fault_tolerant: true
+      hide_client_headers: false
+      error_code: 429
+      error_message: "Rate limit exceeded. Please slow down."
+
+  # -------------------------------------------------------------------------
+  # Rate Limiting — Driver group: 200 req/min
+  # -------------------------------------------------------------------------
+  - name: rate-limiting
+    consumer_group: driver-group
+    config:
+      minute: 200
+      policy: redis
+      redis_host: redis
+      redis_port: 6379
+      redis_database: 1
+      fault_tolerant: true
+      hide_client_headers: false
+      error_code: 429
+      error_message: "Rate limit exceeded. Please slow down."
+
+  # -------------------------------------------------------------------------
+  # Rate Limiting — Operator group: 60 req/min
+  # -------------------------------------------------------------------------
+  - name: rate-limiting
+    consumer_group: operator-group
+    config:
+      minute: 60
+      policy: redis
+      redis_host: redis
+      redis_port: 6379
+      redis_database: 1
+      fault_tolerant: true
+      hide_client_headers: false
+      error_code: 429
+      error_message: "Rate limit exceeded. Please slow down."
+
+  # -------------------------------------------------------------------------
+  # Rate Limiting — Admin group: 30 req/min
+  # -------------------------------------------------------------------------
+  - name: rate-limiting
+    consumer_group: admin-group
+    config:
+      minute: 30
+      policy: redis
+      redis_host: redis
+      redis_port: 6379
+      redis_database: 1
+      fault_tolerant: true
+      hide_client_headers: false
+      error_code: 429
+      error_message: "Rate limit exceeded. Please slow down."
+
+  # -------------------------------------------------------------------------
+  # Request Termination for unknown routes (catch-all 404)
+  # -------------------------------------------------------------------------
+  - name: request-termination
+    config:
+      status_code: 404
+      message: "Route not found"
+      content_type: "application/json"
