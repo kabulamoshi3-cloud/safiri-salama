@@ -8,29 +8,23 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Pool is created lazily — safe when DATABASE_URL is not yet set
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  max: 20,
+  max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
+  connectionTimeoutMillis: 5000,
 });
 
-// Test connection
+// Log connection events — do NOT call process.exit() on error; let Vercel handle it
 pool.on('connect', () => {
-  console.log('Database connected successfully');
+  console.log('Database connected');
 });
 
 pool.on('error', (err) => {
-  console.error('Unexpected database error:', err);
-  process.exit(-1);
-});
-
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  await pool.end();
-  console.log('Database pool closed');
-  process.exit(0);
+  // Log but do not crash the serverless function
+  console.error('Database pool error:', err.message);
 });
 
 export default pool;
