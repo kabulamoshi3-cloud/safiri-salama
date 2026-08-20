@@ -22,7 +22,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: services/api-gateway
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Type check
         working-directory: services/api-gateway
