@@ -14,7 +14,6 @@ dotenv.config();
 
 const app = express();
 const logger = createLogger('api-gateway');
-const PORT = process.env.PORT || 3000;
 
 // Security middleware
 app.use(helmet());
@@ -55,16 +54,5 @@ app.use('/api', authMiddleware, routes);
 // Error handling
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
-  logger.info(`API Gateway running on port ${PORT}`);
-  logger.info(`Environment: ${process.env.NODE_ENV}`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received, shutting down gracefully');
-  process.exit(0);
-});
-
+// Export for Vercel serverless — do NOT call app.listen() here
 export default app;
