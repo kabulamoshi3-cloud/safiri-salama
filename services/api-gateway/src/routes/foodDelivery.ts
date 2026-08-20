@@ -256,7 +256,7 @@ foodDeliveryRouter.post('/orders', auth, async (req: Request, res: Response) => 
 foodDeliveryRouter.get('/orders', auth, async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
-    const { status } = req.query;
+    const status = req.query.status as string | undefined;
 
     let query = `SELECT 
       fo.id, fo.order_number, fo.restaurant_id, r.name as restaurant_name,

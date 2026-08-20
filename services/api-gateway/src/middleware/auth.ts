@@ -7,8 +7,9 @@ const logger = createLogger('auth-middleware');
 export interface AuthRequest extends Request {
   user?: {
     id: string;
-    type: 'passenger' | 'driver' | 'operator' | 'admin';
+    type: 'passenger' | 'driver' | 'operator' | 'admin' | 'support_agent';
     phone: string;
+    phone_number?: string;
   };
 }
 

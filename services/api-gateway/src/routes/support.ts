@@ -154,7 +154,7 @@ supportRouter.post('/send-message', auth, async (req: Request, res: Response) =>
 supportRouter.get('/tickets', auth, async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
-    const { status } = req.query;
+    const status = req.query.status as string | undefined;
 
     let query = `SELECT * FROM support_tickets WHERE user_id = $1`;
     const params = [userId];
