@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import NetInfo from '@react-native-community/netinfo';
 
 const API_BASE_URL = 'https://simon-daladala-api.vercel.app/api';
 const TOKEN_KEY = '@dalasmart:token';

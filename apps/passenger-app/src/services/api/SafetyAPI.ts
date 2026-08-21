@@ -49,3 +49,5 @@ export class SafetyAPI {
     return APIClient.delete<void>(`/safety/emergency-contacts/${contactId}`);
   }
 }
+
+

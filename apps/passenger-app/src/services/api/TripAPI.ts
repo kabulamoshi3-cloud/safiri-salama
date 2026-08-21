@@ -106,3 +106,5 @@ export class TripAPI {
     return APIClient.get<GeoPoint[]>(`/trips/${tripId}/route-path`);
   }
 }
+
+

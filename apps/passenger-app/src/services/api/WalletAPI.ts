@@ -42,3 +42,5 @@ export class WalletAPI {
     return APIClient.get<{ balance: number }>('/wallet/balance');
   }
 }
+
+
