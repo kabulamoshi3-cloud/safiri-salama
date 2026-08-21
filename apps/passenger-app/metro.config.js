@@ -1,19 +1,12 @@
-const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const { getDefaultConfig } = require('expo/metro-config');
+const path = require('path');
 
-/**
- * Metro configuration
- * https://reactnative.dev/docs/metro
- *
- * @type {import('metro-config').MetroConfig}
- */
-const config = {
-  resolver: {
-    sourceExts: ['jsx', 'js', 'ts', 'tsx', 'json'],
-  },
-  watchFolders: [
-    // Add parent directories for monorepo support
-    require('path').resolve(__dirname, '../../'),
-  ],
-};
+const config = getDefaultConfig(__dirname);
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+// Support monorepo — watch parent dirs for shared packages
+config.watchFolders = [path.resolve(__dirname, '../../')];
+
+// Support TypeScript
+config.resolver.sourceExts = ['jsx', 'js', 'ts', 'tsx', 'json'];
+
+module.exports = config;
