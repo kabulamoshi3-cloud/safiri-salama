@@ -1,5 +1,50 @@
 {
-  "name": "DalaSmart",
-  "displayName": "DalaSmart",
-  "description": "Smart, safe, and affordable transport for Dar es Salaam"
+  "expo": {
+    "name": "DalaSmart",
+    "slug": "dalasmart-passenger",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a73e8"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.dalasmart.passenger",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "DalaSmart needs your location to find nearby drivers and show your trip on the map.",
+        "NSLocationAlwaysUsageDescription": "DalaSmart needs your location to track your trip in real-time.",
+        "NSCameraUsageDescription": "DalaSmart needs camera access to scan QR codes for payments."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1a73e8"
+      },
+      "package": "com.dalasmart.passenger",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "DalaSmart needs your location to find drivers near you."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "dalasmart-passenger"
+      }
+    }
+  }
 }

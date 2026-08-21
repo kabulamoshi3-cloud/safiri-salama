@@ -1,5 +1,51 @@
 {
-  "name": "DalaSmart Driver",
-  "displayName": "DalaSmart Driver",
-  "description": "Driver app for DalaSmart transport platform"
+  "expo": {
+    "name": "DalaSmart Driver",
+    "slug": "dalasmart-driver",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#2e7d32"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.dalasmart.driver",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "DalaSmart Driver needs your location to show you on the map for passengers.",
+        "NSLocationAlwaysUsageDescription": "DalaSmart Driver needs background location to track your trips.",
+        "UIBackgroundModes": ["location"]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#2e7d32"
+      },
+      "package": "com.dalasmart.driver",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "DalaSmart Driver needs your location to accept rides and navigate."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "dalasmart-driver"
+      }
+    }
+  }
 }

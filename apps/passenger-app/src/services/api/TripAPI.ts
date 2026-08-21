@@ -85,7 +85,7 @@ export class TripAPI {
   static async subscribeToTripTracking(tripId: string): Promise<EventSource> {
     const token = await this.getAuthToken();
     const eventSource = new EventSource(
-      `${process.env.API_BASE_URL}/trips/${tripId}/tracking/live?token=${token}`
+      `https://simon-daladala-api.vercel.app/api/trips/${tripId}/tracking/live?token=${token}`
     );
     return eventSource;
   }
