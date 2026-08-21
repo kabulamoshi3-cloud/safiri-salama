@@ -36,6 +36,25 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Rate limiting
 app.use(rateLimiter);
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    name: 'DalaSmart API',
+    version: '1.0.0',
+    status: 'running',
+    endpoints: {
+      health: '/health',
+      auth: '/api/v1/auth',
+      trips: '/api/v1/trips',
+      drivers: '/api/v1/drivers',
+      promo: '/api/v1/promo',
+      referral: '/api/v1/referral',
+      support: '/api/v1/support',
+      food: '/api/v1/food'
+    }
+  });
+});
+
 // Health check endpoint (no auth required)
 app.get('/health', (req, res) => {
   res.json({
