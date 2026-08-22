@@ -1,0 +1,11 @@
+# Ignore everything outside passenger-app during EAS build
+../../services
+../../apps/driver-app
+../../apps/driver-dashboard
+../../apps/admin-panel
+../../packages
+../../infrastructure
+../../.github
+../../package.json
+../../vercel.json
+../../tsconfig.base.json
