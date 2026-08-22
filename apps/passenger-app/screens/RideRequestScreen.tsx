@@ -4,6 +4,7 @@ import {
   ScrollView, Alert, ActivityIndicator, Modal,
 } from 'react-native';
 import * as Location from 'expo-location';
+import AnimatedButton from '../components/AnimatedButton';
 
 const FARES: Record<string, { perKm: number; base: number; perMin: number }> = {
   car: { perKm: 1500, base: 3000, perMin: 50 },
@@ -141,9 +142,14 @@ export default function RideRequestScreen({ navigation }: any) {
 
       {/* Estimate / Confirm button */}
       {!estimatedFare ? (
-        <TouchableOpacity style={styles.estimateBtn} onPress={estimateFare} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>Get Fare Estimate</Text>}
-        </TouchableOpacity>
+        <AnimatedButton
+          title="Get Fare Estimate"
+          onPress={estimateFare}
+          disabled={loading}
+          icon="💰"
+          colors={['#1a73e8', '#1565c0']}
+          style={{ marginHorizontal: 16, marginTop: 12 }}
+        />
       ) : (
         <View style={styles.fareCard}>
           <View style={styles.fareRow}>
@@ -154,9 +160,12 @@ export default function RideRequestScreen({ navigation }: any) {
             <Text style={styles.fareLabel}>Estimated time</Text>
             <Text style={styles.fareTime}>{estimatedTime} min</Text>
           </View>
-          <TouchableOpacity style={styles.confirmBtn} onPress={confirmRide}>
-            <Text style={styles.btnText}>Confirm Ride</Text>
-          </TouchableOpacity>
+          <AnimatedButton
+            title="Confirm Ride"
+            onPress={confirmRide}
+            icon="🚗"
+            colors={['#2e7d32', '#1b5e20']}
+          />
         </View>
       )}
 

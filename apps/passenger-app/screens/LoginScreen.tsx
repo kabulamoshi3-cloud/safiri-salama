@@ -7,6 +7,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
+import AnimatedButton from '../components/AnimatedButton';
+
 const API = 'https://simon-daladala-api.vercel.app/api/v1';
 
 export default function LoginScreen({ route, navigation }: any) {
@@ -72,24 +74,29 @@ export default function LoginScreen({ route, navigation }: any) {
             <TextInput style={styles.input} placeholder="••••••••" value={password} onChangeText={setPassword} secureTextEntry />
           </View>
 
-          <TouchableOpacity
-            style={[styles.button, isDriver && styles.driverBtn]}
-            onPress={handleAuth} disabled={loading} activeOpacity={0.85}
-          >
-            {loading ? <ActivityIndicator color="#fff" /> : (
-              <Text style={styles.buttonText}>{isRegister ? 'Create Account' : 'Login'} →</Text>
-            )}
-          </TouchableOpacity>
+          <AnimatedButton
+            title={isRegister ? 'Create Account →' : 'Login →'}
+            onPress={handleAuth}
+            disabled={loading}
+            colors={isDriver ? ['#2e7d32', '#1b5e20'] : ['#1a73e8', '#1565c0']}
+            icon={loading ? '⏳' : isRegister ? '✨' : '🔓'}
+          />
 
-          <TouchableOpacity onPress={() => setIsRegister(!isRegister)} style={styles.switchBtn}>
-            <Text style={styles.switchText}>
-              {isRegister ? 'Already have an account? Login' : "Don't have an account? Sign Up"}
-            </Text>
-          </TouchableOpacity>
+          <AnimatedButton
+            title={isRegister ? 'Already have an account? Login' : "Don't have an account? Sign Up"}
+            onPress={() => setIsRegister(!isRegister)}
+            variant="ghost"
+            colors={['#1a73e8', '#1a73e8']}
+            size="small"
+          />
 
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Text style={styles.backText}>← Change role</Text>
-          </TouchableOpacity>
+          <AnimatedButton
+            title="← Change role"
+            onPress={() => navigation.goBack()}
+            variant="ghost"
+            colors={['#999', '#999']}
+            size="small"
+          />
         </Animated.View>
       </KeyboardAvoidingView>
     </LinearGradient>

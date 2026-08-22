@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import AnimatedButton from '../components/AnimatedButton';
 
 export default function HomeScreen({ navigation }: any) {
   const fadeIn = useRef(new Animated.Value(0)).current;

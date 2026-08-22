@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert,
 } from 'react-native';
+import AnimatedButton from '../components/AnimatedButton';
 
 export default function DriverHomeScreen() {
   const [isOnline, setIsOnline] = useState(false);
@@ -21,14 +22,12 @@ export default function DriverHomeScreen() {
         <Text style={styles.statusText}>
           {isOnline ? '🟢 You are Online' : '🔴 You are Offline'}
         </Text>
-        <TouchableOpacity
-          style={[styles.toggleBtn, isOnline ? styles.offlineBtn : styles.onlineBtn]}
+        <AnimatedButton
+          title={isOnline ? '⏸ Go Offline' : '▶ Go Online'}
           onPress={toggleOnline}
-        >
-          <Text style={styles.toggleText}>
-            {isOnline ? 'Go Offline' : 'Go Online'}
-          </Text>
-        </TouchableOpacity>
+          colors={isOnline ? ['#c62828', '#b71c1c'] : ['#2e7d32', '#1b5e20']}
+          icon={isOnline ? '🔴' : '🟢'}
+        />
       </View>
 
       {/* Today's Stats */}
