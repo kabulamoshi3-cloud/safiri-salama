@@ -1,69 +1,69 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  View, Text, StyleSheet, TextInput, TouchableOpacity,
-  Alert, ScrollView,
+  View, Text, StyleSheet, TouchableOpacity, ScrollView, Image,
 } from 'react-native';
 
-const API = 'https://simon-daladala-api.vercel.app/api/v1';
-
-export default function HomeScreen() {
-  const [pickup, setPickup] = useState('');
-  const [destination, setDestination] = useState('');
-
-  const requestRide = () => {
-    if (!pickup || !destination) {
-      Alert.alert('Enter locations', 'Please enter both pickup and destination');
-      return;
-    }
-    Alert.alert(
-      'Ride Requested',
-      `Looking for drivers...\n\nFrom: ${pickup}\nTo: ${destination}`,
-      [{ text: 'OK' }]
-    );
-  };
-
+export default function HomeScreen({ navigation }: any) {
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.card}>
-        <Text style={styles.greeting}>Habari! Where to?</Text>
+      {/* Quick booking card */}
+      <TouchableOpacity style={styles.bookCard} onPress={() => navigation.navigate('RideRequest')}>
+        <Text style={styles.bookEmoji}>🚗</Text>
+        <View style={styles.bookInfo}>
+          <Text style={styles.bookTitle}>Where to?</Text>
+          <Text style={styles.bookSubtitle}>Tap to book a ride</Text>
+        </View>
+        <Text style={styles.bookArrow}>›</Text>
+      </TouchableOpacity>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Pickup location"
-          value={pickup}
-          onChangeText={setPickup}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Destination"
-          value={destination}
-          onChangeText={setDestination}
-        />
-
-        <TouchableOpacity style={styles.button} onPress={requestRide}>
-          <Text style={styles.buttonText}>Request Ride</Text>
-        </TouchableOpacity>
-      </View>
-
+      {/* Vehicle options */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick Options</Text>
-        <View style={styles.options}>
-          {['Car', 'Bajaji', 'Boda-Boda'].map((type) => (
-            <TouchableOpacity key={type} style={styles.option}>
-              <Text style={styles.optionEmoji}>
-                {type === 'Car' ? '🚗' : type === 'Bajaji' ? '🛺' : '🏍️'}
-              </Text>
-              <Text style={styles.optionText}>{type}</Text>
+        <Text style={styles.sectionTitle}>Choose your ride</Text>
+        <View style={styles.vehicleRow}>
+          {[
+            { emoji: '🚗', name: 'Car', desc: 'Comfort', price: 'from Sh 3,000' },
+            { emoji: '🛺', name: 'Bajaji', desc: 'Affordable', price: 'from Sh 2,000' },
+            { emoji: '🏍️', name: 'Boda', desc: 'Fast', price: 'from Sh 1,500' },
+          ].map((v) => (
+            <TouchableOpacity
+              key={v.name}
+              style={styles.vehicleCard}
+              onPress={() => navigation.navigate('RideRequest')}
+            >
+              <Text style={styles.vehicleEmoji}>{v.emoji}</Text>
+              <Text style={styles.vehicleName}>{v.name}</Text>
+              <Text style={styles.vehicleDesc}>{v.desc}</Text>
+              <Text style={styles.vehiclePrice}>{v.price}</Text>
             </TouchableOpacity>
           ))}
         </View>
       </View>
 
+      {/* Promo */}
+      <View style={styles.promoCard}>
+        <Text style={styles.promoEmoji}>🎉</Text>
+        <View style={styles.promoInfo}>
+          <Text style={styles.promoTitle}>Refer & Earn Sh 5,000</Text>
+          <Text style={styles.promoDesc}>Share DalaSmart with friends</Text>
+        </View>
+      </View>
+
+      {/* Recent */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Recent Trips</Text>
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>No recent trips</Text>
-          <Text style={styles.emptySubtext}>Your trip history will appear here</Text>
+        <Text style={styles.sectionTitle}>Saved Places</Text>
+        <View style={styles.placesRow}>
+          <TouchableOpacity style={styles.placeCard}>
+            <Text style={styles.placeEmoji}>🏠</Text>
+            <Text style={styles.placeText}>Home</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.placeCard}>
+            <Text style={styles.placeEmoji}>💼</Text>
+            <Text style={styles.placeText}>Work</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.placeCard}>
+            <Text style={styles.placeEmoji}>➕</Text>
+            <Text style={styles.placeText}>Add</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
@@ -72,27 +72,39 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5' },
-  card: { backgroundColor: '#fff', margin: 16, padding: 20, borderRadius: 12, elevation: 2 },
-  greeting: { fontSize: 22, fontWeight: 'bold', color: '#333', marginBottom: 16 },
-  input: {
-    borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 8,
-    padding: 14, fontSize: 16, marginBottom: 12, backgroundColor: '#fafafa',
+  bookCard: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff',
+    margin: 16, padding: 18, borderRadius: 14, elevation: 2,
   },
-  button: {
-    backgroundColor: '#1a73e8', borderRadius: 8, padding: 16,
-    alignItems: 'center', marginTop: 4,
+  bookEmoji: { fontSize: 30, marginRight: 14 },
+  bookInfo: { flex: 1 },
+  bookTitle: { fontSize: 18, fontWeight: '600', color: '#333' },
+  bookSubtitle: { fontSize: 13, color: '#999', marginTop: 2 },
+  bookArrow: { fontSize: 24, color: '#ccc' },
+  section: { marginHorizontal: 16, marginTop: 16 },
+  sectionTitle: { fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 10 },
+  vehicleRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  vehicleCard: {
+    flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 14,
+    alignItems: 'center', marginHorizontal: 4, elevation: 1,
   },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  section: { marginHorizontal: 16, marginTop: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: '600', color: '#333', marginBottom: 12 },
-  options: { flexDirection: 'row', justifyContent: 'space-between' },
-  option: {
-    backgroundColor: '#fff', borderRadius: 12, padding: 16, flex: 1,
-    marginHorizontal: 4, alignItems: 'center', elevation: 1,
+  vehicleEmoji: { fontSize: 28, marginBottom: 6 },
+  vehicleName: { fontSize: 14, fontWeight: '600', color: '#333' },
+  vehicleDesc: { fontSize: 11, color: '#666', marginTop: 2 },
+  vehiclePrice: { fontSize: 10, color: '#1a73e8', marginTop: 4 },
+  promoCard: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff3e0',
+    margin: 16, padding: 16, borderRadius: 12,
   },
-  optionEmoji: { fontSize: 28, marginBottom: 6 },
-  optionText: { fontSize: 12, color: '#666' },
-  emptyState: { backgroundColor: '#fff', borderRadius: 12, padding: 24, alignItems: 'center' },
-  emptyText: { fontSize: 16, color: '#999' },
-  emptySubtext: { fontSize: 12, color: '#ccc', marginTop: 4 },
+  promoEmoji: { fontSize: 28, marginRight: 12 },
+  promoInfo: { flex: 1 },
+  promoTitle: { fontSize: 14, fontWeight: '600', color: '#e65100' },
+  promoDesc: { fontSize: 12, color: '#f57c00', marginTop: 2 },
+  placesRow: { flexDirection: 'row' },
+  placeCard: {
+    backgroundColor: '#fff', borderRadius: 10, padding: 14, marginRight: 10,
+    alignItems: 'center', elevation: 1, width: 80,
+  },
+  placeEmoji: { fontSize: 22, marginBottom: 4 },
+  placeText: { fontSize: 11, color: '#666' },
 });
