@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import Geolocation from '@react-native-community/geolocation';
+import * as Location from 'expo-location';
 import type { GeoPoint } from '../types/shared';
 
 interface LocationContextType {
@@ -19,27 +19,34 @@ export const LocationProvider: React.FC<{ children: ReactNode }> = ({ children }
   useEffect(() => {
     requestLocation();
 
-    const watchId = Geolocation.watchPosition(
-      (position) => {
-        setCurrentLocation({
-          lat: position.coords.latitude,
-          lon: position.coords.longitude,
-        });
-        setError(null);
-      },
-      (err) => {
-        console.error('Location watch error:', err);
-        setError(err.message);
-      },
-      {
-        enableHighAccuracy: true,
-        distanceFilter: 5,
-        interval: 3000,
+    let subscription: Location.LocationSubscription | null = null;
+
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setError('Location permission denied');
+        setIsLoading(false);
+        return;
       }
-    );
+
+      subscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          distanceInterval: 10,
+          timeInterval: 5000,
+        },
+        (loc) => {
+          setCurrentLocation({
+            lat: loc.coords.latitude,
+            lng: loc.coords.longitude,
+          });
+          setError(null);
+        }
+      );
+    })();
 
     return () => {
-      Geolocation.clearWatch(watchId);
+      subscription?.remove();
     };
   }, []);
 
@@ -48,27 +55,24 @@ export const LocationProvider: React.FC<{ children: ReactNode }> = ({ children }
     setError(null);
 
     try {
-      Geolocation.getCurrentPosition(
-        (position) => {
-          setCurrentLocation({
-            lat: position.coords.latitude,
-            lon: position.coords.longitude,
-          });
-          setIsLoading(false);
-        },
-        (err) => {
-          console.error('Location request error:', err);
-          setError(err.message);
-          setIsLoading(false);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 10000,
-        }
-      );
-    } catch (err) {
-      setError('Failed to get location');
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setError('Location permission denied');
+        setIsLoading(false);
+        return;
+      }
+
+      const loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+
+      setCurrentLocation({
+        lat: loc.coords.latitude,
+        lng: loc.coords.longitude,
+      });
+      setIsLoading(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to get location');
       setIsLoading(false);
     }
   };
@@ -94,4 +98,3 @@ export const useLocation = (): LocationContextType => {
   }
   return context;
 };
-
