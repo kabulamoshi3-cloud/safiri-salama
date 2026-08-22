@@ -8,7 +8,8 @@ import axios from 'axios';
 
 const API = 'https://simon-daladala-api.vercel.app/api/v1';
 
-export default function LoginScreen({ navigation }: any) {
+export default function LoginScreen({ route, navigation }: any) {
+  const role = route?.params?.role || 'passenger';
   const [phone, setPhone] = useState('+255');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,16 +21,22 @@ export default function LoginScreen({ navigation }: any) {
       Alert.alert('Error', 'Enter a valid phone number');
       return;
     }
+    if (!password || password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
     setLoading(true);
     try {
       const endpoint = isRegister ? `${API}/auth/register` : `${API}/auth/login`;
       const body = isRegister
-        ? { phone, password, name, userType: 'passenger' }
+        ? { phone, password, name, userType: role }
         : { phone, password };
 
       const res = await axios.post(endpoint, body);
-      const token = res.data.token || 'demo-token';
+      const token = res.data.token;
       await AsyncStorage.setItem('@dalasmart:token', token);
+      await AsyncStorage.setItem('@dalasmart:role', role);
+      await AsyncStorage.setItem('@dalasmart:user', JSON.stringify(res.data.user));
       navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
     } catch (err: any) {
       const msg = err.response?.data?.error || err.message || 'Authentication failed';
@@ -42,8 +49,10 @@ export default function LoginScreen({ navigation }: any) {
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.header}>
-        <Text style={styles.logo}>DalaSmart</Text>
-        <Text style={styles.subtitle}>Smart transport for Dar es Salaam</Text>
+        <Text style={styles.roleLabel}>
+          {role === 'driver' ? '🏍️ Driver' : '🚗 Passenger'} Account
+        </Text>
+        <Text style={styles.title}>{isRegister ? 'Create Account' : 'Welcome Back'}</Text>
       </View>
 
       <View style={styles.form}>
@@ -53,6 +62,7 @@ export default function LoginScreen({ navigation }: any) {
             placeholder="Full Name"
             value={name}
             onChangeText={setName}
+            autoCapitalize="words"
           />
         )}
         <TextInput
@@ -70,7 +80,7 @@ export default function LoginScreen({ navigation }: any) {
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleAuth} disabled={loading}>
+        <TouchableOpacity style={[styles.button, role === 'driver' && styles.driverButton]} onPress={handleAuth} disabled={loading}>
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
@@ -83,6 +93,10 @@ export default function LoginScreen({ navigation }: any) {
             {isRegister ? 'Already have an account? Login' : "Don't have an account? Sign Up"}
           </Text>
         </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Text style={styles.backText}>← Change role</Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -90,18 +104,21 @@ export default function LoginScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#1a73e8', justifyContent: 'center' },
-  header: { alignItems: 'center', marginBottom: 40 },
-  logo: { fontSize: 36, fontWeight: 'bold', color: '#fff' },
-  subtitle: { fontSize: 14, color: '#e3f2fd', marginTop: 8 },
+  header: { alignItems: 'center', marginBottom: 30 },
+  roleLabel: { fontSize: 14, color: '#e3f2fd', marginBottom: 6 },
+  title: { fontSize: 26, fontWeight: 'bold', color: '#fff' },
   form: { backgroundColor: '#fff', marginHorizontal: 20, borderRadius: 16, padding: 24 },
   input: {
-    borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 8,
+    borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 10,
     padding: 14, fontSize: 16, marginBottom: 12,
   },
   button: {
-    backgroundColor: '#1a73e8', borderRadius: 8, padding: 16,
+    backgroundColor: '#1a73e8', borderRadius: 10, padding: 16,
     alignItems: 'center', marginTop: 8,
   },
+  driverButton: { backgroundColor: '#2e7d32' },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  switchText: { textAlign: 'center', marginTop: 16, color: '#1a73e8' },
+  switchText: { textAlign: 'center', marginTop: 16, color: '#1a73e8', fontSize: 14 },
+  backBtn: { marginTop: 12, alignItems: 'center' },
+  backText: { color: '#999', fontSize: 13 },
 });
