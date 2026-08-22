@@ -9,9 +9,6 @@
       "resizeMode": "contain",
       "backgroundColor": "#1a73e8"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.dalasmart.passenger"
@@ -20,12 +17,7 @@
       "adaptiveIcon": {
         "backgroundColor": "#1a73e8"
       },
-      "package": "com.dalasmart.passenger",
-      "permissions": [
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "CAMERA"
-      ]
+      "package": "com.dalasmart.passenger"
     },
     "extra": {
       "eas": {
