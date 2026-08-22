@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform,
+  StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Animated,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
@@ -16,109 +17,107 @@ export default function LoginScreen({ route, navigation }: any) {
   const [isRegister, setIsRegister] = useState(false);
   const [name, setName] = useState('');
 
+  const formSlide = useRef(new Animated.Value(40)).current;
+  const formOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(formSlide, { toValue: 0, duration: 500, useNativeDriver: true }),
+      Animated.timing(formOpacity, { toValue: 1, duration: 600, useNativeDriver: true }),
+    ]).start();
+  }, []);
+
   const handleAuth = async () => {
-    if (!phone || phone.length < 10) {
-      Alert.alert('Error', 'Enter a valid phone number');
-      return;
-    }
-    if (!password || password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
-      return;
-    }
+    if (!phone || phone.length < 10) { Alert.alert('Error', 'Enter a valid phone number'); return; }
+    if (!password || password.length < 6) { Alert.alert('Error', 'Password must be at least 6 characters'); return; }
     setLoading(true);
     try {
       const endpoint = isRegister ? `${API}/auth/register` : `${API}/auth/login`;
-      const body = isRegister
-        ? { phone, password, name, userType: role }
-        : { phone, password };
-
+      const body = isRegister ? { phone, password, name, userType: role } : { phone, password };
       const res = await axios.post(endpoint, body);
-      const token = res.data.token;
-      await AsyncStorage.setItem('@dalasmart:token', token);
+      await AsyncStorage.setItem('@dalasmart:token', res.data.token);
       await AsyncStorage.setItem('@dalasmart:role', role);
       await AsyncStorage.setItem('@dalasmart:user', JSON.stringify(res.data.user));
       navigation.reset({ index: 0, routes: [{ name: role === 'driver' ? 'MainDriver' : 'Main' }] });
     } catch (err: any) {
-      const msg = err.response?.data?.error || err.message || 'Authentication failed';
-      Alert.alert('Error', msg);
-    } finally {
-      setLoading(false);
-    }
+      Alert.alert('Error', err.response?.data?.error || 'Authentication failed');
+    } finally { setLoading(false); }
   };
 
+  const isDriver = role === 'driver';
+  const colors: [string, string] = isDriver ? ['#2e7d32', '#1b5e20'] : ['#1a73e8', '#0d47a1'];
+
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.header}>
-        <Text style={styles.roleLabel}>
-          {role === 'driver' ? '🏍️ Driver' : '🚗 Passenger'} Account
-        </Text>
-        <Text style={styles.title}>{isRegister ? 'Create Account' : 'Welcome Back'}</Text>
-      </View>
+    <LinearGradient colors={colors} style={styles.container}>
+      <KeyboardAvoidingView style={styles.inner} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <View style={styles.header}>
+          <Text style={styles.roleIcon}>{isDriver ? '🏍️' : '🚗'}</Text>
+          <Text style={styles.roleLabel}>{isDriver ? 'Driver' : 'Passenger'} Account</Text>
+          <Text style={styles.title}>{isRegister ? 'Create Account' : 'Welcome Back'}</Text>
+        </View>
 
-      <View style={styles.form}>
-        {isRegister && (
-          <TextInput
-            style={styles.input}
-            placeholder="Full Name"
-            value={name}
-            onChangeText={setName}
-            autoCapitalize="words"
-          />
-        )}
-        <TextInput
-          style={styles.input}
-          placeholder="Phone (+255...)"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-
-        <TouchableOpacity style={[styles.button, role === 'driver' && styles.driverButton]} onPress={handleAuth} disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>{isRegister ? 'Sign Up' : 'Login'}</Text>
+        <Animated.View style={[styles.form, { transform: [{ translateY: formSlide }], opacity: formOpacity }]}>
+          {isRegister && (
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Full Name</Text>
+              <TextInput style={styles.input} placeholder="Enter your name" value={name} onChangeText={setName} autoCapitalize="words" />
+            </View>
           )}
-        </TouchableOpacity>
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Phone Number</Text>
+            <TextInput style={styles.input} placeholder="+255 7XX XXX XXX" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+          </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Password</Text>
+            <TextInput style={styles.input} placeholder="••••••••" value={password} onChangeText={setPassword} secureTextEntry />
+          </View>
 
-        <TouchableOpacity onPress={() => setIsRegister(!isRegister)}>
-          <Text style={styles.switchText}>
-            {isRegister ? 'Already have an account? Login' : "Don't have an account? Sign Up"}
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, isDriver && styles.driverBtn]}
+            onPress={handleAuth} disabled={loading} activeOpacity={0.85}
+          >
+            {loading ? <ActivityIndicator color="#fff" /> : (
+              <Text style={styles.buttonText}>{isRegister ? 'Create Account' : 'Login'} →</Text>
+            )}
+          </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Change role</Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+          <TouchableOpacity onPress={() => setIsRegister(!isRegister)} style={styles.switchBtn}>
+            <Text style={styles.switchText}>
+              {isRegister ? 'Already have an account? Login' : "Don't have an account? Sign Up"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+            <Text style={styles.backText}>← Change role</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#1a73e8', justifyContent: 'center' },
-  header: { alignItems: 'center', marginBottom: 30 },
-  roleLabel: { fontSize: 14, color: '#e3f2fd', marginBottom: 6 },
-  title: { fontSize: 26, fontWeight: 'bold', color: '#fff' },
-  form: { backgroundColor: '#fff', marginHorizontal: 20, borderRadius: 16, padding: 24 },
+  container: { flex: 1 },
+  inner: { flex: 1, justifyContent: 'center' },
+  header: { alignItems: 'center', marginBottom: 24 },
+  roleIcon: { fontSize: 40, marginBottom: 8 },
+  roleLabel: { fontSize: 14, color: 'rgba(255,255,255,0.7)', fontWeight: '500' },
+  title: { fontSize: 28, fontWeight: '800', color: '#fff', marginTop: 4 },
+  form: { backgroundColor: '#fff', marginHorizontal: 20, borderRadius: 24, padding: 28, elevation: 8 },
+  inputContainer: { marginBottom: 14 },
+  inputLabel: { fontSize: 12, fontWeight: '600', color: '#999', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
   input: {
-    borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 10,
-    padding: 14, fontSize: 16, marginBottom: 12,
+    borderWidth: 1.5, borderColor: '#eee', borderRadius: 12,
+    padding: 14, fontSize: 16, backgroundColor: '#fafafa',
   },
   button: {
-    backgroundColor: '#1a73e8', borderRadius: 10, padding: 16,
-    alignItems: 'center', marginTop: 8,
+    backgroundColor: '#1a73e8', borderRadius: 14, padding: 16,
+    alignItems: 'center', marginTop: 10, elevation: 3,
   },
-  driverButton: { backgroundColor: '#2e7d32' },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  switchText: { textAlign: 'center', marginTop: 16, color: '#1a73e8', fontSize: 14 },
+  driverBtn: { backgroundColor: '#2e7d32' },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  switchBtn: { marginTop: 16 },
+  switchText: { textAlign: 'center', color: '#1a73e8', fontSize: 14, fontWeight: '500' },
   backBtn: { marginTop: 12, alignItems: 'center' },
-  backText: { color: '#999', fontSize: 13 },
+  backText: { color: '#aaa', fontSize: 13 },
 });

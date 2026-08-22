@@ -1,110 +1,134 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, ScrollView, Image,
+  View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function HomeScreen({ navigation }: any) {
+  const fadeIn = useRef(new Animated.Value(0)).current;
+  const slideUp = useRef(new Animated.Value(30)).current;
+  const cardScale = useRef(new Animated.Value(0.95)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeIn, { toValue: 1, duration: 600, useNativeDriver: true }),
+      Animated.timing(slideUp, { toValue: 0, duration: 500, useNativeDriver: true }),
+      Animated.spring(cardScale, { toValue: 1, tension: 50, friction: 8, useNativeDriver: true }),
+    ]).start();
+  }, []);
+
   return (
-    <ScrollView style={styles.container}>
-      {/* Quick booking card */}
-      <TouchableOpacity style={styles.bookCard} onPress={() => navigation.navigate('RideRequest')}>
-        <Text style={styles.bookEmoji}>🚗</Text>
-        <View style={styles.bookInfo}>
-          <Text style={styles.bookTitle}>Where to?</Text>
-          <Text style={styles.bookSubtitle}>Tap to book a ride</Text>
-        </View>
-        <Text style={styles.bookArrow}>›</Text>
-      </TouchableOpacity>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Hero card */}
+      <Animated.View style={{ transform: [{ scale: cardScale }], opacity: fadeIn }}>
+        <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('RideRequest')}>
+          <LinearGradient colors={['#1a73e8', '#1565c0']} style={styles.heroCard}>
+            <Text style={styles.heroGreeting}>Habari! 👋</Text>
+            <Text style={styles.heroTitle}>Where are you going?</Text>
+            <View style={styles.searchBar}>
+              <Text style={styles.searchIcon}>🔍</Text>
+              <Text style={styles.searchText}>Enter destination...</Text>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+      </Animated.View>
 
       {/* Vehicle options */}
-      <View style={styles.section}>
+      <Animated.View style={[styles.section, { opacity: fadeIn, transform: [{ translateY: slideUp }] }]}>
         <Text style={styles.sectionTitle}>Choose your ride</Text>
         <View style={styles.vehicleRow}>
           {[
-            { emoji: '🚗', name: 'Car', desc: 'Comfort', price: 'from Sh 3,000' },
-            { emoji: '🛺', name: 'Bajaji', desc: 'Affordable', price: 'from Sh 2,000' },
-            { emoji: '🏍️', name: 'Boda', desc: 'Fast', price: 'from Sh 1,500' },
+            { emoji: '🚗', name: 'Car', desc: 'Comfort', price: 'Sh 3,000+', colors: ['#e3f2fd', '#bbdefb'] },
+            { emoji: '🛺', name: 'Bajaji', desc: 'Affordable', price: 'Sh 2,000+', colors: ['#fff3e0', '#ffe0b2'] },
+            { emoji: '🏍️', name: 'Boda', desc: 'Fast', price: 'Sh 1,500+', colors: ['#e8f5e9', '#c8e6c9'] },
           ].map((v) => (
             <TouchableOpacity
-              key={v.name}
+              key={v.name} activeOpacity={0.8}
               style={styles.vehicleCard}
               onPress={() => navigation.navigate('RideRequest')}
             >
-              <Text style={styles.vehicleEmoji}>{v.emoji}</Text>
-              <Text style={styles.vehicleName}>{v.name}</Text>
-              <Text style={styles.vehicleDesc}>{v.desc}</Text>
-              <Text style={styles.vehiclePrice}>{v.price}</Text>
+              <LinearGradient colors={v.colors} style={styles.vehicleGradient}>
+                <Text style={styles.vehicleEmoji}>{v.emoji}</Text>
+                <Text style={styles.vehicleName}>{v.name}</Text>
+                <Text style={styles.vehicleDesc}>{v.desc}</Text>
+                <Text style={styles.vehiclePrice}>{v.price}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </Animated.View>
+
+      {/* Promo banner */}
+      <Animated.View style={{ opacity: fadeIn }}>
+        <TouchableOpacity activeOpacity={0.85}>
+          <LinearGradient colors={['#ff6f00', '#ff8f00']} style={styles.promoCard}>
+            <View style={styles.promoLeft}>
+              <Text style={styles.promoTitle}>🎉 Refer & Earn</Text>
+              <Text style={styles.promoAmount}>Sh 5,000 bonus</Text>
+              <Text style={styles.promoDesc}>Share with friends</Text>
+            </View>
+            <Text style={styles.promoArrow}>→</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </Animated.View>
+
+      {/* Saved places */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Saved Places</Text>
+        <View style={styles.placesRow}>
+          {[
+            { emoji: '🏠', name: 'Home', color: '#e3f2fd' },
+            { emoji: '💼', name: 'Work', color: '#f3e5f5' },
+            { emoji: '🏋️', name: 'Gym', color: '#e8f5e9' },
+            { emoji: '➕', name: 'Add', color: '#f5f5f5' },
+          ].map((p) => (
+            <TouchableOpacity key={p.name} style={[styles.placeCard, { backgroundColor: p.color }]}>
+              <Text style={styles.placeEmoji}>{p.emoji}</Text>
+              <Text style={styles.placeText}>{p.name}</Text>
             </TouchableOpacity>
           ))}
         </View>
       </View>
 
-      {/* Promo */}
-      <View style={styles.promoCard}>
-        <Text style={styles.promoEmoji}>🎉</Text>
-        <View style={styles.promoInfo}>
-          <Text style={styles.promoTitle}>Refer & Earn Sh 5,000</Text>
-          <Text style={styles.promoDesc}>Share DalaSmart with friends</Text>
-        </View>
-      </View>
-
-      {/* Recent */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Saved Places</Text>
-        <View style={styles.placesRow}>
-          <TouchableOpacity style={styles.placeCard}>
-            <Text style={styles.placeEmoji}>🏠</Text>
-            <Text style={styles.placeText}>Home</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.placeCard}>
-            <Text style={styles.placeEmoji}>💼</Text>
-            <Text style={styles.placeText}>Work</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.placeCard}>
-            <Text style={styles.placeEmoji}>➕</Text>
-            <Text style={styles.placeText}>Add</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <View style={{ height: 30 }} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  bookCard: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff',
-    margin: 16, padding: 18, borderRadius: 14, elevation: 2,
+  container: { flex: 1, backgroundColor: '#fafafa' },
+  heroCard: { margin: 16, borderRadius: 20, padding: 24, elevation: 6 },
+  heroGreeting: { fontSize: 16, color: '#e3f2fd' },
+  heroTitle: { fontSize: 24, fontWeight: '800', color: '#fff', marginTop: 4 },
+  searchBar: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 12, padding: 14, marginTop: 16,
   },
-  bookEmoji: { fontSize: 30, marginRight: 14 },
-  bookInfo: { flex: 1 },
-  bookTitle: { fontSize: 18, fontWeight: '600', color: '#333' },
-  bookSubtitle: { fontSize: 13, color: '#999', marginTop: 2 },
-  bookArrow: { fontSize: 24, color: '#ccc' },
-  section: { marginHorizontal: 16, marginTop: 16 },
-  sectionTitle: { fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 10 },
+  searchIcon: { fontSize: 16, marginRight: 10 },
+  searchText: { fontSize: 15, color: 'rgba(255,255,255,0.7)' },
+  section: { marginHorizontal: 16, marginTop: 20 },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#333', marginBottom: 12 },
   vehicleRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  vehicleCard: {
-    flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 14,
-    alignItems: 'center', marginHorizontal: 4, elevation: 1,
-  },
-  vehicleEmoji: { fontSize: 28, marginBottom: 6 },
-  vehicleName: { fontSize: 14, fontWeight: '600', color: '#333' },
+  vehicleCard: { flex: 1, marginHorizontal: 4, borderRadius: 16, overflow: 'hidden', elevation: 2 },
+  vehicleGradient: { padding: 16, alignItems: 'center' },
+  vehicleEmoji: { fontSize: 32, marginBottom: 8 },
+  vehicleName: { fontSize: 14, fontWeight: '700', color: '#333' },
   vehicleDesc: { fontSize: 11, color: '#666', marginTop: 2 },
-  vehiclePrice: { fontSize: 10, color: '#1a73e8', marginTop: 4 },
+  vehiclePrice: { fontSize: 11, color: '#1a73e8', fontWeight: '600', marginTop: 6 },
   promoCard: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff3e0',
-    margin: 16, padding: 16, borderRadius: 12,
+    margin: 16, borderRadius: 16, padding: 20, flexDirection: 'row',
+    alignItems: 'center', elevation: 3,
   },
-  promoEmoji: { fontSize: 28, marginRight: 12 },
-  promoInfo: { flex: 1 },
-  promoTitle: { fontSize: 14, fontWeight: '600', color: '#e65100' },
-  promoDesc: { fontSize: 12, color: '#f57c00', marginTop: 2 },
+  promoLeft: { flex: 1 },
+  promoTitle: { fontSize: 15, color: '#fff', fontWeight: '600' },
+  promoAmount: { fontSize: 22, fontWeight: '800', color: '#fff', marginTop: 2 },
+  promoDesc: { fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
+  promoArrow: { fontSize: 24, color: '#fff' },
   placesRow: { flexDirection: 'row' },
   placeCard: {
-    backgroundColor: '#fff', borderRadius: 10, padding: 14, marginRight: 10,
-    alignItems: 'center', elevation: 1, width: 80,
+    borderRadius: 14, padding: 14, marginRight: 10,
+    alignItems: 'center', width: 72, elevation: 1,
   },
   placeEmoji: { fontSize: 22, marginBottom: 4 },
-  placeText: { fontSize: 11, color: '#666' },
+  placeText: { fontSize: 11, color: '#555', fontWeight: '500' },
 });
