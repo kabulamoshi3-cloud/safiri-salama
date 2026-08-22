@@ -4,8 +4,10 @@
     "slug": "dalasmart-passenger",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#1a73e8"
     },
@@ -15,6 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1a73e8"
       },
       "package": "com.dalasmart.passenger"
