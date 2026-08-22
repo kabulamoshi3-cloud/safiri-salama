@@ -3,17 +3,26 @@ const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
-// Stub out unavailable native modules during build
-const stubModules = {
-  'react-native-agora': path.resolve(__dirname, 'src/stubs/empty.js'),
-  'react-native-background-task': path.resolve(__dirname, 'src/stubs/empty.js'),
-  'react-native-secure-store': path.resolve(__dirname, 'src/stubs/empty.js'),
-  'perf_hooks': path.resolve(__dirname, 'src/stubs/empty.js'),
-};
+const stubPath = path.resolve(__dirname, 'src/stubs/empty.js');
 
+// Stub all unavailable native modules
 config.resolver.extraNodeModules = {
   ...config.resolver.extraNodeModules,
-  ...stubModules,
+  'react-native-agora': stubPath,
+  'react-native-background-task': stubPath,
+  'react-native-secure-store': stubPath,
+  'react-native-vector-icons/MaterialCommunityIcons': stubPath,
+  'react-native-vector-icons': stubPath,
+  'react-native-maps': stubPath,
+  'react-native-camera': stubPath,
+  'react-native-localize': stubPath,
+  '@react-native-firebase/app': stubPath,
+  '@react-native-firebase/messaging': stubPath,
+  '@react-native-firebase/crashlytics': stubPath,
+  '@react-native-firebase/analytics': stubPath,
+  '@react-native-community/netinfo': stubPath,
+  '@react-native-community/geolocation': stubPath,
+  'perf_hooks': stubPath,
 };
 
 module.exports = config;
