@@ -14,6 +14,9 @@
       },
       "ios": {
         "simulator": true
+      },
+      "env": {
+        "EAS_NO_VCS": "1"
       }
     },
     "production": {
