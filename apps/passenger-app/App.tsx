@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 
+import OnboardingScreen from './screens/OnboardingScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
@@ -51,7 +52,7 @@ function DriverTabs() {
 }
 
 export default function App() {
-  const [appState, setAppState] = useState<'loading' | 'welcome' | 'passenger' | 'driver'>('loading');
+  const [appState, setAppState] = useState<'loading' | 'onboarding' | 'welcome' | 'passenger' | 'driver'>('loading');
 
   useEffect(() => {
     checkAuth();
@@ -60,11 +61,14 @@ export default function App() {
   const checkAuth = async () => {
     const token = await AsyncStorage.getItem('@dalasmart:token');
     const role = await AsyncStorage.getItem('@dalasmart:role');
+    const hasOnboarded = await AsyncStorage.getItem('@dalasmart:onboarded');
 
     if (token && role) {
       setAppState(role === 'driver' ? 'driver' : 'passenger');
-    } else {
+    } else if (hasOnboarded) {
       setAppState('welcome');
+    } else {
+      setAppState('onboarding');
     }
   };
 
@@ -74,7 +78,14 @@ export default function App() {
     <NavigationContainer>
       <StatusBar style="light" />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {appState === 'welcome' ? (
+        {appState === 'onboarding' ? (
+          <>
+            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+            <Stack.Screen name="Welcome" component={WelcomeScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Main" component={PassengerTabs} />
+          </>
+        ) : appState === 'welcome' ? (
           <>
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />

@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function WelcomeScreen({ navigation }: any) {
-  const selectRole = (role: 'passenger' | 'driver') => {
+  const selectRole = async (role: 'passenger' | 'driver') => {
+    await AsyncStorage.setItem('@dalasmart:onboarded', 'true');
     navigation.navigate('Login', { role });
   };
 
