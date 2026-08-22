@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { User } from '@dalasmart/shared-types';
+import type { User } from '../types/shared';
 import { AuthAPI } from '../services/api/AuthAPI';
 
 interface AuthContextType {
@@ -129,5 +129,7 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
+
 
 

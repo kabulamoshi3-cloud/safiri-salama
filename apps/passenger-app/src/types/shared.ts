@@ -1,4 +1,4 @@
-// Local type definitions (replaces @dalasmart/shared-types)
+// Local type definitions (replaces ../../../../types/shared)
 
 export interface GeoPoint {
   lat: number;
@@ -95,4 +95,5 @@ export interface EmergencyContact {
   phone: string;
   relationship: string;
 }
+
 

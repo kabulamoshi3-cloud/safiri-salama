@@ -1,5 +1,5 @@
 import { APIClient } from './client';
-import type { GeoPoint, TripPlan, TripOption, TransportMode } from '@dalasmart/shared-types';
+import type { GeoPoint, TripPlan, TripOption, TransportMode } from '../../types/shared';
 
 export interface TripRequest {
   origin: GeoPoint;
@@ -106,5 +106,7 @@ export class TripAPI {
     return APIClient.get<GeoPoint[]>(`/trips/${tripId}/route-path`);
   }
 }
+
+
 
 

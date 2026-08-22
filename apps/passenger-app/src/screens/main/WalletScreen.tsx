@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { WalletAPI } from '../../services/api/WalletAPI';
 import { WalletStackParamList } from '../../navigation/MainNavigator';
-import type { Wallet, Transaction } from '@dalasmart/shared-types';
+import type { Wallet, Transaction } from '../../types/shared';
 
 type WalletScreenNavigationProp = StackNavigationProp<WalletStackParamList, 'WalletMain'>;
 
@@ -301,5 +301,7 @@ const styles = StyleSheet.create({
 });
 
 export default WalletScreen;
+
+
 
 

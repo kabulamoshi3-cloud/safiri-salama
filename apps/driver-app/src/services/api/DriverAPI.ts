@@ -1,5 +1,5 @@
 import { APIClient } from './client';
-import type { GeoPoint, Vehicle } from '@dalasmart/shared-types';
+import type { GeoPoint, Vehicle } from '../../types/shared';
 
 export interface LocationUpdate {
   lat: number;
@@ -105,3 +105,4 @@ export class DriverAPI {
     );
   }
 }
+

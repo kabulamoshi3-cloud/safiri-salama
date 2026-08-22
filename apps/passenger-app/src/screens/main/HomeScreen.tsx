@@ -18,7 +18,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { HomeStackParamList } from '../../navigation/MainNavigator';
 import { TripAPI } from '../../services/api/TripAPI';
 import { WalletAPI } from '../../services/api/WalletAPI';
-import type { SavedPlace } from '@dalasmart/shared-types';
+import type { SavedPlace } from '../../types/shared';
 
 type HomeScreenNavigationProp = StackNavigationProp<HomeStackParamList, 'HomeMain'>;
 
@@ -437,5 +437,7 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
+
+
 
 

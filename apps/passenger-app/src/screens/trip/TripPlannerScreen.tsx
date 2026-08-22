@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLocation } from '../../contexts/LocationContext';
 import { TripAPI, TripRequest } from '../../services/api/TripAPI';
-import type { TripOption, GeoPoint } from '@dalasmart/shared-types';
+import type { TripOption, GeoPoint } from '../../types/shared';
 
 const TripPlannerScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -296,5 +296,7 @@ const styles = StyleSheet.create({
 });
 
 export default TripPlannerScreen;
+
+
 
 

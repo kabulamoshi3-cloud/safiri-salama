@@ -1,5 +1,5 @@
 import { APIClient } from './client';
-import type { IncidentReport, EmergencyEvent, EmergencyContact } from '@dalasmart/shared-types';
+import type { IncidentReport, EmergencyEvent, EmergencyContact } from '../../types/shared';
 
 export interface ReportIncidentRequest {
   type: string;
@@ -49,5 +49,7 @@ export class SafetyAPI {
     return APIClient.delete<void>(`/safety/emergency-contacts/${contactId}`);
   }
 }
+
+
 
 

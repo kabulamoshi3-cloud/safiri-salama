@@ -13,7 +13,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { TripAPI } from '../../services/api/TripAPI';
-import type { GeoPoint, VehiclePosition } from '@dalasmart/shared-types';
+import type { GeoPoint, VehiclePosition } from '../../types/shared';
 
 type LiveTrackingRouteProp = RouteProp<{ LiveTracking: { tripId: string; vehicleId: string } }, 'LiveTracking'>;
 
@@ -483,5 +483,7 @@ const styles = StyleSheet.create({
 });
 
 export default LiveTrackingScreen;
+
+
 
 

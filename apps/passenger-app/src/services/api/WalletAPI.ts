@@ -1,5 +1,5 @@
 import { APIClient } from './client';
-import type { Wallet, Transaction, MobileMoneyProvider } from '@dalasmart/shared-types';
+import type { Wallet, Transaction, MobileMoneyProvider } from '../../types/shared';
 
 export interface TopUpRequest {
   amount: number;
@@ -42,5 +42,7 @@ export class WalletAPI {
     return APIClient.get<{ balance: number }>('/wallet/balance');
   }
 }
+
+
 
 

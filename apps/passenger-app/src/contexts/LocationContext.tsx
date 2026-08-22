@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import Geolocation from '@react-native-community/geolocation';
-import type { GeoPoint } from '@dalasmart/shared-types';
+import type { GeoPoint } from '../types/shared';
 
 interface LocationContextType {
   currentLocation: GeoPoint | null;
@@ -95,5 +95,7 @@ export const useLocation = (): LocationContextType => {
   }
   return context;
 };
+
+
 
 

@@ -1,5 +1,5 @@
 import { APIClient } from './client';
-import type { User } from '@dalasmart/shared-types';
+import type { User } from '../../types/shared';
 
 interface AuthResponse {
   token: string;
@@ -62,5 +62,7 @@ export class AuthAPI {
     });
   }
 }
+
+
 
 

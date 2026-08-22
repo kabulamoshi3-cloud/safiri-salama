@@ -12,7 +12,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { WalletAPI } from '../../services/api/WalletAPI';
-import type { MobileMoneyProvider } from '@dalasmart/shared-types';
+import type { MobileMoneyProvider } from '../../types/shared';
 
 const TopUpScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -246,5 +246,7 @@ const styles = StyleSheet.create({
 });
 
 export default TopUpScreen;
+
+
 
 

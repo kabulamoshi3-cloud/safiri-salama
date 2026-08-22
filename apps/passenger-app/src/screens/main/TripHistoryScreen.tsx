@@ -11,7 +11,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
 import { TripAPI } from '../../services/api/TripAPI';
-import type { TripPlan } from '@dalasmart/shared-types';
+import type { TripPlan } from '../../types/shared';
 
 const TripHistoryScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -236,5 +236,7 @@ const styles = StyleSheet.create({
 });
 
 export default TripHistoryScreen;
+
+
 
 
