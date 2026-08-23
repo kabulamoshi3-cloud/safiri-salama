@@ -3,7 +3,10 @@
   "builds": [
     {
       "src": "services/api-gateway/src/index.ts",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": "services/api-gateway/src/**"
+      }
     }
   ],
   "routes": [
