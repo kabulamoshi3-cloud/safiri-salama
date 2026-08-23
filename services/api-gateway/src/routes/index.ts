@@ -15,6 +15,13 @@ import subscriptionRouter     from './subscription';
 import supportRouter          from './support';
 import corporateAccountsRouter from './corporateAccounts';
 import foodDeliveryRouter     from './foodDelivery';
+import trackingRouter         from './tracking';
+import notificationsRouter   from './notifications';
+import uploadRouter          from './upload';
+import mapsRouter            from './maps';
+import chatRouter            from './chat';
+import pricingRouter         from './pricing';
+import featuresRouter        from './features';
 
 const router = Router();
 
@@ -31,6 +38,13 @@ router.use('/v1/subscription',      subscriptionRouter);
 router.use('/v1/support',           supportRouter);
 router.use('/v1/corporate',         corporateAccountsRouter);
 router.use('/v1/food',              foodDeliveryRouter);
+router.use('/v1/tracking',          trackingRouter);
+router.use('/v1/notifications',     notificationsRouter);
+router.use('/v1/upload',            uploadRouter);
+router.use('/v1/maps',              mapsRouter);
+router.use('/v1/chat',              chatRouter);
+router.use('/v1/pricing',           pricingRouter);
+router.use('/v1/features',          featuresRouter);
 
 // ── Feature health-check (no auth required upstream) ──────
 router.get('/v1/features', (_req, res) => {

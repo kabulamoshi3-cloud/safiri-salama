@@ -28,7 +28,11 @@
         "googleMaps": {
           "apiKey": "AIzaSyASYw4Rk2vO1qG60l6D6dZQxUUuzSSJZw8"
         }
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "plugins": [
       [
@@ -40,8 +44,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "e7a54a04-1237-44d0-994f-710ebd010eb0"
+        "projectId": "5f7ad6c8-510e-4f1b-a526-2933af25b604"
       }
-    }
+    },
+    "owner": "dalasimart2026"
   }
 }
