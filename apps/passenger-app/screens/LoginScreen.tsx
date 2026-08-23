@@ -40,7 +40,7 @@ export default function LoginScreen({ route, navigation }: any) {
       await AsyncStorage.setItem('@dalasmart:token', res.data.token);
       await AsyncStorage.setItem('@dalasmart:role', role);
       await AsyncStorage.setItem('@dalasmart:user', JSON.stringify(res.data.user));
-      navigation.reset({ index: 0, routes: [{ name: role === 'driver' ? 'MainDriver' : 'Main' }] });
+      navigation.reset({ index: 0, routes: [{ name: role === 'driver' ? 'DriverMain' : 'Main' }] });
     } catch (err: any) {
       Alert.alert('Error', err.response?.data?.error || 'Authentication failed');
     } finally { setLoading(false); }
