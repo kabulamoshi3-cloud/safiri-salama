@@ -5,21 +5,31 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
+import i18n from './i18n';
 
+// Auth
+import CountryLanguageScreen from './screens/CountryLanguageScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import LoginScreen from './screens/LoginScreen';
-import HomeScreen from './screens/HomeScreen';
+
+// Passenger (Bolt-style 3 tabs)
+import RidesScreen from './screens/RidesScreen';
+import ActivityScreen from './screens/ActivityScreen';
+import AccountScreen from './screens/AccountScreen';
+
+// Passenger sub-screens
 import RideRequestScreen from './screens/RideRequestScreen';
 import TripActiveScreen from './screens/TripActiveScreen';
 import RatingScreen from './screens/RatingScreen';
-import TripsScreen from './screens/TripsScreen';
-import ProfileScreen from './screens/ProfileScreen';
 import SupportScreen from './screens/SupportScreen';
+import ScheduleRideScreen from './screens/ScheduleRideScreen';
+
+// Driver
 import DriverHomeScreen from './screens/DriverHomeScreen';
+import EarningsScreen from './screens/EarningsScreen';
 import DriverTripRequestScreen from './screens/DriverTripRequestScreen';
 import DriverActiveTripScreen from './screens/DriverActiveTripScreen';
-import EarningsScreen from './screens/EarningsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -29,26 +39,33 @@ function PassengerTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap = 'home';
-          if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
-          else if (route.name === 'Trips') iconName = focused ? 'car' : 'car-outline';
-          else if (route.name === 'Support') iconName = focused ? 'help-circle' : 'help-circle-outline';
-          else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
-          return <Ionicons name={iconName} size={size} color={color} />;
+          let iconName: keyof typeof Ionicons.glyphMap = 'car';
+          if (route.name === 'Rides') iconName = focused ? 'navigate' : 'navigate-outline';
+          else if (route.name === 'Activity') iconName = focused ? 'time' : 'time-outline';
+          else if (route.name === 'Account') iconName = focused ? 'person-circle' : 'person-circle-outline';
+          return <Ionicons name={iconName} size={24} color={color} />;
         },
-        tabBarActiveTintColor: '#1a73e8',
-        tabBarInactiveTintColor: '#999',
-        tabBarStyle: { paddingBottom: 6, paddingTop: 6, height: 60, borderTopWidth: 0, elevation: 10, shadowOpacity: 0.1 },
+        tabBarActiveTintColor: '#34c759',
+        tabBarInactiveTintColor: '#8e8e93',
+        tabBarStyle: {
+          height: Platform.OS === 'ios' ? 85 : 64,
+          paddingTop: 8,
+          paddingBottom: Platform.OS === 'ios' ? 28 : 10,
+          backgroundColor: '#fff',
+          borderTopWidth: 0,
+          elevation: 20,
+          shadowColor: '#000',
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: -4 },
+        },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
-        headerStyle: { backgroundColor: '#1a73e8', elevation: 0 },
-        headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: '700' },
+        headerShown: false,
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />
-      <Tab.Screen name="Trips" component={TripsScreen} options={{ title: 'Trips' }} />
-      <Tab.Screen name="Support" component={SupportScreen} options={{ title: 'Help' }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Me' }} />
+      <Tab.Screen name="Rides" component={RidesScreen} />
+      <Tab.Screen name="Activity" component={ActivityScreen} />
+      <Tab.Screen name="Account" component={AccountScreen} />
     </Tab.Navigator>
   );
 }
@@ -58,26 +75,29 @@ function DriverTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap = 'home';
-          if (route.name === 'DriverHome') iconName = focused ? 'home' : 'home-outline';
+          let iconName: keyof typeof Ionicons.glyphMap = 'car';
+          if (route.name === 'DriverHome') iconName = focused ? 'radio' : 'radio-outline';
           else if (route.name === 'Earnings') iconName = focused ? 'wallet' : 'wallet-outline';
-          else if (route.name === 'Support') iconName = focused ? 'help-circle' : 'help-circle-outline';
-          else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
-          return <Ionicons name={iconName} size={size} color={color} />;
+          else if (route.name === 'Account') iconName = focused ? 'person-circle' : 'person-circle-outline';
+          return <Ionicons name={iconName} size={24} color={color} />;
         },
-        tabBarActiveTintColor: '#2e7d32',
-        tabBarInactiveTintColor: '#999',
-        tabBarStyle: { paddingBottom: 6, paddingTop: 6, height: 60, borderTopWidth: 0, elevation: 10, shadowOpacity: 0.1 },
+        tabBarActiveTintColor: '#34c759',
+        tabBarInactiveTintColor: '#8e8e93',
+        tabBarStyle: {
+          height: Platform.OS === 'ios' ? 85 : 64,
+          paddingTop: 8,
+          paddingBottom: Platform.OS === 'ios' ? 28 : 10,
+          backgroundColor: '#fff',
+          borderTopWidth: 0,
+          elevation: 20,
+        },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
-        headerStyle: { backgroundColor: '#2e7d32', elevation: 0 },
-        headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: '700' },
+        headerShown: false,
       })}
     >
-      <Tab.Screen name="DriverHome" component={DriverHomeScreen} options={{ title: 'Home' }} />
-      <Tab.Screen name="Earnings" component={EarningsScreen} options={{ title: 'Earnings' }} />
-      <Tab.Screen name="Support" component={SupportScreen} options={{ title: 'Help' }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Me' }} />
+      <Tab.Screen name="DriverHome" component={DriverHomeScreen} options={{ title: 'Online' }} />
+      <Tab.Screen name="Earnings" component={EarningsScreen} />
+      <Tab.Screen name="Account" component={AccountScreen} />
     </Tab.Navigator>
   );
 }
@@ -87,14 +107,17 @@ export default function App() {
 
   useEffect(() => {
     (async () => {
+      await i18n.loadSavedLanguage();
       const token = await AsyncStorage.getItem('@dalasmart:token');
       const role = await AsyncStorage.getItem('@dalasmart:role');
       const hasOnboarded = await AsyncStorage.getItem('@dalasmart:onboarded');
+      const hasCountry = await AsyncStorage.getItem('@dalasmart:country');
 
       if (token && role === 'driver') setInitialRoute('MainDriver');
       else if (token) setInitialRoute('Main');
       else if (hasOnboarded) setInitialRoute('Welcome');
-      else setInitialRoute('Onboarding');
+      else if (hasCountry) setInitialRoute('Onboarding');
+      else setInitialRoute('CountryLanguage');
     })();
   }, []);
 
@@ -102,18 +125,26 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
+        {/* Auth */}
+        <Stack.Screen name="CountryLanguage" component={CountryLanguageScreen} />
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
+
+        {/* Passenger */}
         <Stack.Screen name="Main" component={PassengerTabs} />
-        <Stack.Screen name="MainDriver" component={DriverTabs} />
-        <Stack.Screen name="RideRequest" component={RideRequestScreen} options={{ headerShown: true, title: 'Book a Ride', headerStyle: { backgroundColor: '#1a73e8' }, headerTintColor: '#fff' }} />
-        <Stack.Screen name="TripActive" component={TripActiveScreen} options={{ headerShown: true, title: 'Your Trip', headerStyle: { backgroundColor: '#1a73e8' }, headerTintColor: '#fff' }} />
+        <Stack.Screen name="RideRequest" component={RideRequestScreen} options={{ headerShown: true, title: '', headerTransparent: true, headerTintColor: '#000' }} />
+        <Stack.Screen name="TripActive" component={TripActiveScreen} options={{ headerShown: true, title: 'Your Trip', headerStyle: { backgroundColor: '#fff' } }} />
         <Stack.Screen name="Rating" component={RatingScreen} />
-        <Stack.Screen name="TripRequest" component={DriverTripRequestScreen} options={{ headerShown: true, title: 'New Trip', headerStyle: { backgroundColor: '#2e7d32' }, headerTintColor: '#fff' }} />
-        <Stack.Screen name="DriverActiveTrip" component={DriverActiveTripScreen} options={{ headerShown: true, title: 'Active Trip', headerStyle: { backgroundColor: '#2e7d32' }, headerTintColor: '#fff' }} />
+        <Stack.Screen name="ScheduleRide" component={ScheduleRideScreen} options={{ headerShown: true, title: 'Schedule a Ride', headerStyle: { backgroundColor: '#fff' } }} />
+        <Stack.Screen name="Support" component={SupportScreen} options={{ headerShown: true, title: 'Help', headerStyle: { backgroundColor: '#fff' } }} />
+
+        {/* Driver */}
+        <Stack.Screen name="MainDriver" component={DriverTabs} />
+        <Stack.Screen name="TripRequest" component={DriverTripRequestScreen} />
+        <Stack.Screen name="DriverActiveTrip" component={DriverActiveTripScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
