@@ -22,6 +22,7 @@ import mapsRouter            from './maps';
 import chatRouter            from './chat';
 import pricingRouter         from './pricing';
 import featuresRouter        from './features';
+import otpRouter             from './otp';
 
 const router = Router();
 
@@ -45,6 +46,7 @@ router.use('/v1/maps',              mapsRouter);
 router.use('/v1/chat',              chatRouter);
 router.use('/v1/pricing',           pricingRouter);
 router.use('/v1/features',          featuresRouter);
+router.use('/v1/otp',               otpRouter);
 
 // ── Feature health-check (no auth required upstream) ──────
 router.get('/v1/features', (_req, res) => {
