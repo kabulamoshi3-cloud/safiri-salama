@@ -1,0 +1,8 @@
+{
+  "name": "dalasmart",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install": "cd services/api-gateway && npm install --legacy-peer-deps"
+  }
+}

@@ -3,10 +3,7 @@
   "builds": [
     {
       "src": "services/api-gateway/src/index.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": "services/api-gateway/src/**"
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -14,9 +11,5 @@
       "src": "/(.*)",
       "dest": "services/api-gateway/src/index.ts"
     }
-  ],
-  "installCommand": "cd services/api-gateway && npm install --legacy-peer-deps",
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
