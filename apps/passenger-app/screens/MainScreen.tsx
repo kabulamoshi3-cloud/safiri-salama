@@ -6,6 +6,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import i18n from '../i18n';
 
 const { width } = Dimensions.get('window');
@@ -15,6 +16,19 @@ export default function MainScreen({ navigation }: any) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [currentAddress, setCurrentAddress] = useState('Getting location...');
+  const [region, setRegion] = useState({
+    latitude: -6.7924,
+    longitude: 39.2083,
+    latitudeDelta: 0.02,
+    longitudeDelta: 0.02,
+  });
+  const [nearbyDrivers] = useState([
+    { id: '1', lat: -6.7900, lng: 39.2100, type: 'car' },
+    { id: '2', lat: -6.7940, lng: 39.2050, type: 'bajaji' },
+    { id: '3', lat: -6.7880, lng: 39.2120, type: 'car' },
+    { id: '4', lat: -6.7960, lng: 39.2090, type: 'boda' },
+    { id: '5', lat: -6.7910, lng: 39.2030, type: 'car' },
+  ]);
   const drawerAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
 
@@ -33,6 +47,12 @@ export default function MainScreen({ navigation }: any) {
     if (status === 'granted') {
       try {
         const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        setRegion({
+          latitude: loc.coords.latitude,
+          longitude: loc.coords.longitude,
+          latitudeDelta: 0.02,
+          longitudeDelta: 0.02,
+        });
         const addr = await Location.reverseGeocodeAsync(loc.coords);
         if (addr[0]) {
           setCurrentAddress(`${addr[0].street || addr[0].district || ''}, ${addr[0].city || 'Dar es Salaam'}`);
@@ -78,20 +98,30 @@ export default function MainScreen({ navigation }: any) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Map area */}
+      {/* Real Google Map */}
       <View style={styles.mapArea}>
-        <View style={styles.mapContent}>
-          <Text style={styles.mapPin}>📍</Text>
-          <Text style={styles.mapCity}>Dar es Salaam</Text>
-          {/* Simulated nearby drivers */}
-          <Text style={[styles.driverIcon, { top: 40, left: 60 }]}>🚗</Text>
-          <Text style={[styles.driverIcon, { top: 80, left: 180 }]}>🛺</Text>
-          <Text style={[styles.driverIcon, { top: 30, left: 250 }]}>🚗</Text>
-          <Text style={[styles.driverIcon, { top: 110, left: 100 }]}>🏍️</Text>
-          <Text style={[styles.driverIcon, { top: 60, left: 300 }]}>🚗</Text>
-        </View>
+        <MapView
+          provider={PROVIDER_GOOGLE}
+          style={styles.map}
+          region={region}
+          showsUserLocation
+          showsMyLocationButton={false}
+        >
+          {/* Nearby drivers as markers */}
+          {nearbyDrivers.map((d) => (
+            <Marker
+              key={d.id}
+              coordinate={{ latitude: d.lat, longitude: d.lng }}
+              title={d.type === 'car' ? 'Car' : d.type === 'bajaji' ? 'Bajaji' : 'Boda-Boda'}
+            >
+              <Text style={{ fontSize: 22 }}>
+                {d.type === 'car' ? '🚗' : d.type === 'bajaji' ? '🛺' : '🏍️'}
+              </Text>
+            </Marker>
+          ))}
+        </MapView>
 
-        {/* Top bar */}
+        {/* Top bar over map */}
         <View style={styles.topBar}>
           <TouchableOpacity style={styles.menuBtn} onPress={openDrawer}>
             <Ionicons name="menu" size={26} color="#1c1c1e" />
@@ -212,11 +242,8 @@ export default function MainScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f4f0' },
-  mapArea: { flex: 1, backgroundColor: '#e8f5e9', position: 'relative' },
-  mapContent: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  mapPin: { fontSize: 36 },
-  mapCity: { fontSize: 12, color: '#666', marginTop: 4 },
-  driverIcon: { position: 'absolute', fontSize: 18 },
+  mapArea: { flex: 1, position: 'relative' },
+  map: { ...StyleSheet.absoluteFillObject },
   topBar: { position: 'absolute', top: 12, left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between' },
   menuBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', elevation: 4, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 6 },
   notifBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', elevation: 4 },

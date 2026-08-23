@@ -13,15 +13,31 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.dalasmart.passenger"
+      "bundleIdentifier": "com.dalasmart.passenger",
+      "config": {
+        "googleMapsApiKey": "AIzaSyASYw4Rk2vO1qG60l6D6dZQxUUuzSSJZw8"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1a73e8"
       },
-      "package": "com.dalasmart.passenger"
+      "package": "com.dalasmart.passenger",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyASYw4Rk2vO1qG60l6D6dZQxUUuzSSJZw8"
+        }
+      }
     },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "DalaSmart needs your location to find nearby drivers."
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "e7a54a04-1237-44d0-994f-710ebd010eb0"
