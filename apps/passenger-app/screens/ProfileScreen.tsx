@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Image,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -49,15 +48,15 @@ export default function ProfileScreen({ navigation }: any) {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Profile header */}
-      <LinearGradient colors={role === 'driver' ? ['#2e7d32', '#1b5e20'] : ['#1a73e8', '#0d47a1']} style={styles.header}>
+      <View style={styles.header}>
         <TouchableOpacity style={styles.editBtn}>
           <Ionicons name="create-outline" size={18} color="#fff" />
         </TouchableOpacity>
 
         <View style={styles.avatarContainer}>
-          <LinearGradient colors={['#ffffff40', '#ffffff20']} style={styles.avatar}>
+          <View style={styles.avatar}>
             <Text style={styles.avatarText}>{user?.name?.charAt(0)?.toUpperCase() || 'D'}</Text>
-          </LinearGradient>
+          </View>
           <View style={styles.onlineDot} />
         </View>
 
@@ -80,7 +79,7 @@ export default function ProfileScreen({ navigation }: any) {
             <Text style={styles.statLabel}>Member</Text>
           </View>
         </View>
-      </LinearGradient>
+      </View>
 
       {/* Menu items */}
       <View style={styles.menuSection}>
@@ -136,3 +135,4 @@ const styles = StyleSheet.create({
   logoutText: { fontSize: 16, color: '#f44336', fontWeight: '600', marginLeft: 8 },
   version: { textAlign: 'center', fontSize: 12, color: '#bbb', marginTop: 8 },
 });
+

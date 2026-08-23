@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import AnimatedButton from '../components/AnimatedButton';
 
 export default function HomeScreen({ navigation }: any) {
@@ -23,14 +22,14 @@ export default function HomeScreen({ navigation }: any) {
       {/* Hero card */}
       <Animated.View style={{ transform: [{ scale: cardScale }], opacity: fadeIn }}>
         <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('RideRequest')}>
-          <LinearGradient colors={['#1a73e8', '#1565c0']} style={styles.heroCard}>
+          <View style={styles.heroCard}>
             <Text style={styles.heroGreeting}>Habari! 👋</Text>
             <Text style={styles.heroTitle}>Where are you going?</Text>
             <View style={styles.searchBar}>
               <Text style={styles.searchIcon}>🔍</Text>
               <Text style={styles.searchText}>Enter destination...</Text>
             </View>
-          </LinearGradient>
+          </View>
         </TouchableOpacity>
       </Animated.View>
 
@@ -48,12 +47,12 @@ export default function HomeScreen({ navigation }: any) {
               style={styles.vehicleCard}
               onPress={() => navigation.navigate('RideRequest')}
             >
-              <LinearGradient colors={v.colors} style={styles.vehicleGradient}>
+              <View style={styles.vehicleGradient}>
                 <Text style={styles.vehicleEmoji}>{v.emoji}</Text>
                 <Text style={styles.vehicleName}>{v.name}</Text>
                 <Text style={styles.vehicleDesc}>{v.desc}</Text>
                 <Text style={styles.vehiclePrice}>{v.price}</Text>
-              </LinearGradient>
+              </View>
             </TouchableOpacity>
           ))}
         </View>
@@ -62,14 +61,14 @@ export default function HomeScreen({ navigation }: any) {
       {/* Promo banner */}
       <Animated.View style={{ opacity: fadeIn }}>
         <TouchableOpacity activeOpacity={0.85}>
-          <LinearGradient colors={['#ff6f00', '#ff8f00']} style={styles.promoCard}>
+          <View style={styles.promoCard}>
             <View style={styles.promoLeft}>
               <Text style={styles.promoTitle}>🎉 Refer & Earn</Text>
               <Text style={styles.promoAmount}>Sh 5,000 bonus</Text>
               <Text style={styles.promoDesc}>Share with friends</Text>
             </View>
             <Text style={styles.promoArrow}>→</Text>
-          </LinearGradient>
+          </View>
         </TouchableOpacity>
       </Animated.View>
 
@@ -133,3 +132,4 @@ const styles = StyleSheet.create({
   placeEmoji: { fontSize: 22, marginBottom: 4 },
   placeText: { fontSize: 11, color: '#555', fontWeight: '500' },
 });
+

@@ -3,7 +3,6 @@ import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Animated,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
@@ -50,7 +49,7 @@ export default function LoginScreen({ route, navigation }: any) {
   const colors: [string, string] = isDriver ? ['#2e7d32', '#1b5e20'] : ['#1a73e8', '#0d47a1'];
 
   return (
-    <LinearGradient colors={colors} style={styles.container}>
+    <View style={styles.container}>
       <KeyboardAvoidingView style={styles.inner} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.header}>
           <Text style={styles.roleIcon}>{isDriver ? '🏍️' : '🚗'}</Text>
@@ -99,7 +98,7 @@ export default function LoginScreen({ route, navigation }: any) {
           />
         </Animated.View>
       </KeyboardAvoidingView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -128,3 +127,4 @@ const styles = StyleSheet.create({
   backBtn: { marginTop: 12, alignItems: 'center' },
   backText: { color: '#aaa', fontSize: 13 },
 });
+

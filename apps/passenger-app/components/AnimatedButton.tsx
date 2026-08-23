@@ -1,7 +1,5 @@
 import React, { useRef } from 'react';
-import { TouchableOpacity, Text, StyleSheet, Animated, ViewStyle, TextStyle } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import * as Haptics from 'expo-haptics';
+import { TouchableOpacity, Text, StyleSheet, Animated, ViewStyle, TextStyle, View } from 'react-native';
 
 interface AnimatedButtonProps {
   title: string;
@@ -16,30 +14,18 @@ interface AnimatedButtonProps {
 }
 
 export default function AnimatedButton({
-  title, onPress, colors = ['#1a73e8', '#1565c0'],
+  title, onPress, colors = ['#34c759', '#28a745'],
   style, textStyle, icon, disabled = false,
   size = 'large', variant = 'filled',
 }: AnimatedButtonProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const shadowAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
-    Animated.parallel([
-      Animated.spring(scaleAnim, { toValue: 0.94, friction: 5, tension: 100, useNativeDriver: true }),
-      Animated.timing(shadowAnim, { toValue: 0.5, duration: 100, useNativeDriver: true }),
-    ]).start();
+    Animated.spring(scaleAnim, { toValue: 0.95, friction: 5, tension: 100, useNativeDriver: true }).start();
   };
 
   const handlePressOut = () => {
-    Animated.parallel([
-      Animated.spring(scaleAnim, { toValue: 1, friction: 4, tension: 80, useNativeDriver: true }),
-      Animated.timing(shadowAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
-    ]).start();
-  };
-
-  const handlePress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    onPress();
+    Animated.spring(scaleAnim, { toValue: 1, friction: 4, tension: 80, useNativeDriver: true }).start();
   };
 
   const sizeStyles = {
@@ -51,16 +37,10 @@ export default function AnimatedButton({
   if (variant === 'outline') {
     return (
       <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, style]}>
-        <TouchableOpacity
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          onPress={handlePress}
-          disabled={disabled}
-          activeOpacity={1}
-          style={[styles.outlineBtn, { borderRadius: sizeStyles.borderRadius, paddingVertical: sizeStyles.paddingVertical, paddingHorizontal: sizeStyles.paddingHorizontal, borderColor: colors[0] }]}
-        >
+        <TouchableOpacity onPressIn={handlePressIn} onPressOut={handlePressOut} onPress={onPress} disabled={disabled} activeOpacity={1}
+          style={[styles.outlineBtn, { borderRadius: sizeStyles.borderRadius, paddingVertical: sizeStyles.paddingVertical, paddingHorizontal: sizeStyles.paddingHorizontal, borderColor: colors[0] }]}>
           {icon && <Text style={styles.icon}>{icon}</Text>}
-          <Text style={[styles.outlineText, { fontSize: sizeStyles.fontSize, color: colors[0] }, textStyle]}>{title}</Text>
+          <Text style={[{ fontSize: sizeStyles.fontSize, color: colors[0], fontWeight: '700' }, textStyle]}>{title}</Text>
         </TouchableOpacity>
       </Animated.View>
     );
@@ -69,42 +49,28 @@ export default function AnimatedButton({
   if (variant === 'ghost') {
     return (
       <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, style]}>
-        <TouchableOpacity onPressIn={handlePressIn} onPressOut={handlePressOut} onPress={handlePress} disabled={disabled} activeOpacity={1}>
-          {icon && <Text style={styles.icon}>{icon}</Text>}
-          <Text style={[styles.ghostText, { fontSize: sizeStyles.fontSize, color: colors[0] }, textStyle]}>{title}</Text>
+        <TouchableOpacity onPressIn={handlePressIn} onPressOut={handlePressOut} onPress={onPress} disabled={disabled} activeOpacity={1} style={{ padding: 10, alignItems: 'center' }}>
+          <Text style={[{ fontSize: sizeStyles.fontSize, color: colors[0], fontWeight: '600' }, textStyle]}>{title}</Text>
         </TouchableOpacity>
       </Animated.View>
     );
   }
 
   return (
-    <Animated.View style={[{ transform: [{ scale: scaleAnim }], opacity: disabled ? 0.5 : shadowAnim }, style]}>
-      <TouchableOpacity
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        onPress={handlePress}
-        disabled={disabled}
-        activeOpacity={1}
-      >
-        <LinearGradient
-          colors={disabled ? ['#bbb', '#999'] : colors}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[styles.gradient, { borderRadius: sizeStyles.borderRadius, paddingVertical: sizeStyles.paddingVertical, paddingHorizontal: sizeStyles.paddingHorizontal }]}
-        >
+    <Animated.View style={[{ transform: [{ scale: scaleAnim }], opacity: disabled ? 0.5 : 1 }, style]}>
+      <TouchableOpacity onPressIn={handlePressIn} onPressOut={handlePressOut} onPress={onPress} disabled={disabled} activeOpacity={1}>
+        <View style={[styles.filled, { backgroundColor: colors[0], borderRadius: sizeStyles.borderRadius, paddingVertical: sizeStyles.paddingVertical, paddingHorizontal: sizeStyles.paddingHorizontal }]}>
           {icon && <Text style={styles.icon}>{icon}</Text>}
-          <Text style={[styles.text, { fontSize: sizeStyles.fontSize }, textStyle]}>{title}</Text>
-        </LinearGradient>
+          <Text style={[styles.filledText, { fontSize: sizeStyles.fontSize }, textStyle]}>{title}</Text>
+        </View>
       </TouchableOpacity>
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: { alignItems: 'center', justifyContent: 'center', flexDirection: 'row', elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8 },
-  text: { color: '#fff', fontWeight: '700', letterSpacing: 0.3 },
-  icon: { fontSize: 18, marginRight: 8 },
+  filled: { alignItems: 'center', justifyContent: 'center', flexDirection: 'row', elevation: 3 },
+  filledText: { color: '#fff', fontWeight: '700' },
+  icon: { fontSize: 16, marginRight: 8 },
   outlineBtn: { alignItems: 'center', justifyContent: 'center', flexDirection: 'row', borderWidth: 2, backgroundColor: 'transparent' },
-  outlineText: { fontWeight: '700' },
-  ghostText: { fontWeight: '600', textAlign: 'center' },
 });
