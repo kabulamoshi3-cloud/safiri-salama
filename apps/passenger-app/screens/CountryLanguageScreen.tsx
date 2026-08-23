@@ -41,10 +41,14 @@ export default function CountryLanguageScreen({ navigation }: any) {
 
   const selectLanguage = async (lang: Language) => {
     setSelectedLanguage(lang);
-    await i18n.setLanguage(lang);
-    const country = countries.find(c => c.code === selectedCountry);
-    await AsyncStorage.setItem('@dalasmart:country', selectedCountry);
-    await AsyncStorage.setItem('@dalasmart:phone_prefix', country?.prefix || '+255');
+    try {
+      await i18n.setLanguage(lang);
+      const country = countries.find(c => c.code === selectedCountry);
+      await AsyncStorage.setItem('@dalasmart:country', selectedCountry);
+      await AsyncStorage.setItem('@dalasmart:phone_prefix', country?.prefix || '+255');
+    } catch (e) {
+      console.log('Language save error:', e);
+    }
     navigation.replace('Onboarding');
   };
 
