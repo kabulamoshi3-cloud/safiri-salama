@@ -1,32 +1,108 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator,
+  View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Linking,
 } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import axios from 'axios';
 
-type TripStatus = 'searching' | 'accepted' | 'arriving' | 'in_progress' | 'completed';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
+
+type TripStatus = 'searching' | 'accepted' | 'arriving' | 'in_progress' | 'completed' | 'cancelled';
+
+interface DriverLocation {
+  lat: number;
+  lng: number;
+  bearing: number;
+  speed_kmh: number;
+  eta_minutes: number;
+  progress_percent: number;
+}
+
+interface Driver {
+  name: string;
+  plate: string;
+  rating: number;
+  vehicle: string;
+  phone: string;
+}
 
 export default function TripActiveScreen({ route, navigation }: any) {
   const { pickup, destination, vehicle, fare, paymentMethod } = route.params;
+  const tripId: string = route.params?.tripId ?? 'mock-trip-1';
+
   const [status, setStatus] = useState<TripStatus>('searching');
-  const [driver, setDriver] = useState({ name: '', plate: '', rating: 0, vehicle: '' });
+  const [driver, setDriver] = useState<Driver>({ name: '', plate: '', rating: 0, vehicle: '', phone: '' });
   const [elapsed, setElapsed] = useState(0);
+  const [driverLocation, setDriverLocation] = useState<DriverLocation | null>(null);
+  const [region, setRegion] = useState({
+    latitude: -6.7924,
+    longitude: 39.2083,
+    latitudeDelta: 0.02,
+    longitudeDelta: 0.02,
+  });
 
+  const trackingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const hasTripId = route.params?.tripId !== undefined;
+
+  // Simulated flow — only when no real tripId provided
   useEffect(() => {
-    // Simulate trip flow
-    const timers: NodeJS.Timeout[] = [];
+    if (hasTripId) return;
 
+    const timers: ReturnType<typeof setTimeout>[] = [];
     timers.push(setTimeout(() => {
-      setDriver({ name: 'Juma Hassan', plate: 'T 456 DFS', rating: 4.8, vehicle: vehicle });
+      setDriver({ name: 'Juma Hassan', plate: 'T 456 DFS', rating: 4.8, vehicle: vehicle, phone: '+255700000000' });
       setStatus('accepted');
     }, 3000));
-
     timers.push(setTimeout(() => setStatus('arriving'), 8000));
     timers.push(setTimeout(() => setStatus('in_progress'), 14000));
     timers.push(setTimeout(() => setStatus('completed'), 25000));
 
     return () => timers.forEach(clearTimeout);
-  }, []);
+  }, [hasTripId]);
 
+  // Live tracking — only when real tripId is provided
+  useEffect(() => {
+    if (!hasTripId) return;
+
+    const liveStatuses: TripStatus[] = ['accepted', 'arriving', 'in_progress'];
+    const stopStatuses: TripStatus[] = ['completed', 'cancelled'];
+
+    if (liveStatuses.includes(status)) {
+      if (trackingRef.current) clearInterval(trackingRef.current);
+
+      const fetchLocation = async () => {
+        try {
+          const response = await axios.get<DriverLocation>(
+            `${API_BASE}/tracking/trip/${tripId}/driver-location`
+          );
+          const loc = response.data;
+          setDriverLocation(loc);
+          setRegion({
+            latitude: loc.lat,
+            longitude: loc.lng,
+            latitudeDelta: 0.02,
+            longitudeDelta: 0.02,
+          });
+        } catch {
+          // keep last known location
+        }
+      };
+
+      fetchLocation();
+      trackingRef.current = setInterval(fetchLocation, 5000);
+    } else if (stopStatuses.includes(status)) {
+      if (trackingRef.current) {
+        clearInterval(trackingRef.current);
+        trackingRef.current = null;
+      }
+    }
+
+    return () => {
+      if (trackingRef.current) clearInterval(trackingRef.current);
+    };
+  }, [status, hasTripId, tripId]);
+
+  // Elapsed timer during in_progress
   useEffect(() => {
     if (status === 'in_progress') {
       const interval = setInterval(() => setElapsed((e) => e + 1), 1000);
@@ -34,6 +110,7 @@ export default function TripActiveScreen({ route, navigation }: any) {
     }
   }, [status]);
 
+  // Navigate to rating when completed
   useEffect(() => {
     if (status === 'completed') {
       setTimeout(() => {
@@ -52,30 +129,21 @@ export default function TripActiveScreen({ route, navigation }: any) {
   const getStatusUI = () => {
     switch (status) {
       case 'searching':
-        return {
-          emoji: '🔍', title: 'Finding your driver...',
-          subtitle: 'Looking for nearby drivers', color: '#1a73e8',
-        };
+        return { emoji: '🔍', title: 'Finding your driver...', subtitle: 'Looking for nearby drivers', color: '#1a73e8' };
       case 'accepted':
-        return {
-          emoji: '✅', title: 'Driver found!',
-          subtitle: `${driver.name} is on the way`, color: '#2e7d32',
-        };
+        return { emoji: '✅', title: 'Driver found!', subtitle: `${driver.name} is on the way`, color: '#2e7d32' };
       case 'arriving':
-        return {
-          emoji: '🚗', title: 'Driver is arriving',
-          subtitle: `${driver.name} will arrive in 2 min`, color: '#f57c00',
-        };
+        return { emoji: '🚗', title: 'Driver is arriving', subtitle: `${driver.name} will arrive in 2 min`, color: '#f57c00' };
       case 'in_progress':
         return {
           emoji: '🛣️', title: 'Trip in progress',
-          subtitle: `${Math.floor(elapsed / 60)}:${(elapsed % 60).toString().padStart(2, '0')} elapsed`, color: '#1a73e8',
+          subtitle: `${Math.floor(elapsed / 60)}:${(elapsed % 60).toString().padStart(2, '0')} elapsed`,
+          color: '#1a73e8',
         };
       case 'completed':
-        return {
-          emoji: '🎉', title: 'Trip completed!',
-          subtitle: 'Thank you for riding with DalaSmart', color: '#2e7d32',
-        };
+        return { emoji: '🎉', title: 'Trip completed!', subtitle: 'Thank you for riding with DalaSmart', color: '#2e7d32' };
+      case 'cancelled':
+        return { emoji: '❌', title: 'Trip cancelled', subtitle: '', color: '#ff3b30' };
     }
   };
 
@@ -83,13 +151,52 @@ export default function TripActiveScreen({ route, navigation }: any) {
 
   return (
     <View style={styles.container}>
-      {/* Map area with tracking simulation */}
+      {/* Map area */}
       <View style={styles.mapArea}>
-        {status === 'searching' && <ActivityIndicator size="large" color="#1a73e8" />}
-        {status === 'accepted' && <Text style={styles.mapEmoji}>🚗💨</Text>}
-        {status === 'arriving' && <Text style={styles.mapEmoji}>🚗 → 📍</Text>}
-        {status === 'in_progress' && <Text style={styles.mapEmoji}>🟢 ━━━ 🚗 ━━━ 🔴</Text>}
-        {status === 'completed' && <Text style={styles.mapEmoji}>✅ 🎉</Text>}
+        {status === 'searching' ? (
+          <ActivityIndicator size="large" color="#00d46a" style={styles.mapLoader} />
+        ) : (
+          <MapView
+            provider={PROVIDER_GOOGLE}
+            style={styles.map}
+            region={region}
+            showsUserLocation
+            showsMyLocationButton={false}
+          >
+            {/* Pickup marker */}
+            <Marker
+              coordinate={{ latitude: region.latitude - 0.005, longitude: region.longitude - 0.005 }}
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <Text style={{ fontSize: 20 }}>📍</Text>
+            </Marker>
+
+            {/* Destination marker */}
+            <Marker
+              coordinate={{ latitude: region.latitude + 0.005, longitude: region.longitude + 0.005 }}
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <Text style={{ fontSize: 20 }}>🏁</Text>
+            </Marker>
+
+            {/* Live driver marker */}
+            {driverLocation !== null && (
+              <Marker
+                coordinate={{ latitude: driverLocation.lat, longitude: driverLocation.lng }}
+                anchor={{ x: 0.5, y: 0.5 }}
+              >
+                <Text style={{ fontSize: 24 }}>🚕</Text>
+              </Marker>
+            )}
+          </MapView>
+        )}
+
+        {/* ETA overlay */}
+        {driverLocation !== null && (
+          <View style={styles.etaOverlay}>
+            <Text style={styles.etaText}>Unafika dakika {driverLocation.eta_minutes}</Text>
+          </View>
+        )}
       </View>
 
       {/* Status card */}
@@ -99,6 +206,11 @@ export default function TripActiveScreen({ route, navigation }: any) {
           <Text style={styles.statusTitle}>{ui.title}</Text>
           <Text style={styles.statusSubtitle}>{ui.subtitle}</Text>
         </View>
+      </View>
+
+      {/* Progress bar */}
+      <View style={styles.progressTrack}>
+        <View style={[styles.progressFill, { width: `${driverLocation?.progress_percent ?? 0}%` }]} />
       </View>
 
       {/* Driver info */}
@@ -111,7 +223,10 @@ export default function TripActiveScreen({ route, navigation }: any) {
             <Text style={styles.driverName}>{driver.name}</Text>
             <Text style={styles.driverPlate}>{driver.plate} • ⭐ {driver.rating}</Text>
           </View>
-          <TouchableOpacity style={styles.callBtn}>
+          <TouchableOpacity
+            style={styles.callBtn}
+            onPress={() => Linking.openURL(`tel:${driver.phone || '+255700000000'}`)}
+          >
             <Text style={styles.callText}>📞</Text>
           </TouchableOpacity>
         </View>
@@ -146,41 +261,62 @@ export default function TripActiveScreen({ route, navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  mapArea: {
-    height: 200, backgroundColor: '#e8f5e9', justifyContent: 'center',
-    alignItems: 'center',
+  container: { flex: 1, backgroundColor: '#1a1a2e' },
+
+  // Map
+  mapArea: { height: 220, backgroundColor: '#16213e', justifyContent: 'center', alignItems: 'center', position: 'relative' },
+  map: { ...StyleSheet.absoluteFillObject },
+  mapLoader: { flex: 1 },
+
+  // ETA overlay
+  etaOverlay: {
+    position: 'absolute', top: 8, right: 8,
+    backgroundColor: 'rgba(0,0,0,0.7)', borderRadius: 16, paddingVertical: 6, paddingHorizontal: 12,
   },
-  mapEmoji: { fontSize: 28 },
+  etaText: { color: '#fff', fontSize: 12 },
+
+  // Status card
   statusCard: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff',
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#16213e',
     margin: 16, padding: 16, borderRadius: 12, borderLeftWidth: 4, elevation: 2,
   },
   statusEmoji: { fontSize: 28, marginRight: 12 },
   statusInfo: { flex: 1 },
-  statusTitle: { fontSize: 16, fontWeight: '600', color: '#333' },
-  statusSubtitle: { fontSize: 13, color: '#666', marginTop: 2 },
+  statusTitle: { fontSize: 16, fontWeight: '600', color: '#ffffff' },
+  statusSubtitle: { fontSize: 13, color: '#aaaaaa', marginTop: 2 },
+
+  // Progress bar
+  progressTrack: {
+    backgroundColor: '#333', height: 6, borderRadius: 3, marginHorizontal: 16, marginBottom: 12,
+  },
+  progressFill: { backgroundColor: '#00d46a', height: 6, borderRadius: 3 },
+
+  // Driver card
   driverCard: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff',
-    marginHorizontal: 16, padding: 14, borderRadius: 12, elevation: 1,
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#16213e',
+    marginHorizontal: 16, marginBottom: 12, padding: 14, borderRadius: 12, elevation: 1,
   },
   driverAvatar: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: '#1a73e8',
+    width: 44, height: 44, borderRadius: 22, backgroundColor: '#00d46a',
     justifyContent: 'center', alignItems: 'center',
   },
   driverAvatarText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
   driverInfo: { flex: 1, marginLeft: 12 },
-  driverName: { fontSize: 15, fontWeight: '600', color: '#333' },
-  driverPlate: { fontSize: 12, color: '#999', marginTop: 2 },
+  driverName: { fontSize: 15, fontWeight: '600', color: '#ffffff' },
+  driverPlate: { fontSize: 12, color: '#aaaaaa', marginTop: 2 },
   callBtn: { padding: 10 },
   callText: { fontSize: 22 },
-  detailsCard: { backgroundColor: '#fff', margin: 16, padding: 16, borderRadius: 12 },
+
+  // Trip details
+  detailsCard: { backgroundColor: '#16213e', marginHorizontal: 16, marginBottom: 12, padding: 16, borderRadius: 12 },
   detailRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   detailDot: { fontSize: 10, marginRight: 10 },
-  detailText: { fontSize: 14, color: '#333', flex: 1 },
-  fareRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#eee' },
-  fareLabel: { fontSize: 15, fontWeight: '600', color: '#1a73e8' },
-  farePayment: { fontSize: 13, color: '#666' },
-  cancelBtn: { margin: 16, padding: 14, borderRadius: 10, borderWidth: 1, borderColor: '#e53935', alignItems: 'center' },
-  cancelText: { color: '#e53935', fontSize: 15, fontWeight: '600' },
+  detailText: { fontSize: 14, color: '#ffffff', flex: 1 },
+  fareRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#2a2a4e' },
+  fareLabel: { fontSize: 15, fontWeight: '600', color: '#00d46a' },
+  farePayment: { fontSize: 13, color: '#aaaaaa' },
+
+  // Cancel
+  cancelBtn: { marginHorizontal: 16, padding: 14, borderRadius: 10, borderWidth: 1, borderColor: '#ff3b30', alignItems: 'center' },
+  cancelText: { color: '#ff3b30', fontSize: 15, fontWeight: '600' },
 });

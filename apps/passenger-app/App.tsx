@@ -22,6 +22,7 @@ import PromoScreen from './screens/PromoScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import SupportScreen from './screens/SupportScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import TrafficScreen from './screens/TrafficScreen';
 
 // Driver
 import DriverMainScreen from './screens/DriverMainScreen';
@@ -66,6 +67,7 @@ export default function App() {
         <Stack.Screen name="Main" component={MainScreen} />
         <Stack.Screen name="RideRequest" component={RideRequestScreen} options={{ headerShown: true, title: '', headerTransparent: true }} />
         <Stack.Screen name="TripActive" component={TripActiveScreen} />
+        <Stack.Screen name="Traffic" component={TrafficScreen} />
         <Stack.Screen name="Rating" component={RatingScreen} />
         <Stack.Screen name="Orders" component={OrdersScreen} options={{ headerShown: true, title: 'My Orders' }} />
         <Stack.Screen name="Payment" component={PaymentScreen} options={{ headerShown: true, title: 'Payment' }} />

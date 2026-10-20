@@ -1,16 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions,
-  ScrollView, Modal, SafeAreaView,
+  ScrollView, SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import axios from 'axios';
 import i18n from '../i18n';
 
 const { width } = Dimensions.get('window');
 const DRAWER_WIDTH = width * 0.78;
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
+
+interface NearbyDriver {
+  driver_id: string;
+  name: string;
+  vehicle_plate: string;
+  lat: number;
+  lng: number;
+  distance_km: number;
+  eta_minutes: number;
+  vehicle_type: string;
+}
 
 export default function MainScreen({ navigation }: any) {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -22,19 +35,34 @@ export default function MainScreen({ navigation }: any) {
     latitudeDelta: 0.02,
     longitudeDelta: 0.02,
   });
-  const [nearbyDrivers] = useState([
-    { id: '1', lat: -6.7900, lng: 39.2100, type: 'car' },
-    { id: '2', lat: -6.7940, lng: 39.2050, type: 'bajaji' },
-    { id: '3', lat: -6.7880, lng: 39.2120, type: 'car' },
-    { id: '4', lat: -6.7960, lng: 39.2090, type: 'boda' },
-    { id: '5', lat: -6.7910, lng: 39.2030, type: 'car' },
-  ]);
+  const [nearbyDrivers, setNearbyDrivers] = useState<NearbyDriver[]>([]);
+  const [polling, setPolling] = useState(false);
+  const [selectedDriver, setSelectedDriver] = useState<NearbyDriver | null>(null);
+
   const drawerAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const regionRef = useRef({ lat: -6.7924, lng: 39.2083 });
 
   useEffect(() => {
     loadUser();
     getLocation();
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  // Pulsing animation for the live indicator
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 0.3, duration: 1000, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
   }, []);
 
   const loadUser = async () => {
@@ -42,11 +70,29 @@ export default function MainScreen({ navigation }: any) {
     if (data) setUser(JSON.parse(data));
   };
 
+  const fetchNearbyDrivers = async () => {
+    try {
+      const response = await axios.get<NearbyDriver[]>(
+        `${API_BASE}/tracking/nearby-drivers?lat=${regionRef.current.lat}&lng=${regionRef.current.lng}&radius=3`
+      );
+      setNearbyDrivers(response.data);
+    } catch {
+      // keep last known drivers on error
+    }
+  };
+
+  const startDriverPolling = () => {
+    setPolling(true);
+    fetchNearbyDrivers();
+    pollRef.current = setInterval(fetchNearbyDrivers, 5000);
+  };
+
   const getLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status === 'granted') {
       try {
         const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        regionRef.current = { lat: loc.coords.latitude, lng: loc.coords.longitude };
         setRegion({
           latitude: loc.coords.latitude,
           longitude: loc.coords.longitude,
@@ -57,10 +103,13 @@ export default function MainScreen({ navigation }: any) {
         if (addr[0]) {
           setCurrentAddress(`${addr[0].street || addr[0].district || ''}, ${addr[0].city || 'Dar es Salaam'}`);
         }
-      } catch { setCurrentAddress('Dar es Salaam'); }
+      } catch {
+        setCurrentAddress('Dar es Salaam');
+      }
     } else {
       setCurrentAddress('Dar es Salaam');
     }
+    startDriverPolling();
   };
 
   const openDrawer = () => {
@@ -110,16 +159,22 @@ export default function MainScreen({ navigation }: any) {
           {/* Nearby drivers as markers */}
           {nearbyDrivers.map((d) => (
             <Marker
-              key={d.id}
+              key={d.driver_id}
               coordinate={{ latitude: d.lat, longitude: d.lng }}
-              title={d.type === 'car' ? 'Car' : d.type === 'bajaji' ? 'Bajaji' : 'Boda-Boda'}
+              onPress={() => setSelectedDriver(d)}
             >
-              <Text style={{ fontSize: 22 }}>
-                {d.type === 'car' ? '🚗' : d.type === 'bajaji' ? '🛺' : '🏍️'}
-              </Text>
+              <View style={styles.driverMarker}>
+                <Text style={styles.driverMarkerEmoji}>🚕</Text>
+                <Text style={styles.driverMarkerDistance}>{d.distance_km.toFixed(1)} km</Text>
+              </View>
             </Marker>
           ))}
         </MapView>
+
+        {/* Live polling pulse dot — top left inside map */}
+        {polling && (
+          <Animated.View style={[styles.pulseDot, { opacity: pulseAnim }]} />
+        )}
 
         {/* Top bar over map */}
         <View style={styles.topBar}>
@@ -130,6 +185,41 @@ export default function MainScreen({ navigation }: any) {
             <Ionicons name="notifications-outline" size={22} color="#1c1c1e" />
           </TouchableOpacity>
         </View>
+
+        {/* Traffic button — top right below notif */}
+        <TouchableOpacity
+          style={styles.trafficBtn}
+          onPress={() => navigation.navigate('Traffic')}
+        >
+          <Text style={styles.trafficBtnEmoji}>🚦</Text>
+          <Text style={styles.trafficBtnLabel}>Msongamano</Text>
+        </TouchableOpacity>
+
+        {/* Selected driver bottom card */}
+        {selectedDriver !== null && (
+          <View style={styles.driverCard}>
+            <TouchableOpacity
+              style={styles.driverCardClose}
+              onPress={() => setSelectedDriver(null)}
+            >
+              <Text style={styles.driverCardCloseText}>✕</Text>
+            </TouchableOpacity>
+            <Text style={styles.driverCardName}>{selectedDriver.name}</Text>
+            <Text style={styles.driverCardPlate}>{selectedDriver.vehicle_plate}</Text>
+            <Text style={styles.driverCardMeta}>
+              {selectedDriver.distance_km.toFixed(1)} km · Unafika dakika {selectedDriver.eta_minutes}
+            </Text>
+            <TouchableOpacity
+              style={styles.bookBtn}
+              onPress={() => {
+                setSelectedDriver(null);
+                navigation.navigate('RideRequest');
+              }}
+            >
+              <Text style={styles.bookBtnText}>Piga Buku</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       {/* Bottom panel */}
@@ -244,9 +334,51 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f4f0' },
   mapArea: { flex: 1, position: 'relative' },
   map: { ...StyleSheet.absoluteFillObject },
-  topBar: { position: 'absolute', top: 12, left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between' },
+  topBar: { position: 'absolute', top: 12, left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   menuBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', elevation: 4, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 6 },
   notifBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', elevation: 4 },
+
+  // Live pulse dot
+  pulseDot: {
+    position: 'absolute', top: 16, left: 16,
+    width: 10, height: 10, borderRadius: 5, backgroundColor: '#00d46a',
+    zIndex: 10,
+  },
+
+  // Traffic button
+  trafficBtn: {
+    position: 'absolute', top: 66, right: 16,
+    backgroundColor: '#1a1a2e', borderRadius: 12, padding: 12,
+    alignItems: 'center', elevation: 4,
+  },
+  trafficBtnEmoji: { fontSize: 20 },
+  trafficBtnLabel: { color: '#ffffff', fontSize: 11, marginTop: 2 },
+
+  // Driver marker
+  driverMarker: { alignItems: 'center' },
+  driverMarkerEmoji: { fontSize: 22 },
+  driverMarkerDistance: {
+    fontSize: 9, color: '#fff', backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 4, paddingVertical: 2, paddingHorizontal: 4, marginTop: 2,
+  },
+
+  // Selected driver bottom card
+  driverCard: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    padding: 20, elevation: 12,
+  },
+  driverCardClose: { position: 'absolute', top: 16, right: 16, padding: 4 },
+  driverCardCloseText: { fontSize: 18, color: '#999' },
+  driverCardName: { fontSize: 18, fontWeight: '700', color: '#1c1c1e', marginBottom: 4 },
+  driverCardPlate: { fontSize: 13, color: '#666', marginBottom: 4 },
+  driverCardMeta: { fontSize: 13, color: '#1a73e8', marginBottom: 16 },
+  bookBtn: {
+    backgroundColor: '#00d46a', borderRadius: 12, padding: 14,
+    alignItems: 'center', width: '100%',
+  },
+  bookBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+
   bottomPanel: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 16, marginTop: -20, elevation: 10, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10 },
   greeting: { fontSize: 17, fontWeight: '600', color: '#1c1c1e', marginBottom: 14 },
   addressCard: { backgroundColor: '#f8f8f8', borderRadius: 14, padding: 14, marginBottom: 16 },
@@ -282,4 +414,38 @@ const styles = StyleSheet.create({
   drawerItemText: { fontSize: 16, color: '#1c1c1e', marginLeft: 16, fontWeight: '500' },
   drawerDivider: { height: 1, backgroundColor: '#f0f0f0', marginVertical: 8, marginHorizontal: 24 },
   drawerVersion: { textAlign: 'center', fontSize: 11, color: '#ccc', paddingBottom: 20 },
+
+  // Driver marker
+  driverMarker: { alignItems: 'center', justifyContent: 'center' },
+
+  // Traffic button
+  trafficBtn: {
+    backgroundColor: '#fff', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 8,
+    elevation: 4, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 6,
+  },
+
+  // Live dot
+  liveDot: {
+    width: 10, height: 10, borderRadius: 5, backgroundColor: '#00d46a', marginRight: 6,
+  },
+
+  // Driver bottom card modal
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.3)' },
+  driverBottomCard: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    backgroundColor: '#1a1a2e', borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    padding: 20, paddingBottom: 36,
+  },
+  driverCardHandle: {
+    width: 36, height: 4, borderRadius: 2, backgroundColor: '#444',
+    alignSelf: 'center', marginBottom: 16,
+  },
+  driverCardName: { fontSize: 18, fontWeight: '700', color: '#fff', marginBottom: 4 },
+  driverCardPlate: { fontSize: 14, color: '#aaa', marginBottom: 12 },
+  driverCardRow: { flexDirection: 'row', gap: 20, marginBottom: 20 },
+  driverCardStat: { fontSize: 15, color: '#00d46a', fontWeight: '600' },
+  bookBtn: {
+    backgroundColor: '#00d46a', borderRadius: 12, paddingVertical: 14, alignItems: 'center',
+  },
+  bookBtnText: { color: '#1a1a2e', fontSize: 16, fontWeight: '700' },
 });
