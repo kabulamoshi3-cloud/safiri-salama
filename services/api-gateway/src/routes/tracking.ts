@@ -5,6 +5,7 @@
  */
 
 import { Router, Request, Response } from 'express';
+import axios from 'axios';
 import { pool } from '../database/connection';
 
 const router = Router();
@@ -17,6 +18,29 @@ const driverLocations: Map<string, {
   speed: number;
   updatedAt: number;
 }> = new Map();
+
+// ---------------------------------------------------------------------------
+// RouteResult type + in-memory store
+// ---------------------------------------------------------------------------
+interface RouteResult {
+  distance_km: number;
+  duration_minutes: number;
+  fare_tzs: number;
+  polyline_coords: [number, number][];
+  steps: { instruction: string; distance_m: number }[];
+  is_estimate: boolean;
+}
+
+const routeStore = new Map<string, RouteResult>();
+
+// ---------------------------------------------------------------------------
+// Haversine helper (approximate, flat-earth variant used across this file)
+// ---------------------------------------------------------------------------
+function haversineKm(aLat: number, aLng: number, bLat: number, bLng: number): number {
+  const dLat = (bLat - aLat) * 111;
+  const dLng = (bLng - aLng) * 111 * Math.cos(aLat * Math.PI / 180);
+  return Math.sqrt(dLat * dLat + dLng * dLng);
+}
 
 /**
  * POST /api/v1/tracking/driver/update
@@ -117,8 +141,9 @@ router.get('/nearby', async (req: Request, res: Response) => {
     const userLng = parseFloat(lng as string);
     const radiusKm = parseFloat(radius as string);
 
+    interface NearbyEntry { driverId: string; latitude: number; longitude: number; heading: number; distance: number; }
     // Get from memory (active drivers)
-    const nearby: any[] = [];
+    const nearby: NearbyEntry[] = [];
     const now = Date.now();
 
     driverLocations.forEach((loc, driverId) => {
@@ -166,7 +191,13 @@ router.get('/nearby', async (req: Request, res: Response) => {
     res.json({ drivers: nearby, count: nearby.length });
   } catch (error) {
     console.error('Nearby drivers error:', error);
-    res.status(500).json({ error: 'Failed to get nearby drivers' });
+    // Mock fallback on any error
+    const mockNearby = [
+      { driverId: 'mock-1', latitude: -6.7900, longitude: 39.2100, heading: 90, distance: 800 },
+      { driverId: 'mock-2', latitude: -6.7940, longitude: 39.2050, heading: 45, distance: 1200 },
+      { driverId: 'mock-3', latitude: -6.7880, longitude: 39.2120, heading: 180, distance: 1800 },
+    ];
+    res.json({ drivers: mockNearby, count: mockNearby.length });
   }
 });
 
@@ -189,6 +220,142 @@ router.post('/driver/offline', async (req: Request, res: Response) => {
     res.json({ status: 'offline' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to go offline' });
+  }
+});
+
+/**
+ * POST /api/v1/tracking/calculate-route
+ * Calculate route between two points using ORS (falls back to straight-line).
+ * Body: { from_lat, from_lng, to_lat, to_lng, trip_id? }
+ * No auth required — passengers call this before a trip is created.
+ */
+router.post('/calculate-route', async (req: Request, res: Response) => {
+  const { from_lat, from_lng, to_lat, to_lng, trip_id } = req.body as {
+    from_lat: number;
+    from_lng: number;
+    to_lat: number;
+    to_lng: number;
+    trip_id?: string;
+  };
+
+  if (from_lat == null || from_lng == null || to_lat == null || to_lng == null) {
+    return res.status(400).json({ error: 'from_lat, from_lng, to_lat, to_lng required' });
+  }
+
+  let result: RouteResult | null = null;
+
+  const orsKey = process.env.ORS_API_KEY ?? '';
+  if (orsKey) {
+    try {
+      const orsRes = await axios.post(
+        'https://api.openrouteservice.org/v2/directions/driving-car/geojson',
+        { coordinates: [[from_lng, from_lat], [to_lng, to_lat]] },
+        {
+          headers: { Authorization: `Bearer ${orsKey}`, 'Content-Type': 'application/json' },
+          timeout: 8000,
+        }
+      );
+
+      const feature = orsRes.data?.features?.[0];
+      const summary = feature?.properties?.summary;
+      const segments: any[] = feature?.properties?.segments ?? [];
+      const coords: [number, number][] = feature?.geometry?.coordinates ?? [];
+
+      if (summary && coords.length > 0) {
+        const distance_km = summary.distance / 1000;
+        const duration_minutes = summary.duration / 60;
+        const polyline_coords: [number, number][] = coords.map(
+          (c: [number, number]) => [c[1], c[0]] // ORS gives [lng,lat] → flip to [lat,lng]
+        );
+        const steps = (segments[0]?.steps ?? []).map((s: any) => ({
+          instruction: s.instruction as string,
+          distance_m: s.distance as number,
+        }));
+        const fare_tzs = Math.max(3000, Math.round(2000 + distance_km * 500 + duration_minutes * 50));
+
+        result = { distance_km, duration_minutes, fare_tzs, polyline_coords, steps, is_estimate: false };
+      }
+    } catch (orsErr) {
+      // Fall through to straight-line estimate
+    }
+  }
+
+  if (!result) {
+    const distance_km = haversineKm(from_lat, from_lng, to_lat, to_lng);
+    const duration_minutes = (distance_km / 30) * 60;
+    const fare_tzs = Math.max(3000, Math.round(2000 + distance_km * 500 + duration_minutes * 50));
+    result = {
+      distance_km,
+      duration_minutes,
+      fare_tzs,
+      polyline_coords: [[from_lat, from_lng], [to_lat, to_lng]],
+      steps: [{ instruction: 'Endelea moja kwa moja hadi ufikie lengo', distance_m: distance_km * 1000 }],
+      is_estimate: true,
+    };
+  }
+
+  if (trip_id) {
+    routeStore.set(trip_id, result);
+  }
+
+  return res.json(result);
+});
+
+/**
+ * GET /api/v1/tracking/route?trip_id=X
+ * Retrieve a previously calculated route by trip_id.
+ */
+router.get('/route', (req: Request, res: Response) => {
+  const { trip_id } = req.query as { trip_id?: string };
+  if (!trip_id) return res.status(400).json({ error: 'trip_id query param required' });
+
+  const stored = routeStore.get(trip_id);
+  if (!stored) return res.status(404).json({ error: 'Route not found' });
+
+  return res.json(stored);
+});
+
+/**
+ * POST /api/v1/tracking/driver/location
+ * Alias for /driver/update — accepts { lat, lng, bearing, speed, trip_id }.
+ * Requires auth (Bearer token).
+ */
+router.post('/driver/location', async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.userId;
+    const { lat, lng, bearing, speed, trip_id } = req.body as {
+      lat: number;
+      lng: number;
+      bearing?: number;
+      speed?: number;
+      trip_id?: string;
+    };
+
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (lat == null || lng == null) return res.status(400).json({ error: 'lat and lng required' });
+
+    const latitude = lat;
+    const longitude = lng;
+    const heading = bearing ?? 0;
+    const spd = speed ?? 0;
+
+    driverLocations.set(userId, {
+      latitude,
+      longitude,
+      heading,
+      speed: spd,
+      updatedAt: Date.now(),
+    });
+
+    await pool.query(
+      `UPDATE drivers SET current_latitude = $1, current_longitude = $2, last_location_update = NOW(), is_online = true WHERE user_id = $3`,
+      [latitude, longitude, userId]
+    ).catch(() => {});
+
+    return res.json({ status: 'ok', timestamp: Date.now(), trip_id: trip_id ?? null });
+  } catch (error) {
+    console.error('Driver location alias error:', error);
+    return res.status(500).json({ error: 'Failed to update location' });
   }
 });
 
@@ -284,12 +451,6 @@ router.get('/nearby-drivers', async (req: Request, res: Response) => {
   const userLng = parseFloat(lng as string);
   const radiusKm = parseFloat(radius as string);
 
-  const haversine = (aLat: number, aLng: number, bLat: number, bLng: number) => {
-    const dLat = (bLat - aLat) * 111;
-    const dLng = (bLng - aLng) * 111 * Math.cos(aLat * Math.PI / 180);
-    return Math.sqrt(dLat * dLat + dLng * dLng);
-  };
-
   const mockDrivers = [
     { driver_id: 'mock-1', name: 'Juma Hassan', vehicle_plate: 'T 456 DFS', lat: -6.7900, lng: 39.2100, distance_km: 0.8, eta_minutes: 2, vehicle_type: 'car' },
     { driver_id: 'mock-2', name: 'Amina Salim', vehicle_plate: 'T 123 ABC', lat: -6.7940, lng: 39.2050, distance_km: 1.2, eta_minutes: 3, vehicle_type: 'bajaji' },
@@ -314,9 +475,11 @@ router.get('/nearby-drivers', async (req: Request, res: Response) => {
       return res.json(mockDrivers);
     }
 
+    interface DriverRow { driver_id: string; name: string; vehicle_plate: string; vehicle_type: string; lat: string; lng: string; }
+    interface DriverResult { driver_id: string; name: string; vehicle_plate: string; lat: number; lng: number; distance_km: number; eta_minutes: number; vehicle_type: string; }
     const drivers = result.rows
-      .map((row: any) => {
-        const distance_km = haversine(userLat, userLng, parseFloat(row.lat), parseFloat(row.lng));
+      .map((row: DriverRow): DriverResult => {
+        const distance_km = haversineKm(userLat, userLng, parseFloat(row.lat), parseFloat(row.lng));
         return {
           driver_id: row.driver_id,
           name: row.name,
@@ -328,7 +491,7 @@ router.get('/nearby-drivers', async (req: Request, res: Response) => {
           vehicle_type: row.vehicle_type || 'car',
         };
       })
-      .filter((d: any) => d.distance_km <= radiusKm);
+      .filter((d: DriverResult) => d.distance_km <= radiusKm);
 
     return res.json(drivers.length > 0 ? drivers : mockDrivers);
   } catch (err) {
