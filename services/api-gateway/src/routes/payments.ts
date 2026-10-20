@@ -36,7 +36,7 @@ const PLATFORM_FEE_RATES: Record<string, number> = {
   shop:        0.15,   // 15% on shop orders
   market:      0.05,   // 5% on university marketplace
   topup:       0.00,   // no fee on top-ups
-  transfer:    0.01,   // 1% fee on P2P transfers
+  transfer:    0.00,   // no DalaSmart fee on P2P transfers
   bill:        0.00,   // no DalaSmart fee on bill payments
 };
 
@@ -264,6 +264,12 @@ paymentsRouter.post('/pay', async (req: Request, res: Response) => {
     return res.status(400).json({
       error: `Invalid method. Choose: ${validMethods.join(', ')}`,
     });
+  }
+
+  // ── Validate context_id is a valid UUID if provided (context_id column is UUID type)
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (context_id && !UUID_REGEX.test(String(context_id))) {
+    return res.status(400).json({ error: 'context_id must be a valid UUID' });
   }
 
   try {
@@ -768,8 +774,9 @@ paymentsRouter.get('/status/:reference', async (req: Request, res: Response) => 
     const isExpired = tx.status === 'pending' && tx.expires_at && new Date(tx.expires_at) < new Date();
 
     if (isExpired) {
+      // Guard: only expire if still pending — never overwrite a completed/failed status
       await database.query(
-        `UPDATE transactions SET status = 'expired' WHERE reference = $1`,
+        `UPDATE transactions SET status = 'expired' WHERE reference = $1 AND status = 'pending'`,
         [reference]
       );
       tx.status = 'expired';
@@ -879,9 +886,28 @@ async function handlePaymentFailure(reference: string, reason: string) {
   );
 }
 
+// ── Webhook signature guard ───────────────────────────────────────────────────
+/**
+ * Verifies the X-Webhook-Secret header against WEBHOOK_SECRET env var.
+ * If WEBHOOK_SECRET is not configured, the check is skipped with a warning
+ * (safe for development; set the var in production).
+ */
+function verifyWebhookSecret(req: Request): boolean {
+  const secret = process.env.WEBHOOK_SECRET;
+  if (!secret) {
+    console.warn('[Webhook] WEBHOOK_SECRET not set — skipping signature check (set it in production)');
+    return true;
+  }
+  const provided = req.headers['x-webhook-secret'];
+  return provided === secret;
+}
+
 // ── M-Pesa webhook ────────────────────────────────────────────────────────────
 paymentsRouter.post('/webhooks/mpesa', async (req: Request, res: Response) => {
   try {
+    if (!verifyWebhookSecret(req)) {
+      return res.status(401).json({ error: 'Invalid webhook secret' });
+    }
     // Vodacom TZ callback structure
     const reference   = req.body?.output_ThirdPartyConversationID ?? req.body?.reference;
     const resultCode  = req.body?.output_ResponseCode ?? req.body?.resultCode;
@@ -906,6 +932,9 @@ paymentsRouter.post('/webhooks/mpesa', async (req: Request, res: Response) => {
 // ── Airtel Money webhook ──────────────────────────────────────────────────────
 paymentsRouter.post('/webhooks/airtel', async (req: Request, res: Response) => {
   try {
+    if (!verifyWebhookSecret(req)) {
+      return res.status(401).json({ error: 'Invalid webhook secret' });
+    }
     const reference = req.body?.transaction?.id ?? req.body?.reference;
     const status    = req.body?.transaction?.status;
     const txnId     = req.body?.transaction?.airtel_money_id ?? req.body?.transactionId;
@@ -928,6 +957,9 @@ paymentsRouter.post('/webhooks/airtel', async (req: Request, res: Response) => {
 // ── Tigo Pesa webhook ─────────────────────────────────────────────────────────
 paymentsRouter.post('/webhooks/tigo', async (req: Request, res: Response) => {
   try {
+    if (!verifyWebhookSecret(req)) {
+      return res.status(401).json({ error: 'Invalid webhook secret' });
+    }
     const reference = req.body?.MasterMerchant?.ReceivedTxnId ?? req.body?.reference;
     const status    = req.body?.Status ?? req.body?.status;
     const txnId     = req.body?.TxnId ?? req.body?.transactionId;
@@ -950,6 +982,9 @@ paymentsRouter.post('/webhooks/tigo', async (req: Request, res: Response) => {
 // ── Halotel webhook ───────────────────────────────────────────────────────────
 paymentsRouter.post('/webhooks/halotel', async (req: Request, res: Response) => {
   try {
+    if (!verifyWebhookSecret(req)) {
+      return res.status(401).json({ error: 'Invalid webhook secret' });
+    }
     const reference = req.body?.reference ?? req.body?.transactionRef;
     const success   = req.body?.status === 'SUCCESS';
     const txnId     = req.body?.transactionId;
@@ -1121,11 +1156,14 @@ paymentsRouter.post('/qr/pay', async (req: Request, res: Response) => {
       // Debit passenger
       await db.query(`UPDATE wallets SET balance = balance - $1 WHERE user_id = $2`, [qr.amount, user.id]);
 
-      // Credit driver
+      // Credit driver using the same fee rate as regular ride payments
+      const driverShare = Math.round(qr.amount * (1 - PLATFORM_FEE_RATES.ride));
+      const platformShare = qr.amount - driverShare;
+
       await db.query(
         `INSERT INTO wallets (user_id, balance, currency) VALUES ($1,$2,'TZS')
          ON CONFLICT (user_id) DO UPDATE SET balance = wallets.balance + $2`,
-        [qr.driver_id, Math.round(qr.amount * 0.8)]
+        [qr.driver_id, driverShare]
       );
 
       await db.query(
@@ -1133,6 +1171,18 @@ paymentsRouter.post('/qr/pay', async (req: Request, res: Response) => {
            (reference, user_id, context, amount, type, method, provider, status, description)
          VALUES ($1,$2,'ride',$3,'debit','qr_code','wallet','completed','Bus fare — QR payment')`,
         [reference, user.id, qr.amount]
+      );
+
+      // Record payment_splits (same pattern as creditPayee)
+      await db.query(
+        `INSERT INTO payment_splits (transaction_ref, payee_id, payee_type, amount, status)
+         VALUES ($1, $2, 'driver', $3, 'paid')`,
+        [reference, qr.driver_id, driverShare]
+      );
+      await db.query(
+        `INSERT INTO payment_splits (transaction_ref, payee_id, payee_type, amount, status)
+         VALUES ($1, NULL, 'platform', $2, 'pending')`,
+        [reference, platformShare]
       );
 
       await db.query(
@@ -1404,10 +1454,33 @@ paymentsRouter.post('/refund', async (req: Request, res: Response) => {
     const refundRef = makeRef('RFD');
 
     await db.query(`BEGIN`);
+    // Credit payer wallet
     await db.query(
       `UPDATE wallets SET balance = balance + $1 WHERE user_id = $2`,
       [tx.amount, user.id]
     );
+    // Reverse payee credit: debit the payee's share back from their wallet
+    // Only applies to contexts where creditPayee() ran (ride/food/shop/market)
+    const creditableContexts = ['ride', 'food', 'shop', 'market'];
+    if (creditableContexts.includes(tx.context)) {
+      const feeRate = PLATFORM_FEE_RATES[tx.context] ?? 0.10;
+      const payeeShare = Math.round(tx.amount * (1 - feeRate));
+      await db.query(
+        `UPDATE payment_splits
+         SET status = 'reversed'
+         WHERE transaction_ref = $1 AND payee_type != 'platform'`,
+        [tx.reference]
+      );
+      // Debit payee wallet for their share (best-effort: ignore if wallet gone)
+      await db.query(
+        `UPDATE wallets w
+         SET balance = GREATEST(0, balance - $1)
+         FROM payment_splits ps
+         WHERE ps.transaction_ref = $2 AND ps.payee_type != 'platform'
+           AND ps.payee_id = w.user_id`,
+        [payeeShare, tx.reference]
+      );
+    }
     await db.query(
       `UPDATE transactions SET refunded = true, refund_reference = $1, refund_reason = $2 WHERE reference = $3`,
       [refundRef, reason, reference]
@@ -1601,7 +1674,7 @@ paymentsRouter.get('/admin/report', async (req: Request, res: Response) => {
        WHERE payee_type = 'platform'`
     );
 
-    // Recent transactions with user name
+    // Recent transactions with user name (phone fetched only for masking, not exposed raw)
     const recentResult = await db.query(
       `SELECT t.reference, t.context, t.amount, t.type, t.method, t.provider,
               t.status, t.created_at, t.completed_at,
@@ -1642,8 +1715,17 @@ paymentsRouter.get('/admin/report', async (req: Request, res: Response) => {
       total_platform_fees:           Number(platformFeesResult.rows[0].total_platform_fees),
       total_platform_fees_formatted: `Sh${Number(platformFeesResult.rows[0].total_platform_fees).toLocaleString()}`,
       recent_transactions: recentResult.rows.map(tx => ({
-        ...tx,
+        reference:        tx.reference,
+        context:          tx.context,
+        amount:           tx.amount,
         amount_formatted: `Sh${Number(tx.amount).toLocaleString()}`,
+        type:             tx.type,
+        method:           tx.method,
+        provider:         tx.provider,
+        status:           tx.status,
+        created_at:       tx.created_at,
+        completed_at:     tx.completed_at,
+        user_name:        tx.user_name,
         user_phone_masked: maskPhone(tx.user_phone ?? ''),
       })),
     });
