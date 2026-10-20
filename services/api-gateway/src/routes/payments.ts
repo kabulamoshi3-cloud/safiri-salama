@@ -418,7 +418,7 @@ paymentsRouter.post('/pay', async (req: Request, res: Response) => {
         // Splits: payee gets netAmount, platform gets fee
         await db.query(
           `INSERT INTO payment_splits (transaction_ref, payee_id, payee_type, amount, status)
-           VALUES ($1, $2, 'driver', $3, 'paid'),
+           VALUES ($1, $2, 'recipient', $3, 'paid'),
                   ($1, NULL, 'platform', $4, 'pending')`,
           [reference, recipient.id, netAmount, fee]
         );
@@ -880,25 +880,90 @@ async function handlePaymentSuccess(reference: string, providerTxnId: string) {
 }
 
 async function handlePaymentFailure(reference: string, reason: string) {
-  await database.query(
-    `UPDATE transactions SET status = 'failed', failure_reason = $1 WHERE reference = $2`,
-    [reason, reference]
-  );
+  // Use a client + FOR UPDATE so a concurrent handlePaymentSuccess cannot be
+  // overwritten by a duplicate failure callback arriving on a separate connection.
+  const db = await database.getClient();
+  try {
+    await db.query(`BEGIN`);
+    const txResult = await db.query(
+      `SELECT status FROM transactions WHERE reference = $1 FOR UPDATE`,
+      [reference]
+    );
+    if (txResult.rowCount === 0) { await db.query(`ROLLBACK`); return; }
+    if (txResult.rows[0].status === 'completed') {
+      // Already completed — never overwrite a success with a failure
+      await db.query(`ROLLBACK`);
+      return;
+    }
+    await db.query(
+      `UPDATE transactions SET status = 'failed', failure_reason = $1 WHERE reference = $2`,
+      [reason, reference]
+    );
+    await db.query(`COMMIT`);
+  } catch (e) {
+    await db.query(`ROLLBACK`);
+    throw e;
+  } finally {
+    db.release();
+  }
 }
 
 // ── Webhook signature guard ───────────────────────────────────────────────────
 /**
- * Verifies the X-Webhook-Secret header against WEBHOOK_SECRET env var.
- * If WEBHOOK_SECRET is not configured, the check is skipped with a warning
- * (safe for development; set the var in production).
+ * Verifies the webhook request is authentic.
+ *
+ * CURRENT BEHAVIOUR:
+ *  - In production (NODE_ENV=production): WEBHOOK_SECRET MUST be set; missing = fail-closed (401).
+ *  - In dev/staging: if WEBHOOK_SECRET is not set, allow with a console warning.
+ *  - If WEBHOOK_SECRET is set in any env, it is compared as a plain string for now.
+ *
+ * TODO — per-provider HMAC-SHA256 verification:
+ *
+ *  M-Pesa (Vodacom TZ):
+ *    Provider signs the callback body with HMAC-SHA256 using the API key as the secret.
+ *    Header: X-Signature (or X-Mpesa-Signature, confirm in your Vodacom TZ developer portal).
+ *    Compute: crypto.createHmac('sha256', process.env.MPESA_API_KEY!).update(rawBody).digest('hex')
+ *    Compare constant-time: crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(header))
+ *    Requires: MPESA_API_KEY env var + express raw body buffer (use express.raw() before this router).
+ *
+ *  Airtel Money:
+ *    Signs with HMAC-SHA256 using the client secret.
+ *    Header: X-Signature
+ *    Compute: crypto.createHmac('sha256', process.env.AIRTEL_CLIENT_SECRET!).update(rawBody).digest('hex')
+ *    Requires: AIRTEL_CLIENT_SECRET env var.
+ *
+ *  Tigo Pesa:
+ *    Uses a shared secret passed as a header field. Upgrade to HMAC once Tigo provides documentation.
+ *    Header: X-Tigo-Token (confirm in Tigo Pesa developer portal).
+ *    Compute: HMAC-SHA256 with process.env.TIGO_SECRET
+ *    Requires: TIGO_SECRET env var.
+ *
+ *  Halotel:
+ *    Uses a merchantCode + HMAC. Confirm exact scheme in the Halotel EPG documentation.
+ *    Header: X-Halotel-Signature
+ *    Compute: HMAC-SHA256 with process.env.HALOTEL_SECRET
+ *    Requires: HALOTEL_SECRET env var.
+ *
+ * Until HMAC is implemented, WEBHOOK_SECRET acts as a shared bearer token —
+ * still better than nothing, but rotate it frequently.
  */
 function verifyWebhookSecret(req: Request): boolean {
   const secret = process.env.WEBHOOK_SECRET;
+  const isProduction = process.env.NODE_ENV === 'production';
+
   if (!secret) {
+    if (isProduction) {
+      // Fail-closed in production: never process an unauthenticated webhook callback.
+      console.error('[Webhook] WEBHOOK_SECRET is not set in production — rejecting request. Set WEBHOOK_SECRET in your environment.');
+      return false;
+    }
+    // Dev/staging: allow with warning so local testing works without env var.
     console.warn('[Webhook] WEBHOOK_SECRET not set — skipping signature check (set it in production)');
     return true;
   }
+
   const provided = req.headers['x-webhook-secret'];
+  // TODO: replace with per-provider HMAC verification (see comments above).
   return provided === secret;
 }
 
@@ -1131,28 +1196,29 @@ paymentsRouter.post('/qr/pay', async (req: Request, res: Response) => {
 
     const qr = tokenResult.rows[0];
 
-    // Check wallet balance
-    const walletResult = await db.query(
-      `SELECT balance FROM wallets WHERE user_id = $1 FOR UPDATE`,
-      [user.id]
-    );
-
-    const balance = Number(walletResult.rows[0]?.balance ?? 0);
-    if (balance < qr.amount) {
-      db.release();
-      return res.status(400).json({
-        error:    `Insufficient wallet balance.`,
-        required: `Sh${Number(qr.amount).toLocaleString()}`,
-        balance:  `Sh${balance.toLocaleString()}`,
-        shortfall:`Sh${(qr.amount - balance).toLocaleString()}`,
-        hint:     'Top up your wallet first using mobile money.',
-      });
-    }
-
     const reference = makeRef('QRP');
 
+    // Lock wallet row INSIDE the transaction to prevent TOCTOU race on concurrent scans
     await db.query(`BEGIN`);
     try {
+      // Check wallet balance with row lock inside transaction
+      const walletResult = await db.query(
+        `SELECT balance FROM wallets WHERE user_id = $1 FOR UPDATE`,
+        [user.id]
+      );
+
+      const balance = Number(walletResult.rows[0]?.balance ?? 0);
+      if (balance < qr.amount) {
+        await db.query(`ROLLBACK`);
+        db.release();
+        return res.status(400).json({
+          error:    `Insufficient wallet balance.`,
+          required: `Sh${Number(qr.amount).toLocaleString()}`,
+          balance:  `Sh${balance.toLocaleString()}`,
+          shortfall:`Sh${(qr.amount - balance).toLocaleString()}`,
+          hint:     'Top up your wallet first using mobile money.',
+        });
+      }
       // Debit passenger
       await db.query(`UPDATE wallets SET balance = balance - $1 WHERE user_id = $2`, [qr.amount, user.id]);
 
@@ -1229,34 +1295,31 @@ paymentsRouter.post('/wallet/topup', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Minimum top-up is Sh500' });
   }
 
-  // Re-use the main /pay endpoint logic via a direct call
-  req.body = {
-    amount,
-    method: detectProvider(normalisePhone(providedPhone || '')) ?? 'mpesa',
-    phone:  providedPhone,
-    use_registered_phone,
-    context: 'topup',
-    description: 'Wallet top-up',
-  };
-
   // Resolve phone
   try {
     const db = await database.getClient();
-    const userResult = await db.query(`SELECT phone FROM users WHERE id = $1`, [user.id]);
-    db.release();
 
-    const registeredPhone = userResult.rows[0]?.phone;
-    const phoneToUse = use_registered_phone || !providedPhone
+    const userResult = await db.query(`SELECT phone FROM users WHERE id = $1`, [user.id]);
+    if (userResult.rowCount === 0) {
+      db.release();
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const registeredPhone = userResult.rows[0].phone;
+    const phoneToUse = (use_registered_phone || !providedPhone)
       ? normalisePhone(registeredPhone)
       : normalisePhone(providedPhone);
 
     const provider = detectProvider(phoneToUse);
     if (!provider) {
+      db.release();
       return res.status(400).json({ error: 'Could not detect provider. Check phone number.' });
     }
 
     const reference = makeRef('TOP');
-    await database.query(
+    // INSERT and STK push share the same client — ensures the row exists
+    // before the push fires and the provider webhook can call back.
+    await db.query(
       `INSERT INTO transactions
          (reference, user_id, context, amount, type, method, provider,
           phone_number, phone_source, status, description, expires_at)
@@ -1264,9 +1327,10 @@ paymentsRouter.post('/wallet/topup', async (req: Request, res: Response) => {
                'Wallet top-up', NOW() + INTERVAL '2 minutes')`,
       [
         reference, user.id, amount, provider, phoneToUse,
-        use_registered_phone ? 'registered' : 'user_provided',
+        (use_registered_phone || !providedPhone) ? 'registered' : 'user_provided',
       ]
     );
+    db.release();
 
     await fireStkPush({ method: provider, phone: phoneToUse, amount, reference, description: 'DalaSmart Wallet Top-up' });
 
@@ -1449,6 +1513,17 @@ paymentsRouter.post('/refund', async (req: Request, res: Response) => {
     if (tx.refunded) {
       db.release();
       return res.status(400).json({ error: 'Already refunded' });
+    }
+
+    // 7-day self-service refund window
+    const completedAt = tx.completed_at ? new Date(tx.completed_at) : null;
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    if (!completedAt || completedAt < sevenDaysAgo) {
+      db.release();
+      return res.status(400).json({
+        error: 'Refund window expired (7 days after payment)',
+        completed_at: tx.completed_at,
+      });
     }
 
     const refundRef = makeRef('RFD');
