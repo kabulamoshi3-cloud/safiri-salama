@@ -1,0 +1,7 @@
+{
+  "task_id": "task-build3-build5",
+  "task_description": "Build 3A (background GPS for driver app), 3B (push notifications for both apps + backend), 5A (ratings + earnings backend: migrations, routes, wired into trips.ts), 5B (rating screen enhancements, EarningsScreen real data, RatePassengerScreen, driver-app profile/home updates)",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

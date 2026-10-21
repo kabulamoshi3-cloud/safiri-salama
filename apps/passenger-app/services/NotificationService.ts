@@ -90,8 +90,9 @@ export function setupNotificationHandlers(): void {
       let pendingNav: { screen: string; params: Record<string, unknown> };
 
       if (data.type === 'trip_completed') {
-        // Completed trip → go to Rating screen
-        pendingNav = { screen: 'Rating', params: { tripId: resolvedTripId } };
+        // Completed trip → go to Rating screen; include driverId so RatingScreen can post the rating
+        const resolvedDriverId: string | undefined = data.driverId ?? data.driver_id;
+        pendingNav = { screen: 'Rating', params: { tripId: resolvedTripId, driverId: resolvedDriverId } };
       } else {
         // trip_accepted, driver_arriving, new_request, etc. → go to active trip
         pendingNav = { screen: 'TripActive', params: { tripId: resolvedTripId } };

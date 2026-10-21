@@ -40,6 +40,12 @@
         {
           "locationAlwaysAndWhenInUsePermission": "DalaSmart needs your location to find nearby drivers."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#1a73e8"
+        }
       ]
     ],
     "extra": {

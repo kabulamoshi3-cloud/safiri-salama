@@ -16,6 +16,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useDriverStatus } from '../../contexts/DriverStatusContext';
 import { DriverAPI, TripRequest } from '../../services/api/DriverAPI';
 import { HomeStackParamList } from '../../navigation/MainNavigator';
+import { isBackgroundTrackingActive } from '../../services/BackgroundLocation';
 
 type HomeScreenNavigationProp = StackNavigationProp<HomeStackParamList, 'HomeMain'>;
 
@@ -28,6 +29,22 @@ const HomeScreen: React.FC = () => {
   const [tripRequests, setTripRequests] = useState<TripRequest[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [todayEarnings, setTodayEarnings] = useState(0);
+  const [gpsActive, setGpsActive] = useState(false);
+
+  // Poll background tracking state every 5 seconds
+  useEffect(() => {
+    let cancelled = false;
+    const poll = async () => {
+      const active = await isBackgroundTrackingActive();
+      if (!cancelled) setGpsActive(active);
+    };
+    poll();
+    const interval = setInterval(poll, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -110,26 +127,34 @@ const HomeScreen: React.FC = () => {
           </View>
         </View>
 
-        <TouchableOpacity
-          style={[
-            styles.statusButton,
-            {
-              backgroundColor: statusColor,
-              opacity: isLoading ? 0.6 : 1,
-            },
-          ]}
-          onPress={handleStatusToggle}
-          disabled={isLoading}
-        >
-          <Icon
-            name={status === 'offline' ? 'power' : 'power-off'}
-            size={20}
-            color={theme.colors.white}
-          />
-          <Text style={[styles.statusButtonText, { color: theme.colors.white }]}>
-            {status === 'offline' ? t('status.goOnline') : t('status.goOffline')}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.statusRight}>
+          {gpsActive && (
+            <View style={styles.gpsBadge}>
+              <View style={styles.gpsDot} />
+              <Text style={styles.gpsText}>GPS</Text>
+            </View>
+          )}
+          <TouchableOpacity
+            style={[
+              styles.statusButton,
+              {
+                backgroundColor: statusColor,
+                opacity: isLoading ? 0.6 : 1,
+              },
+            ]}
+            onPress={handleStatusToggle}
+            disabled={isLoading}
+          >
+            <Icon
+              name={status === 'offline' ? 'power' : 'power-off'}
+              size={20}
+              color={theme.colors.white}
+            />
+            <Text style={[styles.statusButtonText, { color: theme.colors.white }]}>
+              {status === 'offline' ? t('status.goOnline') : t('status.goOffline')}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.statsGrid}>
@@ -344,6 +369,34 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  statusRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  gpsBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2e7d3220',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#2e7d32',
+    gap: 4,
+  },
+  gpsDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#2e7d32',
+  },
+  gpsText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#2e7d32',
+    letterSpacing: 0.5,
   },
 });
 

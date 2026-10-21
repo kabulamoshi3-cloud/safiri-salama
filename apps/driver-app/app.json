@@ -25,9 +25,25 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "ACCESS_BACKGROUND_LOCATION",
-        "FOREGROUND_SERVICE"
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
       ]
     },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "isAndroidBackgroundLocationEnabled": true,
+          "locationAlwaysAndWhenInUsePermission": "DalaSmart inahitaji mahali pako ili kukusaidia na safari."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#2e7d32"
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "7956fd4b-f540-47d0-90ad-6904eceaaef7"

@@ -188,6 +188,7 @@ export default function RideRequestScreen({ navigation }: any) {
       tripId: null,
       polylineCoords,
       destinationCoords,
+      pickupCoords,
     });
   };
 

@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Build 5A: Ratings and earnings backend. Creates migration 015 with ratings and driver_earnings tables. Creates ratings.ts and earnings.ts routes. Registers them in index.ts. Adds driver_earnings insert to trips.ts complete handler. Adds 4 new methods to DriverAPI.ts. Independent of FEAT-003 (both depend on FEAT-001 for the build to be complete, but FEAT-002 is backend-only and does not depend on FEAT-001's mobile changes — it can be implemented in parallel conceptually, but is ordered after FEAT-001 in execution).",
+  "status": "pending",
+  "steps": [
+    "Step 1: Create services/api-gateway/migrations/015_ratings_earnings.sql. Table 'ratings': id UUID PK DEFAULT gen_random_uuid(), trip_id UUID NOT NULL REFERENCES trips(id) ON DELETE CASCADE, rater_id UUID NOT NULL REFERENCES users(id), ratee_id UUID NOT NULL REFERENCES users(id), rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5), review TEXT, created_at TIMESTAMP NOT NULL DEFAULT NOW(), UNIQUE(trip_id, rater_id). Table 'driver_earnings': id UUID PK, driver_id UUID NOT NULL REFERENCES users(id), trip_id UUID NOT NULL UNIQUE REFERENCES trips(id), gross_amount BIGINT NOT NULL, commission_amount BIGINT NOT NULL DEFAULT 0, net_amount BIGINT NOT NULL, payment_method VARCHAR(20) NOT NULL DEFAULT 'cash', period_date DATE NOT NULL DEFAULT CURRENT_DATE, created_at TIMESTAMP NOT NULL DEFAULT NOW(). Indexes: idx_ratings_trip_id, idx_ratings_ratee_id, idx_driver_earnings_driver_id, idx_driver_earnings_driver_period.",
+    "Step 2: Create services/api-gateway/src/routes/ratings.ts. Import Router, Request, Response from express; pool from ../database/connection. Three endpoints: POST / (submit rating — auth required, validates trip is completed and caller is party, INSERT INTO ratings ON CONFLICT DO UPDATE, then UPDATE users SET rating = AVG); GET /my (ratings received by current user, with average and count); GET /drivers/:driverId/rating (public, returns average, count, last 5 reviews). Use (req as any).user?.userId for auth.",
+    "Step 3: Create services/api-gateway/src/routes/earnings.ts. Import Router, Request, Response, pool. Two endpoints: GET /summary (aggregate driver_earnings by period using FILTER clauses for today/week/month/total, plus trip counts, returns { today, week, month, total, cashCollected, digitalPayments, pendingPayment: 0, tripsToday, tripsWeek, tripsMonth }); GET /history (query param: period, limit, offset; JOIN driver_earnings + trips + users; returns { earnings: rows[], count }). Use (req as any).user?.userId.",
+    "Step 4: Read services/api-gateway/src/routes/index.ts in full. Add after the safeUse('/v1/driver-incentives'...) line: safeUse('/v1/ratings', () => require('./ratings')); safeUse('/v1/earnings', () => require('./earnings'));. Add 'ratings' and 'earnings' to the features array in /v1/status handler.",
+    "Step 5: Read services/api-gateway/src/routes/trips.ts in full (ALREADY has push notification changes from FEAT-001 by this point). In PATCH /:tripId/complete, after the successful UPDATE trips + res.json(...), add fire-and-forget async IIFE that: calculates amount = Math.round(Number(final_fare || trip.estimated_fare)), commission = Math.round(amount * 0.15), then pool.query INSERT INTO driver_earnings (driver_id, trip_id, gross_amount, commission_amount, net_amount, payment_method, period_date) VALUES ($1,$2,$3,$4,$5,$6,CURRENT_DATE) ON CONFLICT (trip_id) DO NOTHING. Log errors, do not throw.",
+    "Step 6: Read apps/driver-app/src/services/api/DriverAPI.ts in full. Add four static methods to the DriverAPI class (after existing methods): getEarningsSummary() returning Promise<EarningsSummary> via APIClient.get('/earnings/summary'); getEarningsHistory(period?: string) returning Promise<any[]> via APIClient.get('/earnings/history?period=...') and extracting .earnings; submitRating(payload: { trip_id: string; ratee_id: string; rating: number; review?: string }) via APIClient.post('/ratings', payload); getDriverRating(driverId: string) via APIClient.get('/ratings/drivers/${driverId}/rating').",
+    "Step 7: Run verification: cd services/api-gateway && npm run typecheck && npm test; cd apps/driver-app && npx tsc --noEmit. Fix any errors."
+  ],
+  "acceptance_criteria": [
+    "services/api-gateway/migrations/015_ratings_earnings.sql exists with ratings and driver_earnings tables",
+    "services/api-gateway/src/routes/ratings.ts exports default Router with POST /, GET /my, GET /drivers/:driverId/rating",
+    "services/api-gateway/src/routes/earnings.ts exports default Router with GET /summary and GET /history",
+    "services/api-gateway/src/routes/index.ts has safeUse for /v1/ratings and /v1/earnings",
+    "services/api-gateway/src/routes/trips.ts PATCH /:tripId/complete inserts into driver_earnings after successful completion",
+    "apps/driver-app/src/services/api/DriverAPI.ts has getEarningsSummary, getEarningsHistory, submitRating, getDriverRating methods",
+    "cd services/api-gateway && npm run typecheck exits 0",
+    "cd services/api-gateway && npm test passes",
+    "cd apps/driver-app && npx tsc --noEmit exits 0"
+  ],
+  "verification": [
+    "cd /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/services/api-gateway && npm run typecheck",
+    "cd /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/services/api-gateway && npm test",
+    "cd /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/apps/driver-app && npx tsc --noEmit"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

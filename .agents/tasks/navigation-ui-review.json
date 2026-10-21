@@ -1,11 +1,9 @@
 {
   "verdict": "CHANGES_REQUESTED",
   "findings": [
-    "BLOCKING: ActiveTripScreen uses theme.colors.card which does not exist on the Theme type — the Theme interface in ThemeContext.tsx defines `surface` but not `card`. Both usages at the Trip Info Card and the Payment Modal must be changed to theme.colors.surface.",
-    "BLOCKING: NavigationScreen declares API_BASE using process.env.EXPO_PUBLIC_API_URL but the driver-app tsconfig does not include @types/node or Expo's tsconfig.base, so `process` is not a known global and tsc emits TS2580. Add a src/global.d.ts that declares the minimal `process.env` shape for the Expo build environment.",
-    "Non-blocking: NavigationScreen FlatList keyExtractor receives index as number but the callback parameter is typed as any due to unresolved @react-navigation/stack module. Pre-existing module-resolution issue; not introduced by this change.",
-    "Non-blocking: watchPositionAsync callback parameter `loc` is implicitly any because expo-location typings are not resolved at tsc time. Pre-existing module-resolution issue; not introduced by this change."
+    "BLOCKING: RideRequestScreen.confirmRide does not pass `pickupCoords` in the navigate call to TripActive. TripActiveScreen reads route.params?.pickupCoords?.lat (always undefined), so the route fetch on the passenger map always starts from Dar es Salaam city center (-6.7924, 39.2083) instead of the rider's actual location. Add `pickupCoords` to the navigate params alongside `destinationCoords`.",
+    "NON-BLOCKING: The `if (!estimatedFare)` guard inside estimateFare's .finally() callback captures stale React state (always null at closure-creation time), so the haversine fallback unconditionally overwrites the route-based fare on every successful route fetch. Fix by having calculateRoute return a success boolean and branching on that instead.",
+    "NON-BLOCKING: NavigationScreen's Nimefika button is gated on canArrive, which is only set by the GPS watcher. If the watcher never fires (poor GPS, silent catch), the button is permanently disabled and the driver cannot complete the trip. Add a timeout-based manual override."
   ],
-  "blockingCount": 2,
-  "reviewDoc": "/run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/.agents/tasks/navigation-ui-review.json"
+  "reviewDoc": "/run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/.agents/tasks/navigation-ui-review.md"
 }

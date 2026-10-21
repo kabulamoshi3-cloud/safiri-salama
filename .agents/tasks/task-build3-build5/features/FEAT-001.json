@@ -1,0 +1,44 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Build 3A + 3B: Background GPS service (driver-app) and Push Notification service (both apps + backend). Creates BackgroundLocation.ts service using expo-location with guarded expo-task-manager; replaces the broken Firebase-based NotificationService.ts with an Expo Push implementation; creates passenger-app NotificationService; adds migration 014 for push_token columns; adds POST /push-token endpoint to notifications.ts; wires push notifications into 4 trip lifecycle events in trips.ts.",
+  "status": "pending",
+  "steps": [
+    "Step 1: Read apps/driver-app/src/services/LocationService.ts and apps/driver-app/src/services/NotificationService.ts and apps/driver-app/src/App.tsx and apps/driver-app/src/screens/trip/NavigationScreen.tsx and apps/driver-app/app.json in full. Then create apps/driver-app/src/services/BackgroundLocation.ts — export BACKGROUND_LOCATION_TASK constant, startBackgroundTracking(), stopBackgroundTracking(), isBackgroundTrackingActive(). Guard: let TaskManager: any = null; try { TaskManager = require('expo-task-manager'); } catch {} at module top. Register TaskManager.defineTask at module level (only if TaskManager is not null). The task handler POSTs to ${API_BASE}/tracking/driver/location with lat/lng/bearing/speed/trip_id (trip_id from AsyncStorage '@dalasmart:active_trip_id'). startBackgroundTracking() requests foreground then background permissions; if TaskManager null, returns immediately. Use expo-location ~17.0.0 (installed). API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1'.",
+    "Step 2: Edit apps/driver-app/App.tsx (root barrel, currently 2 lines). Prepend: import './src/services/BackgroundLocation'; before import App from './src/App';",
+    "Step 3: Read apps/driver-app/src/screens/trip/NavigationScreen.tsx in full. Add import { startBackgroundTracking, stopBackgroundTracking } from '../../services/BackgroundLocation'; then call startBackgroundTracking() at start of the main useEffect and stopBackgroundTracking() in its cleanup return.",
+    "Step 4: Edit apps/driver-app/app.json — add 'FOREGROUND_SERVICE_LOCATION' to android.permissions array; add plugins array with expo-location (isAndroidBackgroundLocationEnabled: true, Swahili permission message) and expo-notifications (color: '#2e7d32') entries.",
+    "Step 5: Read apps/driver-app/src/screens/main/HomeScreen.tsx in full. Add isBackgroundTrackingActive import. Add gpsActive state + 5-second polling useEffect. Add GPS badge JSX in statusCard area when gpsActive is true. Add 3 new style entries: gpsBadge, gpsDot, gpsText.",
+    "Step 6: Overwrite apps/driver-app/src/services/NotificationService.ts entirely — replace Firebase/@notifee imports with guarded expo-notifications (try { Notifications = require('expo-notifications'); } catch {}). Keep class name NotificationService with identical initialize() and cleanup() signatures. initialize() gets Expo push token (projectId: '7956fd4b-f540-47d0-90ad-6904eceaaef7' from driver app.json), saves to '@dalasmart:push_token', POSTs to /notifications/register. On notification tap with type='new_trip_request', stores pending nav in '@dalasmart:pending_nav'.",
+    "Step 7: Create apps/passenger-app/services/ directory and apps/passenger-app/services/NotificationService.ts — export registerForPushNotifications() and setupNotificationHandlers(). Guard expo-notifications. Use projectId '5f7ad6c8-510e-4f1b-a526-2933af25b604' from passenger app.json. On notification tap with trip_id, stores pending nav to 'TripActive' screen.",
+    "Step 8: Read apps/passenger-app/App.tsx in full. Add import of registerForPushNotifications and setupNotificationHandlers. Add navigationRef = React.useRef<any>(null). In the existing useEffect async IIFE after i18n.loadSavedLanguage(), call registerForPushNotifications() and setupNotificationHandlers(). Add ref={navigationRef} and onReady handler to NavigationContainer to process '@dalasmart:pending_nav'.",
+    "Step 9: Create services/api-gateway/migrations/014_push_tokens.sql — ALTER TABLE users ADD COLUMN IF NOT EXISTS push_token TEXT; ADD COLUMN IF NOT EXISTS device_platform TEXT; CREATE TABLE IF NOT EXISTS user_push_tokens (id UUID PK, user_id UUID FK users, token TEXT UNIQUE, platform TEXT DEFAULT 'android', created_at/updated_at). Two indexes.",
+    "Step 10: Read services/api-gateway/src/routes/notifications.ts in full. Add POST /push-token endpoint after the existing /register route — upserts into user_push_tokens ON CONFLICT (token) DO UPDATE, then UPDATE users SET push_token. Returns { status: 'ok', token, platform }.",
+    "Step 11: Read services/api-gateway/src/routes/trips.ts in full. Add import { sendPushNotification } from './notifications'; at top. Four fire-and-forget push calls: (a) after res.json in PATCH /:tripId/assign-driver → notify passenger 'Dereva amekubali'; (b) after res.json in PATCH /:tripId/status when status === 'driver_arriving' → notify passenger 'Dereva Amefika Karibu'; (c) after res.json in PATCH /:tripId/complete → notify passenger 'Safari Imekamilika'; (d) after res.status(201).json in POST / → query drivers WHERE d.status = 'available' AND u.push_token IS NOT NULL LIMIT 5 and send 'Ombi Jipya la Safari'.",
+    "Step 12: Add expo-notifications plugin entry to apps/passenger-app/app.json plugins array (color: '#1a73e8').",
+    "Step 13: Run verification: cd apps/driver-app && npx tsc --noEmit; cd apps/passenger-app && npx tsc --noEmit; cd services/api-gateway && npm run typecheck && npm test. Fix any errors found."
+  ],
+  "acceptance_criteria": [
+    "apps/driver-app/src/services/BackgroundLocation.ts exports BACKGROUND_LOCATION_TASK, startBackgroundTracking, stopBackgroundTracking, isBackgroundTrackingActive",
+    "apps/driver-app/src/services/NotificationService.ts has zero Firebase/Notifee imports and compiles without errors",
+    "apps/passenger-app/services/NotificationService.ts exists and exports registerForPushNotifications and setupNotificationHandlers",
+    "apps/passenger-app/App.tsx calls both notification functions and has navigationRef on NavigationContainer",
+    "services/api-gateway/migrations/014_push_tokens.sql exists and is syntactically correct SQL",
+    "services/api-gateway/src/routes/notifications.ts has POST /push-token endpoint",
+    "services/api-gateway/src/routes/trips.ts imports sendPushNotification and fires it at 4 event points",
+    "Both app.json files have expo-notifications in their plugins arrays",
+    "driver-app app.json has FOREGROUND_SERVICE_LOCATION permission",
+    "cd apps/driver-app && npx tsc --noEmit exits 0",
+    "cd apps/passenger-app && npx tsc --noEmit exits 0",
+    "cd services/api-gateway && npm run typecheck exits 0",
+    "cd services/api-gateway && npm test passes"
+  ],
+  "verification": [
+    "cd /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/apps/driver-app && npx tsc --noEmit",
+    "cd /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/apps/passenger-app && npx tsc --noEmit",
+    "cd /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/services/api-gateway && npm run typecheck",
+    "cd /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/services/api-gateway && npm test"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

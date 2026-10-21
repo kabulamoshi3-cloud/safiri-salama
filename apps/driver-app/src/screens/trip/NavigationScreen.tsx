@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/MainNavigator';
+import { startBackgroundTracking, stopBackgroundTracking } from '../../services/BackgroundLocation';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
 
@@ -198,9 +199,11 @@ const NavigationScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   useEffect(() => {
+    startBackgroundTracking();
     fetchRoute();
     return () => {
       locationSub.current?.remove();
+      stopBackgroundTracking();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

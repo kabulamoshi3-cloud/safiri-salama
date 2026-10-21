@@ -1,100 +1,103 @@
-import messaging from '@react-native-firebase/messaging';
-import notifee, { AndroidImportance } from '@notifee/react-native';
+/**
+ * NotificationService.ts — Build 3B
+ * Expo Push Notifications (replaces Firebase/Notifee).
+ * expo-notifications is not in package.json — all usage is guarded with try/catch.
+ */
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { APIClient } from './api/client';
 
-const FCM_TOKEN_KEY = '@dalasmart:fcm_token';
+// Guard expo-notifications — absent from package.json
+let Notifications: any = null;
+try {
+  Notifications = require('expo-notifications');
+} catch (_) {
+  /* expo-notifications not installed — notification features disabled */
+}
+
+const PUSH_TOKEN_KEY = '@dalasmart:push_token';
+const PENDING_NAV_KEY = '@dalasmart:pending_nav';
+
+const PROJECT_ID = '7956fd4b-f540-47d0-90ad-6904eceaaef7';
 
 export class NotificationService {
-  static async initialize(): Promise<void> {
-    const authStatus = await messaging().requestPermission();
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  private static responseSubscription: any = null;
 
-    if (!enabled) {
-      console.warn('Notification permission not granted');
+  static async initialize(): Promise<void> {
+    if (Notifications === null) {
+      console.warn('[NotificationService] expo-notifications not available');
       return;
     }
 
-    const token = await messaging().getToken();
-    await this.saveFCMToken(token);
-
-    messaging().onTokenRefresh(async (newToken) => {
-      await this.saveFCMToken(newToken);
-    });
-
-    messaging().onMessage(async (remoteMessage) => {
-      await this.displayNotification(remoteMessage);
-    });
-
-    messaging().setBackgroundMessageHandler(async (remoteMessage) => {
-      console.log('Background message:', remoteMessage);
-    });
-
-    await this.createNotificationChannels();
-  }
-
-  static async saveFCMToken(token: string): Promise<void> {
     try {
-      const oldToken = await AsyncStorage.getItem(FCM_TOKEN_KEY);
+      // Request permission
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
 
-      if (oldToken !== token) {
-        await AsyncStorage.setItem(FCM_TOKEN_KEY, token);
-        await APIClient.post('/driver/fcm-token', { token });
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
       }
-    } catch (error) {
-      console.error('Failed to save FCM token:', error);
+
+      if (finalStatus !== 'granted') {
+        console.warn('[NotificationService] permission not granted');
+        return;
+      }
+
+      // Get Expo push token
+      const tokenData = await Notifications.getExpoPushTokenAsync({
+        projectId: PROJECT_ID,
+      });
+      const token: string = tokenData.data;
+
+      await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);
+
+      // Register token with backend
+      try {
+        await APIClient.post('/notifications/push-token', {
+          token,
+          platform: 'android',
+        });
+      } catch (regErr) {
+        console.warn('[NotificationService] failed to register token:', regErr);
+      }
+
+      // Configure notification handling
+      Notifications.setNotificationHandler({
+        handleNotification: async () => ({
+          shouldShowAlert: true,
+          shouldPlaySound: true,
+          shouldSetBadge: false,
+        }),
+      });
+
+      // Handle notification tap
+      NotificationService.responseSubscription =
+        Notifications.addNotificationResponseReceivedListener(
+          async (response: any) => {
+            const data = response?.notification?.request?.content?.data ?? {};
+            if (data.type === 'new_trip_request') {
+              await AsyncStorage.setItem(
+                PENDING_NAV_KEY,
+                JSON.stringify({ screen: 'TripRequest', params: data })
+              );
+            }
+          }
+        );
+    } catch (err) {
+      console.error('[NotificationService] initialize error:', err);
     }
   }
 
-  static async createNotificationChannels(): Promise<void> {
-    await notifee.createChannel({
-      id: 'trip-requests',
-      name: 'Trip Requests',
-      importance: AndroidImportance.HIGH,
-      sound: 'default',
-      vibration: true,
-    });
-
-    await notifee.createChannel({
-      id: 'trip-updates',
-      name: 'Trip Updates',
-      importance: AndroidImportance.DEFAULT,
-    });
-
-    await notifee.createChannel({
-      id: 'earnings',
-      name: 'Earnings Notifications',
-      importance: AndroidImportance.DEFAULT,
-    });
-  }
-
-  static async displayNotification(remoteMessage: any): Promise<void> {
-    const { notification, data } = remoteMessage;
-
-    if (!notification) return;
-
-    const channelId = data?.category || 'default';
-
-    await notifee.displayNotification({
-      title: notification.title,
-      body: notification.body,
-      android: {
-        channelId,
-        smallIcon: 'ic_notification',
-        pressAction: {
-          id: 'default',
-        },
-      },
-      ios: {
-        sound: 'default',
-      },
-      data,
-    });
-  }
-
   static async cleanup(): Promise<void> {
-    // Cleanup logic if needed
+    if (Notifications === null) return;
+    try {
+      if (NotificationService.responseSubscription) {
+        NotificationService.responseSubscription.remove();
+        NotificationService.responseSubscription = null;
+      }
+    } catch (err) {
+      console.warn('[NotificationService] cleanup error:', err);
+    }
   }
 }

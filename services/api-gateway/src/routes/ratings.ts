@@ -12,11 +12,14 @@ const router = Router();
 router.post('/', async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id;
-    const { trip_id, ratee_id, rating, review } = req.body;
+    const userType: string = (req as any).user?.type ?? '';
+    // ratee_id is intentionally NOT accepted from the request body —
+    // it is derived server-side from the trip to prevent spoofing.
+    const { trip_id, rating, review } = req.body;
 
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-    if (!trip_id || !ratee_id || !rating)
-      return res.status(400).json({ error: 'trip_id, ratee_id, and rating are required' });
+    if (!trip_id || !rating)
+      return res.status(400).json({ error: 'trip_id and rating are required' });
     if (rating < 1 || rating > 5)
       return res.status(400).json({ error: 'rating must be between 1 and 5' });
 
@@ -33,6 +36,18 @@ router.post('/', async (req: Request, res: Response) => {
     if (trip.passenger_id !== userId && trip.driver_id !== userId)
       return res.status(403).json({ error: 'Not a party to this trip' });
 
+    // Derive ratee from the trip: passenger rates driver, driver rates passenger.
+    // Use JWT role as the authoritative signal; fall back to trip party membership.
+    let rateeId: string | null;
+    if (userType === 'passenger' || userId === trip.passenger_id) {
+      rateeId = trip.driver_id;
+    } else {
+      rateeId = trip.passenger_id;
+    }
+
+    if (!rateeId)
+      return res.status(400).json({ error: 'Trip has no driver assigned yet — cannot rate' });
+
     // Check for duplicate rating — return 409 with Swahili message
     const dupCheck = await pool.query(
       'SELECT id FROM ratings WHERE trip_id = $1 AND rater_id = $2',
@@ -48,7 +63,7 @@ router.post('/', async (req: Request, res: Response) => {
       await client.query(
         `INSERT INTO ratings (trip_id, rater_id, ratee_id, rating, review)
          VALUES ($1, $2, $3, $4, $5)`,
-        [trip_id, userId, ratee_id, rating, review ?? null]
+        [trip_id, userId, rateeId, rating, review ?? null]
       );
 
       // Recalculate ratee average and update users.rating
@@ -60,7 +75,7 @@ router.post('/', async (req: Request, res: Response) => {
            WHERE ratee_id = $1
          )
          WHERE id = $1`,
-        [ratee_id]
+        [rateeId]
       );
 
       await client.query('COMMIT');

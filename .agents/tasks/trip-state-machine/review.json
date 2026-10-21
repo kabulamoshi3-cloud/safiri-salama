@@ -1,0 +1,48 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "id": "arrived-cancel-wrong-status",
+      "severity": "blocking",
+      "summary": "Passenger cancel from ARRIVED state returns 409 instead of 403",
+      "detail": "TRANSITIONS restricts ARRIVED → CANCELLED to actor: 'driver'. When a passenger calls PATCH /cancel on an ARRIVED trip, transitionTrip throws statusCode 409 'Invalid transition' rather than 403. The caller is forbidden, not in conflict. Fix by detecting in transitionTrip (or the cancel handler) that the transition exists for a different actor type and returning 403.",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "23505-missing-active-trip-id",
+      "severity": "blocking",
+      "summary": "Race-path 409 on active-trip guard loses active_trip_id in response body",
+      "detail": "When the partial unique index trips_one_active_per_passenger fires (first-insert TOCTOU race), the 23505 catch returns { error: 'You already have an active trip' } with no active_trip_id. The FOR UPDATE path correctly includes active_trip_id. Mobile clients that navigate to the blocking trip on 409 will silently fail on the race path. Fix: query the active trip in the 23505 catch block and include its ID.",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "admin-get-list-party-scoped",
+      "severity": "blocking",
+      "summary": "Admin/operator GET / is scoped to the caller's own trips, not all trips",
+      "detail": "The non-passenger/non-driver branch of GET / sets whereClause = '(t.passenger_id = $1 OR t.driver_id = $1)'. An admin JWT sees only trips they personally took, not the full trip history. If admin/operator roles require a global view, the clause should be omitted or set to '1=1' for those roles.",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "admin-get-tripid-404-not-403",
+      "severity": "blocking",
+      "summary": "GET /:tripId returns 404 for admins on trips they're not party to, leaking trip existence",
+      "detail": "WHERE t.id = $1 AND (t.passenger_id = $2 OR t.driver_id = $2) conflates 'not found' and 'forbidden' for admin callers. An admin gets 404 on an existing trip they're not party to, leaking trip ID existence. GET /:tripId/state-log correctly returns 403 for admins. /:tripId should match: fetch the trip first, then enforce party membership separately.",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "rating-no-transaction",
+      "severity": "blocking",
+      "summary": "Rating update and user average recalculation run outside a transaction",
+      "detail": "POST /:tripId/rate issues two separate pool.query calls without a transaction. A crash between them leaves the trip rated but the user's aggregate stale. Both updates should run inside a BEGIN/COMMIT.",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "any-type-error-helpers",
+      "severity": "non-blocking",
+      "summary": "Error helpers use `any` casts instead of a typed ApiError interface",
+      "detail": "transitionTrip and sendTransitionError use `err as any` to attach and read statusCode. A typed interface ApiError extends Error { statusCode: number } would eliminate the unsafe casts. Non-blocking but accumulates as more transitions are added.",
+      "confidence": "confirmed"
+    }
+  ],
+  "reviewDoc": "/run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/.agents/tasks/trip-state-machine/review.md"
+}

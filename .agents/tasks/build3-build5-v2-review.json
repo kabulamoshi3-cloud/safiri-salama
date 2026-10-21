@@ -1,0 +1,8 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    "Rating skipped silently on notification tap — RatingScreen.submitRating computes rateeId = driverId ?? driver?.id ?? null; when navigated from a trip_completed notification tap the params only contain { tripId }, so rateeId is null, the if (tripId && rateeId) guard fires, and the axios call is never made. The success alert fires regardless. Fix: add driverId to the server-side trip_completed push payload, or fetch trip details on mount to resolve the driver ID.",
+    "ratee_id not validated as the trip counterparty — the POST /ratings handler confirms the rater is a party to the trip but does not verify that ratee_id is the other party. A passenger on trip T can target any user UUID as the ratee. Fix: derive expectedRateeId server-side and return 400 if ratee_id does not match."
+  ],
+  "reviewDoc": "/run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/.agents/tasks/build3-build5-v2-review.md"
+}

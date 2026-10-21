@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useState, useEffect, useRef } from 'react';
+import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import i18n from './i18n';
+import { registerForPushNotifications, setupNotificationHandlers } from './services/NotificationService';
 
 // Auth
 import CountryLanguageScreen from './screens/CountryLanguageScreen';
@@ -34,10 +35,16 @@ const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [initialRoute, setInitialRoute] = useState<string | null>(null);
+  const navigationRef = useRef<NavigationContainerRef<any>>(null);
 
   useEffect(() => {
     (async () => {
       await i18n.loadSavedLanguage();
+
+      // Register for push notifications and set up handlers
+      await registerForPushNotifications();
+      setupNotificationHandlers();
+
       const token = await AsyncStorage.getItem('@dalasmart:token');
       const role = await AsyncStorage.getItem('@dalasmart:role');
       const hasOnboarded = await AsyncStorage.getItem('@dalasmart:onboarded');
@@ -53,8 +60,21 @@ export default function App() {
 
   if (!initialRoute) return null;
 
+  const handleNavigationReady = async () => {
+    try {
+      const raw = await AsyncStorage.getItem('@dalasmart:pending_nav');
+      if (raw && navigationRef.current) {
+        const { screen, params } = JSON.parse(raw);
+        await AsyncStorage.removeItem('@dalasmart:pending_nav');
+        navigationRef.current.navigate(screen, params);
+      }
+    } catch (_) {
+      /* ignore pending nav errors */
+    }
+  };
+
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef} onReady={handleNavigationReady}>
       <StatusBar style="dark" />
       <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
         {/* Auth */}
