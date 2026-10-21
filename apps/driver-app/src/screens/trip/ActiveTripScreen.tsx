@@ -125,7 +125,7 @@ const ActiveTripScreen: React.FC<Props> = ({ navigation, route }) => {
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Trip Info Card */}
-      <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+      <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
         <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
           🚗 {t('activeTrip') || 'Active Trip'}
         </Text>
@@ -233,7 +233,7 @@ const ActiveTripScreen: React.FC<Props> = ({ navigation, route }) => {
         onRequestClose={() => setShowPaymentModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.surface }]}>
             <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
               💰 {t('collectPayment') || 'Collect Payment'}
             </Text>
