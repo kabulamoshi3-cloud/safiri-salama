@@ -1,0 +1,32 @@
+{
+  "project_type": "React Native (Expo) mobile apps + Express.js API gateway + PostgreSQL/CockroachDB",
+  "language": "TypeScript (all apps and gateway)",
+  "build_system": "npm; api-gateway uses tsc for build; apps use Expo (no native build needed for logic changes)",
+  "test_framework": "Jest (api-gateway: `npm test`); no test framework in apps",
+  "build_command": "cd services/api-gateway && npm run build  (tsc)",
+  "test_command": "cd services/api-gateway && npm test",
+  "verification_instructions": "1. Run `cd services/api-gateway && npm run build` — must emit zero TypeScript errors. 2. Run `npm test` in api-gateway — existing tests must pass. 3. Apply migration manually: `node scripts/migrate.js $DATABASE_URL`. 4. For apps, `cd apps/passenger-app && npx tsc --noEmit` and `cd apps/driver-app && npx tsc --noEmit`.",
+  "snapshot_or_generated_files": "services/api-gateway/dist/ — produced by `npm run build`. Not checked in.",
+  "environment_constraints": "API gateway deploys to Vercel serverless — no persistent WebSocket server. Real-time is implemented via polling (`setInterval` + REST) not native WebSockets. Do NOT add socket.io or ws server. The api-gateway has no socket.ts file. Driver location uses in-memory Map reset on cold-start; same pattern must be used for trip state notifications.",
+  "contribution_requirements": "Keep migrations additive (ALTER TABLE ADD COLUMN IF NOT EXISTS). Migration files are numbered sequentially; next is 012. Each migration is applied once via scripts/migrate.js. Source stays in src/, compiled to dist/.",
+  "key_patterns": "1. Routes use `pool.query` directly — no ORM. 2. Auth token decoded in middleware/auth.ts; `req.user.id` holds the caller's UUID and `req.user.type` holds 'passenger'|'driver'|'operator'|'admin'. 3. requireRole() imported from middleware/auth.ts (not rbac.ts) — use the one in auth.ts for per-route guards since it reads `req.user.type`. 4. Trips table: base columns in 001_base_schema.sql; payment columns added in 011_payments.sql; status currently uses 'pending'/'driver_assigned'/'driver_arriving'/'in_progress'/'completed'/'cancelled' strings (not a DB enum). 5. Passenger app: Expo, screens in apps/passenger-app/screens/, navigation in App.tsx (NativeStackNavigator). 6. Driver app (separate RN app): src/screens/main/ and src/screens/trip/; DriverAPI in src/services/api/DriverAPI.ts; APIClient in src/services/api/client.ts base URL = 'https://simon-daladala-api.vercel.app/api'. 7. Passenger app also has its own driver screens: DriverTripRequestScreen.tsx, DriverActiveTripScreen.tsx — these are the screens that WILL be changed. 8. State machine transitions broadcast to clients via polling endpoint (same pattern as tracking.ts). 9. Atomic accept: use FOR UPDATE SKIP LOCKED on the DB row to prevent two drivers accepting same trip.",
+  "relevant_files": [
+    "services/api-gateway/src/routes/trips.ts",
+    "services/api-gateway/src/routes/tracking.ts",
+    "services/api-gateway/src/routes/index.ts",
+    "services/api-gateway/src/middleware/auth.ts",
+    "services/api-gateway/src/index.ts",
+    "services/api-gateway/migrations/001_base_schema.sql",
+    "services/api-gateway/migrations/011_payments.sql",
+    "apps/passenger-app/screens/RideRequestScreen.tsx",
+    "apps/passenger-app/screens/TripActiveScreen.tsx",
+    "apps/passenger-app/screens/DriverTripRequestScreen.tsx",
+    "apps/passenger-app/screens/DriverActiveTripScreen.tsx",
+    "apps/passenger-app/App.tsx",
+    "apps/driver-app/src/screens/main/HomeScreen.tsx",
+    "apps/driver-app/src/screens/trip/ActiveTripScreen.tsx",
+    "apps/driver-app/src/services/api/DriverAPI.ts",
+    "apps/driver-app/src/services/api/client.ts"
+  ],
+  "directory_structure": "daladala/services/api-gateway/src/routes/ — one file per route group; daladala/services/api-gateway/migrations/ — numbered SQL files; daladala/apps/passenger-app/screens/ — all passenger AND passenger-side driver screens; daladala/apps/driver-app/src/ — separate full RN app with contexts, navigation, screens/main, screens/trip"
+}

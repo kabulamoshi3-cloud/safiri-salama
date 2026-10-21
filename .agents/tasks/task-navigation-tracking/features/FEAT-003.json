@@ -1,0 +1,24 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Driver app: create NavigationScreen (text-based turn-by-turn with live GPS reporting) and wire it into the navigation stack + ActiveTripScreen. Independent of FEAT-002. Depends on FEAT-001 backend endpoints.",
+  "status": "pending",
+  "steps": [
+    "CREATE apps/driver-app/src/screens/trip/NavigationScreen.tsx. Map-free screen (react-native-maps is NOT in the driver app package.json). Route params: { tripId, pickupCoords:{lat,lng}, destinationCoords:{lat,lng}, passengerName, fare }. Include helpers: haversineKm(lat1,lng1,lat2,lng2) and translateToSwahili(instruction) that replaces: 'turn left'→'Pinda kushoto', 'turn right'→'Pinda kulia', 'straight/continue'→'Endelea moja kwa moja', 'arrive/destination'→'Umefika', plus distance patterns N m→'baada ya mita N' and N km→'baada ya kilometa N'. On mount: (1) GET ${API_BASE}/tracking/route?trip_id=${tripId} to load steps[], fallback to [{instruction:'Endelea moja kwa moja hadi ufikie lengo', distance_m: haversine*1000}]. (2) Location.watchPositionAsync with accuracy BestForNavigation, timeInterval 5000: in callback POST /tracking/driver/location {lat,lng,bearing,speed,trip_id} with Bearer token from AsyncStorage; compute distanceRemainingKm and etaMinutes; set nearDestination when < 0.1 km; advance currentStepIndex using cumulative distance driven vs step distance_m sums. Add // TODO: expo-speech comment block. UI: dark #1a1a2e, top bar with back/title/fare, large turn banner (#16213e card) with arrow Text + translated instruction + distance, stats row (umbali/muda), passenger card, 'Nimefika' button (#00d46a) when nearDestination that POSTs /trips/${tripId}/complete then navigates to HomeMain. API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1' (do not use the hardcoded vercel DriverAPI client for tracking).",
+    "EDIT apps/driver-app/src/navigation/MainNavigator.tsx: add Navigation to HomeStackParamList with type { tripId:string; pickupCoords:{lat:number;lng:number}; destinationCoords:{lat:number;lng:number}; passengerName:string; fare:number }, import NavigationScreen, add HomeStack.Screen for Navigation inside HomeNavigator.",
+    "EDIT apps/driver-app/src/screens/trip/ActiveTripScreen.tsx: add useNavigation import (from '@react-navigation/native') typed as StackNavigationProp<HomeStackParamList, 'ActiveTrip'>. Replace the handleStartTrip Alert with navigation.navigate('Navigation', { tripId: trip.id, pickupCoords: {lat:-6.7924, lng:39.2083}, destinationCoords: {lat:-6.80, lng:39.28}, passengerName: trip.passengerName, fare: trip.fare }). Note: coords come from hardcoded defaults because ActiveTripScreen currently has no real coord state — this is acceptable since real coords will flow from trip acceptance in a future iteration. Import HomeStackParamList from '../../navigation/MainNavigator'.",
+    "Run cd apps/driver-app && npx tsc --noEmit and fix all TypeScript errors."
+  ],
+  "acceptance_criteria": [
+    "npx tsc --noEmit in apps/driver-app exits with 0 errors",
+    "NavigationScreen.tsx exists at apps/driver-app/src/screens/trip/NavigationScreen.tsx",
+    "HomeStackParamList in MainNavigator.tsx includes a Navigation entry with correct TypeScript types",
+    "ActiveTripScreen handleStartTrip navigates to Navigation screen instead of showing an Alert",
+    "GPS watchPositionAsync subscription is cleaned up on unmount (subscription.remove() in return cleanup)"
+  ],
+  "verification": [
+    "cd apps/driver-app && npx tsc --noEmit"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -1,0 +1,37 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Add SQL migration 012 and rewrite services/api-gateway/src/routes/trips.ts with the full state machine, atomic driver accept, and a polling endpoint for state change notifications.",
+  "status": "pending",
+  "steps": [
+    "1. Create services/api-gateway/migrations/012_trip_state_machine.sql. Add trip_state_logs table (id UUID PK, trip_id UUID FK trips(id) ON DELETE CASCADE, from_state VARCHAR(30), to_state VARCHAR(30) NOT NULL, actor_id UUID NOT NULL, actor_type VARCHAR(20) NOT NULL, note TEXT, created_at TIMESTAMP DEFAULT NOW()). Add indexes on trip_state_logs(trip_id) and trip_state_logs(created_at). ALTER TABLE trips ADD COLUMN IF NOT EXISTS arrived_at TIMESTAMP. ALTER TABLE trips ADD COLUMN IF NOT EXISTS driver_arriving_at TIMESTAMP. Rename the existing 'pending' default to 'REQUESTED' via UPDATE (only for safety — leave column type VARCHAR, do not add a DB enum, to stay consistent with existing nullable check approach). Insert comment block explaining the state machine.",
+    "2. Rewrite services/api-gateway/src/routes/trips.ts completely. Keep the existing Express Router pattern and pool.query style. Add a VALID_TRANSITIONS constant at the top: { REQUESTED: ['ACCEPTED','CANCELLED'], ACCEPTED: ['DRIVER_ARRIVING','CANCELLED'], DRIVER_ARRIVING: ['ARRIVED','CANCELLED'], ARRIVED: ['IN_PROGRESS'], IN_PROGRESS: ['COMPLETED'], COMPLETED: [], CANCELLED: [] }. Add a CANCEL_ALLOWED_BY constant: { passenger: ['REQUESTED','ACCEPTED'], driver: ['ACCEPTED','DRIVER_ARRIVING'] }.",
+    "3. Add helper function validateTransition(current: string, next: string): boolean that checks VALID_TRANSITIONS. Add helper async function logStateChange(tripId, fromState, toState, actorId, actorType, client) that inserts into trip_state_logs using the passed pg client (for use inside transactions).",
+    "4. Rewrite POST / (create trip): insert with status='REQUESTED' (not 'pending'). Keep all existing fields. After insert, call logStateChange inside the same query using pool (no transaction needed for creation). Return 201 with trip.",
+    "5. Add POST /:tripId/accept endpoint. This replaces the old PATCH assign-driver. Use a database transaction with SELECT ... FOR UPDATE SKIP LOCKED: BEGIN; SELECT id, status, driver_id FROM trips WHERE id=$1 AND status='REQUESTED' AND driver_id IS NULL FOR UPDATE SKIP LOCKED; if no row returned respond 409 'Trip no longer available'; UPDATE trips SET driver_id=$actor, status='ACCEPTED', accepted_at=NOW(), updated_at=NOW() WHERE id=$1; INSERT into trip_state_logs; COMMIT. Only role='driver' may call this (check req.user.type). Return 200 with trip.",
+    "6. Add POST /:tripId/driver-arriving endpoint. Driver calls this. Validates: current status must be ACCEPTED, caller must be the trip's driver_id. UPDATE trips SET status='DRIVER_ARRIVING', driver_arriving_at=NOW(), updated_at=NOW(). Log. Return 200.",
+    "7. Add POST /:tripId/arrived endpoint. Driver calls this. Validates: current status must be DRIVER_ARRIVING, caller must be driver_id. UPDATE trips SET status='ARRIVED', arrived_at=NOW(), updated_at=NOW(). Log. Return 200.",
+    "8. Add POST /:tripId/start endpoint. Driver calls this. Validates: current status must be ARRIVED, caller must be driver_id. UPDATE trips SET status='IN_PROGRESS', started_at=NOW() (add column if not exists — use ALTER in migration 012 too), updated_at=NOW(). Log. Return 200.",
+    "9. Rewrite PATCH /:tripId/complete → POST /:tripId/complete. Driver only. Validates status=IN_PROGRESS, caller=driver_id. UPDATE trips SET status='COMPLETED', completed_at=NOW(), final_fare=$1, updated_at=NOW(). Log. Return 200.",
+    "10. Rewrite PATCH /:tripId/cancel → POST /:tripId/cancel. Validate role-based cancellation: if req.user.type==='passenger' allow only from REQUESTED or ACCEPTED; if req.user.type==='driver' allow only from ACCEPTED or DRIVER_ARRIVING. Use transaction: SELECT FOR UPDATE, validate, UPDATE, log, COMMIT. Set cancelled_by=actorId, cancellation_reason, cancelled_at=NOW(). Return 200.",
+    "11. Add GET /:tripId/state endpoint (polling). Returns { trip_id, status, state_logs: [{from_state,to_state,actor_type,created_at}] } ordered by created_at DESC LIMIT 20. No role restriction beyond owning the trip (passenger_id or driver_id matches caller). This is the polling endpoint both apps use.",
+    "12. Add GET /available/nearby endpoint (existing logic, no change to SQL, just keep status='REQUESTED' filter instead of 'pending').",
+    "13. Keep existing GET / (trip history), GET /:tripId, and POST /:tripId/rate endpoints unchanged except normalize status filter strings to uppercase.",
+    "14. Remove the old PATCH /:tripId/status (generic status updater) — it bypasses the state machine.",
+    "15. Build: cd services/api-gateway && npm run build — must succeed with zero TypeScript errors."
+  ],
+  "acceptance_criteria": [
+    "Migration file 012_trip_state_machine.sql exists with trip_state_logs table and all ALTER TABLE statements.",
+    "`npm run build` in services/api-gateway emits zero TypeScript errors.",
+    "POST /v1/trips/:id/accept with two concurrent requests: only one succeeds (409 on the second).",
+    "POST /v1/trips/:id/cancel by a passenger on an IN_PROGRESS trip returns 400.",
+    "POST /v1/trips/:id/driver-arriving from a passenger returns 403.",
+    "GET /v1/trips/:id/state returns the correct status and state_logs array."
+  ],
+  "verification": [
+    "cd /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/services/api-gateway && npm run build",
+    "cd /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/services/api-gateway && npm test"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Backend: DB migration + ratings.ts route + earnings.ts route + trips.ts completion hook. This is the data and API foundation all UI features depend on.",
+  "status": "pending",
+  "steps": [
+    "1. Create /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/services/api-gateway/migrations/012_ratings_earnings.sql. The file must: (a) CREATE TABLE IF NOT EXISTS ratings with columns id UUID PK, trip_id UUID NOT NULL REFERENCES trips(id), rater_id UUID NOT NULL REFERENCES users(id), ratee_id UUID NOT NULL REFERENCES users(id), rating SMALLINT NOT NULL CHECK(rating BETWEEN 1 AND 5), review TEXT, created_at TIMESTAMP DEFAULT NOW(), UNIQUE(trip_id, rater_id). (b) CREATE TABLE IF NOT EXISTS driver_earnings with columns id UUID PK, driver_id UUID NOT NULL REFERENCES users(id), trip_id UUID UNIQUE REFERENCES trips(id), gross_amount BIGINT NOT NULL (TZS, no decimals), commission_amount BIGINT NOT NULL DEFAULT 0, net_amount BIGINT NOT NULL, payment_method VARCHAR(20), period_date DATE NOT NULL DEFAULT CURRENT_DATE, created_at TIMESTAMP DEFAULT NOW(). (c) CREATE INDEX IF NOT EXISTS idx_ratings_trip ON ratings(trip_id); CREATE INDEX IF NOT EXISTS idx_ratings_ratee ON ratings(ratee_id); CREATE INDEX IF NOT EXISTS idx_driver_earnings_driver ON driver_earnings(driver_id); CREATE INDEX IF NOT EXISTS idx_driver_earnings_period ON driver_earnings(driver_id, period_date).",
+
+    "2. Create /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/services/api-gateway/src/routes/ratings.ts. Import Router from express, pool from '../database/connection'. Export default router. Implement three endpoints: POST / (submit rating for a trip — body: { trip_id, ratee_id, rating, review }; auth required; validate trip is completed and caller is passenger or driver on that trip; insert into ratings; recalculate ratee average from ratings table and UPDATE users SET rating = avg WHERE id = ratee_id; return 201 { message, rating_id }). GET /my (get all ratings received by the authenticated user; query ratings JOIN trips; return { ratings[], average, count }). GET /drivers/:driverId/rating (public-ish: return driver average rating, total_count, and last 5 reviews from ratings table where ratee_id = driverId). Use (req as any).user?.id for userId in all authenticated endpoints.",
+
+    "3. Create /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/services/api-gateway/src/routes/earnings.ts. Import Router from express, pool from '../database/connection'. Export default router. Implement: GET /summary (auth required; return today, week, month, total, cash_collected, digital_payments, pending_payment counts — query driver_earnings where driver_id = userId and aggregate by period_date; also return trips_today, trips_week, trips_month counts from trips table). GET /history (auth required; query param period: 'today'|'week'|'month'|'all'; return array of { date, trip_id, gross_amount, commission_amount, net_amount, payment_method, passenger_name, pickup_address, dropoff_address } joined with trips and users; default limit 50). Use (req as any).user?.id for userId.",
+
+    "4. Modify /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/services/api-gateway/src/routes/trips.ts — in the PATCH /:tripId/complete handler, after the UPDATE trips SET status='completed'... query, add a subsequent INSERT INTO driver_earnings (id, driver_id, trip_id, gross_amount, commission_amount, net_amount, payment_method, period_date) VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, CURRENT_DATE) ON CONFLICT (trip_id) DO NOTHING. Compute commission_amount = ROUND(gross_amount * 0.15) and net_amount = gross_amount - commission_amount where gross_amount = final_fare cast to BIGINT. Wrap in the same try/catch — if earnings insert fails, log the error but do not roll back the trip completion (log-and-continue pattern matches existing code style).",
+
+    "5. Register the two new routes in /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/services/api-gateway/src/routes/index.ts. Add after the existing driver-incentives line: safeUse('/v1/ratings', () => require('./ratings')); safeUse('/v1/earnings', () => require('./earnings')); Also add 'ratings' and 'driver_earnings' to the features array in the GET /v1/status handler.",
+
+    "6. Add getEarningsSummary and getRatingStats methods to /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/apps/driver-app/src/services/api/DriverAPI.ts. The existing getEarnings() hits '/driver/earnings' (old mock endpoint). Add: static async getEarningsSummary(): Promise<EarningsSummary> { return APIClient.get<EarningsSummary>('/earnings/summary'); } static async getEarningsHistory(period?: string): Promise<any[]> { return APIClient.get<any[]>(`/earnings/history${period ? '?period=' + period : ''}`); } static async submitRating(payload: { trip_id: string; ratee_id: string; rating: number; review?: string }): Promise<void> { return APIClient.post<void>('/ratings', payload); } static async getDriverRating(driverId: string): Promise<{ average: number; count: number; reviews: any[] }> { return APIClient.get(`/ratings/drivers/${driverId}/rating`); } Keep the old getEarnings() method unchanged (it won't break existing callers); the new screens will use getEarningsSummary()."
+  ],
+  "acceptance_criteria": [
+    "Running `npm run typecheck` in services/api-gateway exits 0 with no type errors.",
+    "Running `npm test` in services/api-gateway passes all existing tests without regression.",
+    "File services/api-gateway/migrations/012_ratings_earnings.sql exists and is valid SQL (no syntax errors identifiable by inspection).",
+    "File services/api-gateway/src/routes/ratings.ts exports a default Router with POST /, GET /my, GET /drivers/:driverId/rating.",
+    "File services/api-gateway/src/routes/earnings.ts exports a default Router with GET /summary and GET /history.",
+    "services/api-gateway/src/routes/index.ts registers /v1/ratings and /v1/earnings via safeUse().",
+    "trips.ts PATCH /:tripId/complete inserts a driver_earnings row after completing the trip.",
+    "DriverAPI.ts has getEarningsSummary(), getEarningsHistory(period?), submitRating(), and getDriverRating() methods."
+  ],
+  "verification": [
+    "cd /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/services/api-gateway && npm run typecheck",
+    "cd /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/services/api-gateway && npm test"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -1,0 +1,10 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    "Admin refund skips split reversal — POST /admin/refund credits the payer's wallet but does not reverse payment_splits rows or deduct from the payee's wallet, leaving the payee with funds for a refunded transaction and creating a permanent reconciliation mismatch in the settlement report.",
+    "Dead transfer-fee code creates silent-charge risk — PLATFORM_FEE_RATES.transfer is 0.00, but the full fee computation path (fee, netAmount, platform split insert, net_received response field) is live. Setting the constant to non-zero activates a fee with no user disclosure and no test coverage catching it.",
+    "Webhook signature is plain-string bearer token, not HMAC — verifyWebhookSecret does provided === secret, which doesn't prevent replay attacks, body tampering, or cross-provider forgery. Per-provider HMAC-SHA256 over the raw request body (already documented inline) must replace this before production.",
+    "Unbounded pagination in /history — limit comes from req.query with no cap. A single request with limit=1000000 pulls the full user transaction table into Node memory. Enforce Math.min(Number(limit), 100)."
+  ],
+  "reviewDoc": "/run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/.agents/tasks/payments-review.md"
+}

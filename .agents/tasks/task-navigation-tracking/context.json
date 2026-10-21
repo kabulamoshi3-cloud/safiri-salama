@@ -1,0 +1,31 @@
+{
+  "project_type": "React Native / Expo 51 monorepo — two mobile apps + one Express/TypeScript API gateway",
+  "language": "TypeScript throughout",
+  "build_system": "Each app/service is standalone npm. No workspace tooling. Each must be compiled independently.",
+  "test_framework": "Backend: Jest (npm test in services/api-gateway). Mobile apps: no test runner configured — verification is TypeScript typecheck only.",
+  "build_command": "cd services/api-gateway && npm run build",
+  "test_command": "cd services/api-gateway && npm run typecheck   |   cd apps/passenger-app && npx tsc --noEmit   |   cd apps/driver-app && npx tsc --noEmit",
+  "verification_instructions": "1. Run `cd services/api-gateway && npm run typecheck` — must exit 0. 2. Run `cd apps/passenger-app && npx tsc --noEmit` — must exit 0. 3. Run `cd apps/driver-app && npx tsc --noEmit` — must exit 0. These are the only automated checks available without a device/emulator.",
+  "snapshot_or_generated_files": null,
+  "environment_constraints": "NO new npm packages may be installed. Use only what is already in each package.json. expo-speech is absent from both apps — voice directions must be a TODO stub. Driver app has NO react-native-maps — NavigationScreen must be map-free (text UI only).",
+  "contribution_requirements": "TypeScript: 0 errors in every file created or edited. Use process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1' for API base in passenger app. Use process.env.ORS_API_KEY ?? '' on the backend. Colors: #1a1a2e (dark bg), #00d46a (green), #ff3b30 (red), #ff9500 (orange). Swahili labels throughout. Bolt-inspired cards: borderRadius 12, dark backgrounds.",
+  "key_patterns": "Passenger app: screens import from '../components/AnimatedButton', use axios directly, StyleSheet.create at bottom, no separate src/ folder — screens live at apps/passenger-app/screens/. Driver app: screens live at apps/driver-app/src/screens/, use useTheme() + useTranslation() hooks, navigate via useNavigation<StackNavigationProp<HomeStackParamList>>(), API calls via DriverAPI class or direct fetch. Backend: every new route follows the pattern of existing handlers in tracking.ts — try/catch with mock fallback, in-memory Map for fast state, pool.query for persistence.",
+  "relevant_files": [
+    "apps/passenger-app/screens/RideRequestScreen.tsx",
+    "apps/passenger-app/screens/TripActiveScreen.tsx",
+    "apps/passenger-app/App.tsx",
+    "apps/passenger-app/package.json",
+    "apps/driver-app/src/screens/trip/ActiveTripScreen.tsx",
+    "apps/driver-app/src/navigation/MainNavigator.tsx",
+    "apps/driver-app/src/navigation/RootNavigator.tsx",
+    "apps/driver-app/src/contexts/LocationContext.tsx",
+    "apps/driver-app/src/services/api/client.ts",
+    "apps/driver-app/src/services/api/DriverAPI.ts",
+    "apps/driver-app/src/types/shared.ts",
+    "apps/driver-app/package.json",
+    "services/api-gateway/src/routes/tracking.ts",
+    "services/api-gateway/src/routes/index.ts",
+    "services/api-gateway/package.json"
+  ],
+  "directory_structure": "daladala/ ├── apps/ │   ├── passenger-app/  (screens/ components/ i18n.ts App.tsx — flat, no src/) │   └── driver-app/     (src/App.tsx src/screens/{auth,main,trip,profile}/ src/navigation/ src/contexts/ src/services/api/) └── services/ └── api-gateway/ (src/routes/ src/database/ src/middleware/ dist/)"
+}

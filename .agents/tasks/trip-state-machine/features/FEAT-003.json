@@ -1,0 +1,27 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Update the driver-app (apps/driver-app) to use the real state machine. HomeScreen polls for new REQUESTED trips and accepts them via the API. ActiveTripScreen drives the trip through DRIVER_ARRIVING→ARRIVED→IN_PROGRESS→COMPLETED. DriverAPI client methods already exist and map cleanly to the new endpoints. This feature depends on FEAT-001 (API endpoints) but is independent of FEAT-002 (passenger-app).",
+  "status": "pending",
+  "steps": [
+    "1. Update apps/driver-app/src/services/api/DriverAPI.ts: change acceptTrip() to POST /v1/trips/:tripId/accept (was /driver/trips/:tripId/accept); change declineTrip() to POST /v1/trips/:tripId/cancel with body { cancellation_reason: reason }; change arrivedAtPickup() to POST /v1/trips/:tripId/driver-arriving; add a new method driverArrived(tripId) that calls POST /v1/trips/:tripId/arrived; change startTrip() to POST /v1/trips/:tripId/start; change completeTrip(tripId, actualFare) to POST /v1/trips/:tripId/complete with body { final_fare: actualFare, payment_method: 'cash' }; change cancelTrip() to POST /v1/trips/:tripId/cancel with body { cancellation_reason: reason }; add getTripState(tripId) that calls GET /v1/trips/:tripId/state; update getTripRequests() to GET /v1/trips/available/nearby with query params latitude, longitude (pass last known location from LocationService or a default). Also update APIClient base URL to read from process.env or keep the vercel URL — no change needed there.",
+    "2. Update apps/driver-app/src/screens/main/HomeScreen.tsx: add a polling useEffect that calls DriverAPI.getTripRequests() every 8 seconds when driver status is 'available' (not when offline or on-trip). Replace the one-time loadData() call with this interval. When status changes to 'offline' or 'on-trip', clear the interval. handleAcceptTrip: call DriverAPI.acceptTrip(tripId) — already does this; on success navigate to ActiveTrip screen with the tripId. handleDeclineTrip: call DriverAPI.declineTrip(tripId) — already calls this; on success filter the trip from local list as before. Add a useEffect that checks for an active trip on mount (DriverAPI.getActiveTrip()) and if found immediately navigates to ActiveTrip — this handles the case where the app restarts mid-trip. Show a loading skeleton while the first poll is in flight.",
+    "3. Update apps/driver-app/src/screens/trip/ActiveTripScreen.tsx: replace the static hardcoded trip with real data. The screen receives tripId via route.params (already typed as { tripId: string } in HomeStackParamList). On mount, fetch GET /v1/trips/:tripId to load trip details (passenger name, pickup, destination, fare). Add a polling useEffect calling DriverAPI.getTripState(tripId) every 5 seconds; if server returns CANCELLED, show an Alert 'Passenger cancelled the trip' and navigate back to HomeMain. Map the trip's local status state to: 'accepted' (ACCEPTED/DRIVER_ARRIVING), 'arrived' (ARRIVED), 'in_progress' (IN_PROGRESS), 'completed' (COMPLETED). Replace handleStartTrip() to call DriverAPI.arrivedAtPickup(tripId) → transitions to DRIVER_ARRIVING; rename to handleDrivingToPickup for clarity but keep the same button label. Replace handleArrived() to call DriverAPI.driverArrived(tripId) → transitions to ARRIVED. Add handleStartTrip() that calls DriverAPI.startTrip(tripId) → transitions to IN_PROGRESS. Replace confirmPayment() logic to call DriverAPI.completeTrip(tripId, fare) → transitions to COMPLETED; on success navigate to HomeMain. Show the correct buttons based on current local status: ACCEPTED shows 'I've Arrived at Pickup'; ARRIVED shows 'Start Trip'; IN_PROGRESS shows 'Complete Trip'. Add elapsed timer only during IN_PROGRESS (already present, keep it). Add an SOS button that calls POST /v1/tracking/sos (existing endpoint if it exists, otherwise just fires an Alert). Update the status display to show the human-readable server state.",
+    "4. Type-check: cd apps/driver-app && npx tsc --noEmit — zero errors."
+  ],
+  "acceptance_criteria": [
+    "DriverAPI methods map to the correct v1/trips/:tripId/{action} endpoints.",
+    "HomeScreen polls for available trips every 8 seconds when driver is online.",
+    "HomeScreen navigates to ActiveTrip immediately if an active trip exists on mount.",
+    "ActiveTripScreen loads real trip data from server.",
+    "ActiveTripScreen shows the correct action button for each server state (ACCEPTED/DRIVER_ARRIVING/ARRIVED/IN_PROGRESS).",
+    "Completing a trip calls POST /v1/trips/:tripId/complete and navigates back to HomeMain.",
+    "If the server returns CANCELLED (passenger cancelled), the driver's screen shows an alert and returns home.",
+    "npx tsc --noEmit in apps/driver-app emits zero errors."
+  ],
+  "verification": [
+    "cd /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/apps/driver-app && npx tsc --noEmit"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -1,0 +1,26 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Update the passenger app screens to use the real state machine. RideRequestScreen creates a trip and gets a real tripId. TripActiveScreen polls GET /:tripId/state and maps server states to UI states. DriverTripRequestScreen and DriverActiveTripScreen (in passenger-app) wire up to the real API endpoints. This feature is independent of FEAT-003 (driver-app) — they target different apps.",
+  "status": "pending",
+  "steps": [
+    "1. In apps/passenger-app/screens/RideRequestScreen.tsx: change confirmRide() to call POST /api/v1/trips with the payload (pickup_latitude, pickup_longitude, pickup_address, dropoff_latitude, dropoff_longitude, dropoff_address, vehicle_type, estimated_fare, estimated_distance, estimated_duration, payment_method). Store the returned trip.id. Navigate to TripActive with the real tripId. Import AsyncStorage (already a dependency) to read the JWT token and add it as Authorization Bearer header via axios. Handle error with Alert. Keep all existing UI (map, autocomplete, vehicle picker, payment modal) unchanged.",
+    "2. In apps/passenger-app/screens/TripActiveScreen.tsx: replace the simulated setTimeout-based flow with a real polling loop. Add a useEffect that calls GET /api/v1/trips/:tripId/state every 4 seconds when status is not 'completed' or 'cancelled'. Map server states to local TripStatus type: REQUESTED→'searching', ACCEPTED→'accepted', DRIVER_ARRIVING→'arriving', ARRIVED→'arriving' (keep same UI state for both), IN_PROGRESS→'in_progress', COMPLETED→'completed', CANCELLED→'cancelled'. When status transitions to ACCEPTED or later, extract driver info from the trip response (fetch GET /api/v1/trips/:tripId for full driver object) and populate driver state. Cancel button: wire to POST /api/v1/trips/:tripId/cancel only when status is 'searching' (REQUESTED) or 'accepted' (ACCEPTED). On cancel success call navigation.goBack(). Show error Alert if cancel rejected (e.g., 400 from server). Keep the simulation fallback (hasTripId check) for the no-tripId case, but never call it when a real tripId is provided. Clear the polling interval on unmount.",
+    "3. In apps/passenger-app/screens/DriverTripRequestScreen.tsx: replace the hardcoded trip object with a real prop or route param tripId. The screen receives a tripId via route.params.tripId. On mount, fetch GET /api/v1/trips/:tripId to load trip details (pickup address, dropoff address, estimated fare, estimated distance, estimated duration, passenger name). Display real data instead of hardcoded strings. acceptTrip() calls POST /api/v1/trips/:tripId/accept; on success navigate to DriverActiveTrip with the tripId. rejectTrip() calls POST /api/v1/trips/:tripId/cancel (driver cancellation) with reason 'Rejected by driver'; on success navigation.goBack(). Keep the 30-second countdown timer and vibration. Show ActivityIndicator during API calls. Read JWT from AsyncStorage and attach as Bearer header.",
+    "4. In apps/passenger-app/screens/DriverActiveTripScreen.tsx: rewrite advanceStatus() to call the correct API endpoints instead of just setting local state. going_pickup → I've Arrived: calls POST /api/v1/trips/:tripId/arrived. arrived → Start Trip: calls POST /api/v1/trips/:tripId/start. trip_started → Complete Trip: calls POST /api/v1/trips/:tripId/complete with { payment_method: 'cash', final_fare: trip.fare }. Each call uses AsyncStorage JWT as Bearer token. On API error, show Alert. Add a polling useEffect (every 5s) calling GET /api/v1/trips/:tripId/state so that if the passenger cancels, the driver's screen reflects CANCELLED state (redirect back to home). Pass tripId and trip object via route.params.",
+    "5. Type-check: cd apps/passenger-app && npx tsc --noEmit — zero errors."
+  ],
+  "acceptance_criteria": [
+    "RideRequestScreen creates a real trip on the server when 'Tafuta Dereva' is pressed and navigates to TripActive with a non-null tripId.",
+    "TripActiveScreen polls /state and advances through UI states as the server state changes.",
+    "Cancel button on TripActiveScreen calls POST /cancel and returns to previous screen on success; is absent when status is IN_PROGRESS or later.",
+    "DriverTripRequestScreen loads real trip data from server and calls POST /accept or POST /cancel correctly.",
+    "DriverActiveTripScreen advances trip through driver_arriving→arrived→in_progress→completed by calling the correct endpoints.",
+    "npx tsc --noEmit in apps/passenger-app emits zero errors."
+  ],
+  "verification": [
+    "cd /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/apps/passenger-app && npx tsc --noEmit"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

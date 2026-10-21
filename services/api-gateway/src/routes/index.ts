@@ -21,6 +21,7 @@ function safeUse(path: string, importFn: () => any) {
 safeUse('/v1/auth',              () => require('./auth'));
 safeUse('/v1/trips',             () => require('./trips'));
 safeUse('/v1/drivers',           () => require('./drivers'));
+safeUse('/v1/admin',             () => require('./admin'));
 
 // ── Business Features ─────────────────────────────────────
 safeUse('/v1/promo',             () => require('./promoCode'));

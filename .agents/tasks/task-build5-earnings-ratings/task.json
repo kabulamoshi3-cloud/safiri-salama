@@ -1,0 +1,7 @@
+{
+  "task_id": "task-build5-earnings-ratings",
+  "task_description": "Build 5 — Driver Earnings + Rating System: DB migration, backend routes (ratings.ts, earnings.ts, trips.ts completion hook), passenger RatingScreen, driver EarningsScreen + RatePassengerScreen, both App.tsx registrations, and live driver rating display in TripActiveScreen and driver ProfileScreen.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

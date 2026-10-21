@@ -1,0 +1,7 @@
+{
+  "task_id": "task-trip-state-machine",
+  "task_description": "Implement a proper ride-hailing trip lifecycle state machine across the API gateway (trips.ts, new migration 012), passenger app (RideRequestScreen, TripActiveScreen), and driver apps (DriverTripRequestScreen, DriverActiveTripScreen in passenger-app; HomeScreen, ActiveTripScreen in driver-app). States: REQUESTED→ACCEPTED→DRIVER_ARRIVING→ARRIVED→IN_PROGRESS→COMPLETED (or CANCELLED per role rules). All transitions validated server-side with atomic DB lock for driver acceptance.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

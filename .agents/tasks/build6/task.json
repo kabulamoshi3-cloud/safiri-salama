@@ -1,0 +1,7 @@
+{
+  "task_id": "task-tests-and-docs",
+  "task_description": "Write automated Jest+supertest tests for the DalaSmart API gateway covering auth, trips, payments, and tracking routes (with DB and external service mocks), then create comprehensive project documentation: .env.example, SETUP.md, and an extended root README.md.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}

@@ -1,0 +1,26 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Passenger-app: wire up the RatingScreen to the real API and add the RatePassengerScreen concept as a driver screen. Also display real driver rating in TripActiveScreen. Independent of FEAT-003 (driver-app UI); depends on FEAT-001 for the API endpoints to exist.",
+  "status": "pending",
+  "steps": [
+    "1. Rewrite /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/apps/passenger-app/screens/RatingScreen.tsx. Currently it is a stub that calls Alert instead of hitting the API. Replace the submitRating function body with an actual axios.post to `${API_BASE}/ratings` with body { trip_id: route.params.tripId, ratee_id: route.params.driver.id, rating, review: comment }. Show an ActivityIndicator while submitting; on success navigate to Main (popToTop). On error show Alert('Failed to submit rating'). Keep all existing UI (stars, tip buttons, comment input) exactly as-is — only the submit action changes. Add const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1' and import axios from 'axios'. The route.params type must accept tipId, driver.id, and tripId (add these to the destructure: const { driver, fare, pickup, destination, tripId } = route.params). No other visual changes.",
+
+    "2. Update /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/apps/passenger-app/screens/TripActiveScreen.tsx to display the real driver rating fetched from the API. The driver card already shows `⭐ {driver.rating}` using state. In the fetchDriverInfo function (which already runs when hasTripId is true), extend the GET /tracking/trip/:tripId response handling to also GET /ratings/drivers/:driverId/rating and update driver.rating from the response. Add a new state: const [driverRating, setDriverRating] = useState<number>(0). After fetchDriverInfo resolves and sets driver.name/plate from the tracking endpoint, fire a second axios.get to `${API_BASE}/ratings/drivers/${driverIdFromTrip}/rating` and setDriverRating(res.data.average). Replace the hardcoded `driver.rating` display in the driverCard with `driverRating || driver.rating` so it falls back gracefully. This is a minimal addition — do not refactor existing logic.",
+
+    "3. The passenger-app/App.tsx already registers RatingScreen as 'Rating' and EarningsScreen as 'Earnings' — no new screen registrations are needed for the passenger app. However, confirm that the 'Rating' screen entry accepts the new tripId param by checking that no TypeScript errors are introduced. The Stack.Screen definition for Rating does not need to change since it uses a typeless any navigator pattern.",
+
+    "4. The passenger-app/screens/EarningsScreen.tsx is currently a stub imported into App.tsx (registered as 'Earnings' in the driver-side screens section). This screen is visible to drivers using the passenger app (the DriverMain flow). Replace its stub content with a real data-fetching version: import axios, AsyncStorage, and use API_BASE. On mount, GET /earnings/summary with Bearer token from AsyncStorage '@dalasmart:token'. Display today's net earnings, week net, trips_today, trips_week in the existing card layout. Add a period selector (Today / Week / Month) matching the driver-app EarningsScreen style but using the simpler StyleSheet pattern from the passenger-app (no ThemeContext, no icons library — use plain Text emoji icons). Add a history list showing the last 10 rows from GET /earnings/history. Show a 'Withdraw' button (non-functional placeholder that shows Alert 'Coming soon') at the bottom. This replaces the hardcoded zeros without adding new dependencies."
+  ],
+  "acceptance_criteria": [
+    "RatingScreen.tsx posts to /api/v1/ratings on submit and navigates to Main on success.",
+    "TripActiveScreen.tsx fetches driver rating from /ratings/drivers/:driverId/rating and displays it alongside driver name.",
+    "passenger-app/screens/EarningsScreen.tsx fetches real data from /earnings/summary and /earnings/history with auth token.",
+    "No new npm packages are introduced in the passenger-app."
+  ],
+  "verification": [
+    "cd /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/apps/passenger-app && npx tsc --noEmit 2>&1 | head -40"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

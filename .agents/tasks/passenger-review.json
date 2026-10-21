@@ -1,0 +1,12 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    "Duplicate StyleSheet keys overwrite dark-theme styles — `trafficBtn`, `driverMarker`, `driverCardName`, `driverCardPlate`, `bookBtn`, `bookBtnText` are each defined twice in MainScreen's StyleSheet.create. The second (light-theme) definition silently wins, breaking the #1a1a2e accent requirement. Remove the duplicate block starting after the second `// Driver marker` comment.",
+    "Elapsed timer interval leaks on unmount — TripActiveScreen's in_progress elapsed counter uses a bare setInterval not stored in a ref. Store in a useRef<ReturnType<typeof setInterval> | null> and clear in the effect cleanup, consistent with trackingRef.",
+    "Driver rating always 0 in live-trip path — setDriver is only called in the simulation branch. Live trips never populate driver.name, driver.plate, or driver.rating. Fetch from GET /tracking/trip/:tripId on mount in the live path to populate the driver card.",
+    "TrafficScreen hardcodes production API URL — `const API = 'https://simon-daladala-api.vercel.app/api/v1'` bypasses EXPO_PUBLIC_API_URL. Change to `process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1'`.",
+    "any types where shapes are known — navigation: any on all three screens, row: any in the nearby-drivers DB result map, nearby: any[] in GET /tracking/nearby. Define inline or named types for DB row shapes.",
+    "GET /tracking/nearby returns 500 on DB error — unlike the three new endpoints, this endpoint does not fall back to mock data on DB failure. Not called by the current frontend, but inconsistent with the pattern in this file."
+  ],
+  "reviewDoc": "/run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/.agents/tasks/passenger-review.md"
+}

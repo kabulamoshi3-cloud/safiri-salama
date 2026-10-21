@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Backend: add POST /tracking/calculate-route (ORS routing + fare), POST /tracking/driver/location alias, and GET /tracking/route to services/api-gateway/src/routes/tracking.ts. These endpoints are the dependency for both FEAT-002 and FEAT-003.",
+  "status": "completed",
+  "steps": [
+    "Open services/api-gateway/src/routes/tracking.ts. At the top of the file add an interface RouteResult { distance_km: number; duration_minutes: number; fare_tzs: number; polyline_coords: [number, number][]; steps: { instruction: string; distance_m: number }[]; is_estimate: boolean; } and a module-level Map: const routeStore = new Map<string, RouteResult>();",
+
+    "Add POST /calculate-route handler (after the existing /driver/offline route). Body: { from_lat: number; from_lng: number; to_lat: number; to_lng: number; trip_id?: string }. Logic: (a) attempt ORS call — POST https://api.openrouteservice.org/v2/directions/driving-car/geojson with Authorization header 'Bearer ' + (process.env.ORS_API_KEY ?? ''), body { coordinates: [[from_lng, from_lat], [to_lng, to_lat]] }. Use axios (already imported at top of the gateway — if not, add: import axios from 'axios' — axios is in package.json). Parse response: distance_km = summary.distance / 1000, duration_minutes = summary.duration / 60, polyline_coords = segments[0].points.coordinates mapped to [lat, lng] (flip ORS [lng,lat]→[lat,lng]), steps = segments[0].steps[] mapped to { instruction: step.instruction, distance_m: step.distance }. (b) On any error or missing ORS key: fall back to straight-line: distance_km = haversine(from_lat, from_lng, to_lat, to_lng), duration_minutes = distance_km / 30 * 60 (30 km/h average), polyline_coords = [[from_lat, from_lng], [to_lat, to_lng]], steps = [{ instruction: 'Endelea moja kwa moja hadi ufikie lengo', distance_m: distance_km * 1000 }], is_estimate = true. (c) fare_tzs = Math.max(3000, Math.round(2000 + distance_km * 500 + duration_minutes * 50)). (d) If trip_id provided, store result in routeStore.set(trip_id, result). (e) Return 200 JSON result. No auth required (passengers call this before trip is created).",
+
+    "Add GET /route handler. Query param: trip_id. Look up routeStore.get(trip_id). If found return 200 JSON. If not found return 404 { error: 'Route not found' }.",
+
+    "Add POST /driver/location handler as an alias: reads { lat, lng, bearing, speed, trip_id } from body, maps to { latitude: lat, longitude: lng, heading: bearing, speed } and calls the same in-memory driverLocations.set(userId, ...) + pool.query UPDATE as the existing /driver/update handler. Requires auth (same userId = (req as any).user?.userId pattern).",
+
+    "Run cd services/api-gateway && npm run typecheck and fix any TypeScript errors before committing."
+  ],
+  "acceptance_criteria": [
+    "npm run typecheck in services/api-gateway exits with 0 errors",
+    "POST /tracking/calculate-route with valid coords returns JSON containing distance_km, duration_minutes, fare_tzs (>= 3000), polyline_coords (array of [lat,lng] pairs), steps array, and is_estimate boolean",
+    "When ORS_API_KEY is empty string, the endpoint falls back and returns is_estimate: true with a 2-point polyline",
+    "GET /tracking/route?trip_id=X returns the route stored by a prior POST /calculate-route call with trip_id=X",
+    "POST /tracking/driver/location accepts { lat, lng, bearing, speed, trip_id } without TypeScript errors"
+  ],
+  "verification": [
+    "cd services/api-gateway && npm run typecheck"
+  ],
+  "blocked_reason": null,
+  "findings": "Three new endpoints added to services/api-gateway/src/routes/tracking.ts: POST /calculate-route (ORS with straight-line fallback, stores result by trip_id), GET /route?trip_id=X (retrieves stored RouteResult), POST /driver/location (alias for /driver/update accepting {lat,lng,bearing,speed,trip_id}). A top-level haversineKm() helper was added and the duplicate local haversine() inside /nearby-drivers was removed. RouteResult interface and routeStore Map are at module scope — FEAT-002 (passenger app) and FEAT-003 (driver app) can rely on these endpoints being present. The 9 pre-existing TypeScript errors in rbac.ts and validation.ts are unrelated to this feature and existed before this change."
+}

@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Driver-app: wire up EarningsScreen to real API, add RatePassengerScreen, update ActiveTripScreen to navigate to RatePassengerScreen on completion, and show live driver rating in ProfileScreen and HomeScreen. Independent of FEAT-002 (passenger-app UI); depends on FEAT-001 for the API methods on DriverAPI.ts.",
+  "status": "pending",
+  "steps": [
+    "1. Rewrite /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/apps/driver-app/src/screens/main/EarningsScreen.tsx. Currently it calls DriverAPI.getEarnings() which hits '/driver/earnings' (a non-existent endpoint on the gateway). Replace the DriverAPI.getEarnings() call with DriverAPI.getEarningsSummary() (added in FEAT-001 step 6) which hits '/earnings/summary'. Keep the same UI component structure (period selector, breakdown card, summary card) and the same ThemeContext/useTranslation pattern. Add a history section below the existing 'All Time' card: fetch DriverAPI.getEarningsHistory(selectedPeriod) when selectedPeriod changes; render a FlatList of EarningsHistoryItem rows showing date, passenger name, net amount, payment method. Add a 'Withdraw Earnings' TouchableOpacity button at the bottom (placeholder: Alert 'Withdrawal coming soon — contact support'). No new npm packages.",
+
+    "2. Create /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/apps/driver-app/src/screens/trip/RatePassengerScreen.tsx. This is a new file. It receives navigation params: { tripId: string; passengerId: string; passengerName: string; fare: number }. It shows: title 'Rate Passenger', passenger name with initial avatar, 5 interactive star buttons (same pattern as passenger-app RatingScreen — TouchableOpacity per star), an optional comment TextInput, and a 'Submit Rating' button. On submit call DriverAPI.submitRating({ trip_id, ratee_id: passengerId, rating, review: comment }) then navigate back to Home tab (navigation.reset to Main root or navigation.navigate('HomeMain')). On error show Alert. Style with useTheme() following the existing trip screen pattern (see ActiveTripScreen.tsx for reference).",
+
+    "3. Update /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/apps/driver-app/src/screens/trip/ActiveTripScreen.tsx. When trip status becomes 'completed' (inside the confirmPayment / handlePaymentConfirm flow where setTrip({ ...trip, status: 'completed' }) is called), instead of just dismissing the modal, navigate to RatePassengerScreen with params { tripId: route.params.tripId, passengerId: route.params.passengerId ?? '', passengerName: trip.passengerName, fare: trip.fare }. Add passengerId to HomeStackParamList['ActiveTrip'] as optional string. The navigation call should be navigation.navigate('RatePassenger', {...}) — add RatePassenger to HomeStackParamList.",
+
+    "4. Register RatePassengerScreen in /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/apps/driver-app/src/navigation/MainNavigator.tsx. Add 'RatePassenger' to HomeStackParamList type: { tripId: string; passengerId: string; passengerName: string; fare: number }. Import RatePassengerScreen from '../screens/trip/RatePassengerScreen'. Add a HomeStack.Screen for 'RatePassenger' component={RatePassengerScreen} with options={{ title: 'Rate Passenger' }}.",
+
+    "5. Update /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/apps/driver-app/src/screens/main/ProfileScreen.tsx to display the driver's rating. Add a useEffect on mount that calls DriverAPI.getDriverRating(user?.id ?? '') (using getDriverRating added in FEAT-001 step 6) and stores result in local state driverRating. In the profileHeader section, below the phone number, add a row showing '⭐ {driverRating.average.toFixed(1)} ({driverRating.count} ratings)' — only rendered if count > 0. Keep all existing layout and styling intact.",
+
+    "6. Update /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/apps/driver-app/src/screens/main/HomeScreen.tsx to show today's earnings from the new API. The loadData function already calls DriverAPI.getEarnings() and sets setTodayEarnings(earnings.today). Change that call to DriverAPI.getEarningsSummary() — the EarningsSummary interface has the same shape so no other changes needed. Also fetch driver rating: call DriverAPI.getDriverRating(user?.id) after loadData and display it in the home screen header card (the card that shows todayEarnings). Add a small '⭐ X.X' badge next to the driver name or status label. Requires importing useAuth to get user.id — add const { user } = useAuth()."
+  ],
+  "acceptance_criteria": [
+    "driver-app EarningsScreen loads data from /earnings/summary (getEarningsSummary) and shows history from /earnings/history.",
+    "RatePassengerScreen.tsx exists in src/screens/trip/, compiles without errors, submits to /ratings via DriverAPI.submitRating.",
+    "ActiveTripScreen navigates to RatePassengerScreen on trip completion instead of staying on a completed screen.",
+    "RatePassenger is registered in HomeStackParamList and HomeNavigator.",
+    "ProfileScreen shows driver rating fetched from DriverAPI.getDriverRating.",
+    "HomeScreen uses getEarningsSummary() instead of getEarnings()."
+  ],
+  "verification": [
+    "cd /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/apps/driver-app && npx tsc --noEmit 2>&1 | head -40"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
