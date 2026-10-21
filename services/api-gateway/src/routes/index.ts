@@ -35,6 +35,14 @@ safeUse('/v1/food',              () => require('./foodDelivery'));
 // ── New Features ──────────────────────────────────────────
 safeUse('/v1/tracking',          () => require('./tracking'));
 safeUse('/v1/notifications',     () => require('./notifications'));
+safeUse('/v1/ratings',           () => require('./ratings'));
+safeUse('/v1/earnings',          () => require('./earnings'));
+safeUse('/v1/payments',          () => require('./payments'));
+safeUse('/v1/shop',              () => require('./shopDelivery'));
+safeUse('/v1/advertising',       () => require('./advertising'));
+safeUse('/v1/money',             () => require('./moneyTransfer'));
+safeUse('/v1/insurance',         () => require('./insurance'));
+safeUse('/v1/university',        () => require('./universityMarket'));
 safeUse('/v1/upload',            () => require('./upload'));
 safeUse('/v1/maps',              () => require('./maps'));
 safeUse('/v1/chat',              () => require('./chat'));
@@ -49,9 +57,10 @@ router.get('/v1/status', (_req, res) => {
     timestamp: new Date().toISOString(),
     version: '2.0.0',
     features: [
-      'auth', 'trips', 'drivers', 'promo', 'referral',
-      'tracking', 'notifications', 'upload', 'maps',
-      'chat', 'pricing', 'features', 'otp',
+      'auth', 'trips', 'drivers', 'admin', 'promo', 'referral',
+      'tracking', 'notifications', 'ratings', 'earnings', 'payments',
+      'upload', 'maps', 'chat', 'pricing', 'features', 'otp',
+      'shop', 'advertising', 'money', 'insurance', 'university',
     ],
   });
 });
