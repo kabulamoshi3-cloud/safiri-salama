@@ -19,6 +19,7 @@ import {
   TripStateLogRow,
   TRANSITIONS,
 } from './trips.types';
+import { sendPushNotification } from './notifications';
 
 const router = Router();
 
@@ -40,6 +41,16 @@ interface TransitionOpts {
   note?: string;
   /** Extra columns to SET in the trips row, e.g. { final_fare, cancelled_by } */
   extraCols?: Record<string, unknown>;
+  /**
+   * Pre-conditions evaluated INSIDE the transaction after the row is locked.
+   * Each entry is checked before the transition fires; if the check fails,
+   * the transaction is rolled back and the error thrown.
+   */
+  preconditions?: Array<{
+    test: (trip: TripRow) => boolean;
+    statusCode: number;
+    message: string;
+  }>;
 }
 
 interface TransitionResult {
@@ -126,6 +137,16 @@ async function transitionTrip(
       throw err;
     }
 
+    // Evaluate caller-supplied pre-conditions (checked inside the lock)
+    for (const cond of opts.preconditions ?? []) {
+      if (!cond.test(trip)) {
+        await client.query('ROLLBACK');
+        const err = new Error(cond.message) as any;
+        err.statusCode = cond.statusCode;
+        throw err;
+      }
+    }
+
     // Build SET clause
     const setCols: string[] = ['status = $1', 'updated_at = NOW()'];
     const setVals: unknown[] = [toState];
@@ -210,7 +231,8 @@ router.get('/available/nearby', async (req: AuthRequest, res: Response) => {
 
     const lat = parseFloat(latitude as string);
     const lng = parseFloat(longitude as string);
-    const rad = parseFloat(radius as string) || 5;
+    // Cap radius at 50 km to prevent full-table scans (finding: unbounded radius)
+    const rad = Math.min(parseFloat(radius as string) || 5, 50);
 
     // Haversine-filtered REQUESTED trips created within the last 2 minutes
     const result = await pool.query(
@@ -237,6 +259,8 @@ router.get('/available/nearby', async (req: AuthRequest, res: Response) => {
       WHERE t.status = 'REQUESTED'
         AND t.driver_id IS NULL
         AND t.created_at > NOW() - INTERVAL '2 minutes'
+        AND t.pickup_latitude  IS NOT NULL
+        AND t.pickup_longitude IS NOT NULL
         AND (
           6371 * acos(
             cos(radians($1)) * cos(radians(t.pickup_latitude)) *
@@ -429,6 +453,25 @@ router.post('/', async (req: AuthRequest, res: Response) => {
         pickup_longitude,
       });
 
+      // Notify up to 5 available drivers with push tokens (fire-and-forget)
+      pool.query(
+        `SELECT u.id
+         FROM drivers d
+         JOIN users u ON u.id = d.user_id
+         WHERE d.status = 'available'
+           AND u.push_token IS NOT NULL
+         LIMIT 5`
+      ).then(async (driverRes) => {
+        for (const row of driverRes.rows) {
+          sendPushNotification(
+            row.id,
+            'Ombi Jipya la Safari 🔔',
+            'Kuna ombi jipya la safari karibu nawe',
+            { type: 'new_trip_request', tripId: newTrip.id }
+          ).catch(() => {});
+        }
+      }).catch(() => {});
+
       return res.status(201).json({
         message: 'Trip created successfully',
         trip: newTrip,
@@ -440,6 +483,12 @@ router.post('/', async (req: AuthRequest, res: Response) => {
       client.release();
     }
   } catch (error) {
+    // Unique partial index violation: passenger already has an active trip
+    // (catches the race where two concurrent requests both pass the FOR UPDATE
+    //  check because there are no rows yet to lock)
+    if ((error as any)?.code === '23505') {
+      return res.status(409).json({ error: 'You already have an active trip' });
+    }
     console.error('Create trip error:', error);
     res.status(500).json({ error: 'Failed to create trip' });
   }
@@ -571,6 +620,9 @@ router.patch('/:tripId/accept', async (req: AuthRequest, res: Response) => {
 
     await notifyTrackingService('trip:accepted', { tripId, driverId: userId });
 
+    // Notify passenger that a driver has accepted (fire-and-forget)
+    sendPushNotification(trip.passenger_id, 'Dereva Amekubali 🚗', 'Dereva amekubali ombi lako la safari', { type: 'driver_assigned', tripId }).catch(() => {});
+
     res.json({ message: 'Trip accepted', trip, log });
   } catch (err) {
     // 409 for concurrent accept race — return Swahili error as spec requires
@@ -603,6 +655,9 @@ router.patch('/:tripId/driver-arriving', async (req: AuthRequest, res: Response)
     );
 
     await notifyTrackingService('trip:driver_arriving', { tripId });
+
+    // Notify passenger that driver is arriving (fire-and-forget)
+    sendPushNotification(trip.passenger_id, 'Dereva Amefika Karibu 📍', 'Dereva wako anakuja karibu nawe', { type: 'driver_arriving', tripId }).catch(() => {});
 
     res.json({ message: 'Driver arriving', trip, log });
   } catch (err) {
@@ -697,6 +752,9 @@ router.patch('/:tripId/complete', async (req: AuthRequest, res: Response) => {
 
     await notifyTrackingService('trip:completed', { tripId, final_fare });
 
+    // Notify passenger that trip is complete (fire-and-forget)
+    sendPushNotification(trip.passenger_id, 'Safari Imekamilika 🎉', 'Safari yako imekamilika. Asante kwa kutumia DalaSmart!', { type: 'trip_completed', tripId }).catch(() => {});
+
     res.json({ message: 'Trip completed successfully', trip, log });
   } catch (err) {
     sendTransitionError(res, err);
@@ -714,35 +772,32 @@ router.patch('/:tripId/cancel', async (req: AuthRequest, res: Response) => {
     }
 
     const { cancellation_reason } = req.body;
+    const actorType = req.user!.type;
 
-    // ARRIVED → CANCELLED requires a reason (driver no-show scenario)
-    // Check the current trip status first to enforce this requirement
-    if (req.user!.type === 'driver') {
-      const statusCheck = await pool.query<{ status: string }>(
-        'SELECT status FROM trips WHERE id = $1',
-        [tripId]
-      );
-      if (statusCheck.rows.length > 0 && statusCheck.rows[0].status === 'ARRIVED') {
-        if (!cancellation_reason || (cancellation_reason as string).trim() === '') {
-          return res.status(400).json({
-            error: 'Sababu ya kufuta inahitajika (e.g. "Abiria hakuwepo")',
-            message: 'Cancellation reason is required when cancelling after arriving at pickup',
-          });
-        }
-      }
-    }
+    // ARRIVED → CANCELLED requires a reason (driver no-show scenario).
+    // This check runs INSIDE the transaction (via preconditions) so there is no
+    // TOCTOU window between reading the status and performing the transition.
+    const preconditions = actorType === 'driver'
+      ? [{
+          test: (t: TripRow) =>
+            t.status !== 'ARRIVED' ||
+            (typeof cancellation_reason === 'string' && cancellation_reason.trim() !== ''),
+          statusCode: 400,
+          message: 'Sababu ya kufuta inahitajika (e.g. "Abiria hakuwepo")',
+        }]
+      : [];
 
     const { trip, log } = await transitionTrip(
       tripId,
       'CANCELLED',
-      { id: userId, type: req.user!.type },
+      { id: userId, type: actorType },
       {
         note: cancellation_reason ?? undefined,
         extraCols: {
           cancelled_by: userId,
           ...(cancellation_reason != null && { cancellation_reason }),
-          // cancelled_at is set via timestampCol: 'cancelled_at' in TRANSITIONS (uses DB NOW())
         },
+        preconditions,
       }
     );
 
