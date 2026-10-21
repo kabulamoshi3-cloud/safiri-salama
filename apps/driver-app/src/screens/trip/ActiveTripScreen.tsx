@@ -81,7 +81,13 @@ const ActiveTripScreen: React.FC<Props> = ({ navigation, route }) => {
           onPress: () => {
             setTrip({ ...trip, status: 'completed' });
             setShowPaymentModal(false);
-            // TODO: Send to backend API
+            // Navigate to rate passenger screen
+            navigation.replace('RatePassenger', {
+              tripId: route.params.tripId,
+              passengerId: (trip as any).passenger_id ?? (trip as any).passengerId ?? '',
+              passengerName: route.params.passenger_name ?? trip.passengerName,
+              fare: route.params.fare ?? trip.fare,
+            });
           },
         },
       ]

@@ -93,7 +93,7 @@ export class DriverAPI {
   }
 
   static async getEarnings(): Promise<EarningsSummary> {
-    return APIClient.get<EarningsSummary>('/driver/earnings');
+    return APIClient.get<EarningsSummary>('/earnings/summary');
   }
 
   static async getEarningsHistory(

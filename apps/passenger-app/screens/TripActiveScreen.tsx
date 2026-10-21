@@ -193,7 +193,7 @@ export default function TripActiveScreen({ route, navigation }: any) {
   useEffect(() => {
     if (status === 'completed') {
       setTimeout(() => {
-        navigation.replace('Rating', { driver, fare, pickup, destination });
+        navigation.replace('Rating', { driver, fare, pickup, destination, tripId, driverId: (driver as any)?.id ?? null });
       }, 1500);
     }
   }, [status]);

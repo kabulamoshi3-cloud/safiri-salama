@@ -806,6 +806,23 @@ router.patch('/:tripId/complete', async (req: AuthRequest, res: Response) => {
     // Notify passenger that trip is complete (fire-and-forget)
     sendPushNotification(trip.passenger_id, 'Safari Imekamilika 🎉', 'Safari yako imekamilika. Asante kwa kutumia DalaSmart!', { type: 'trip_completed', tripId }).catch(() => {});
 
+    // Insert driver earnings row (fire-and-forget — never block trip completion)
+    const grossFare = trip.final_fare ?? trip.estimated_fare ?? 0;
+    pool.query(
+      `INSERT INTO driver_earnings
+         (driver_id, trip_id, gross_amount, commission_amount, net_amount, payment_method, period_date)
+       VALUES ($1, $2, $3, $4, $5, $6, CURRENT_DATE)
+       ON CONFLICT (trip_id) DO NOTHING`,
+      [
+        userId,
+        tripId,
+        grossFare,
+        Math.round(grossFare * 0.15),
+        Math.round(grossFare * 0.85),
+        trip.payment_method ?? 'cash',
+      ]
+    ).catch((err: any) => console.error('[trips] earnings insert error:', err));
+
     res.json({ message: 'Trip completed successfully', trip, log });
   } catch (err) {
     sendTransitionError(res, err);

@@ -13,6 +13,7 @@ import ProfileScreen from '../screens/main/ProfileScreen';
 import TripDetailsScreen from '../screens/trip/TripDetailsScreen';
 import ActiveTripScreen from '../screens/trip/ActiveTripScreen';
 import NavigationScreen from '../screens/trip/NavigationScreen';
+import RatePassengerScreen from '../screens/trip/RatePassengerScreen';
 import VehicleInfoScreen from '../screens/profile/VehicleInfoScreen';
 import SettingsScreen from '../screens/profile/SettingsScreen';
 
@@ -42,6 +43,12 @@ export type HomeStackParamList = {
     destination_lat: number;
     destination_lng: number;
     passenger_name: string;
+    fare: number;
+  };
+  RatePassenger: {
+    tripId: string;
+    passengerId: string;
+    passengerName: string;
     fare: number;
   };
 };
@@ -77,6 +84,11 @@ const HomeNavigator: React.FC = () => {
       <HomeStack.Screen
         name="Navigation"
         component={NavigationScreen}
+        options={{ headerShown: false }}
+      />
+      <HomeStack.Screen
+        name="RatePassenger"
+        component={RatePassengerScreen}
         options={{ headerShown: false }}
       />
     </HomeStack.Navigator>
