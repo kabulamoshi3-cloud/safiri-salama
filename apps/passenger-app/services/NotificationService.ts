@@ -83,16 +83,18 @@ export function setupNotificationHandlers(): void {
   try {
     Notifications.addNotificationResponseReceivedListener(async (response: any) => {
       const data = response?.notification?.request?.content?.data ?? {};
-      if (!data.trip_id) return;
+      // Server sends tripId (camelCase); fall back to trip_id for older payloads
+      const resolvedTripId: string | undefined = data.tripId ?? data.trip_id;
+      if (!resolvedTripId) return;
 
       let pendingNav: { screen: string; params: Record<string, unknown> };
 
       if (data.type === 'trip_completed') {
         // Completed trip → go to Rating screen
-        pendingNav = { screen: 'Rating', params: { tripId: data.trip_id } };
+        pendingNav = { screen: 'Rating', params: { tripId: resolvedTripId } };
       } else {
         // trip_accepted, driver_arriving, new_request, etc. → go to active trip
-        pendingNav = { screen: 'TripActive', params: { tripId: data.trip_id } };
+        pendingNav = { screen: 'TripActive', params: { tripId: resolvedTripId } };
       }
 
       await AsyncStorage.setItem(PENDING_NAV_KEY, JSON.stringify(pendingNav));

@@ -49,6 +49,7 @@ router.get('/history', async (req: Request, res: Response) => {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const { limit = 50, offset = 0 } = req.query;
+    const safeLim = Math.min(Number(limit), 200);
 
     const result = await pool.query(
       `SELECT
@@ -61,13 +62,13 @@ router.get('/history', async (req: Request, res: Response) => {
        WHERE de.driver_id = $1
        ORDER BY de.created_at DESC
        LIMIT $2 OFFSET $3`,
-      [userId, Number(limit), Number(offset)]
+      [userId, safeLim, Number(offset)]
     );
 
     res.json({
       history: result.rows,
       count:   result.rows.length,
-      limit:   Number(limit),
+      limit:   safeLim,
       offset:  Number(offset),
     });
   } catch (error) {
