@@ -11,12 +11,50 @@ const router = Router();
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
 
 /**
+ * POST /api/v1/notifications/push-token
+ * Upsert a device push token for the authenticated user.
+ */
+router.post('/push-token', async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    const { token, platform } = req.body;
+
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!token) return res.status(400).json({ error: 'token required' });
+
+    const plat: string = platform || 'android';
+
+    // Upsert into user_push_tokens
+    await pool.query(
+      `INSERT INTO user_push_tokens (user_id, token, platform)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (token) DO UPDATE
+         SET user_id    = EXCLUDED.user_id,
+             platform   = EXCLUDED.platform,
+             updated_at = NOW()`,
+      [userId, token, plat]
+    );
+
+    // Also keep users.push_token in sync
+    await pool.query(
+      `UPDATE users SET push_token = $1, device_platform = $2 WHERE id = $3`,
+      [token, plat, userId]
+    );
+
+    res.json({ status: 'ok', token, platform: plat });
+  } catch (error) {
+    console.error('Push token upsert error:', error);
+    res.status(500).json({ error: 'Failed to save push token' });
+  }
+});
+
+/**
  * POST /api/v1/notifications/register
  * Register device push token
  */
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.userId;
+    const userId = (req as any).user?.id;
     const { pushToken, platform } = req.body;
 
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });

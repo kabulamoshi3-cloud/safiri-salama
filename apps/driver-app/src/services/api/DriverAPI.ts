@@ -97,12 +97,10 @@ export class DriverAPI {
   }
 
   static async getEarningsHistory(
-    startDate: Date,
-    endDate: Date
+    limit: number = 20,
+    offset: number = 0
   ): Promise<any[]> {
-    return APIClient.get<any[]>(
-      `/driver/earnings/history?start=${startDate.toISOString()}&end=${endDate.toISOString()}`
-    );
+    return APIClient.get<any[]>(`/earnings/history?limit=${limit}&offset=${offset}`);
   }
 }
 

@@ -10,7 +10,7 @@ const router = Router();
 
 router.get('/summary', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.userId;
+    const userId = (req as any).user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const result = await pool.query(
@@ -45,7 +45,7 @@ router.get('/summary', async (req: Request, res: Response) => {
 
 router.get('/history', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.userId;
+    const userId = (req as any).user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const { limit = 50, offset = 0 } = req.query;

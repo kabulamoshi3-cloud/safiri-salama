@@ -817,8 +817,8 @@ router.patch('/:tripId/complete', async (req: AuthRequest, res: Response) => {
         userId,
         tripId,
         grossFare,
-        Math.round(grossFare * 0.15),
-        Math.round(grossFare * 0.85),
+        Math.round(grossFare * 0.20),
+        Math.round(grossFare * 0.80),
         trip.payment_method ?? 'cash',
       ]
     ).catch((err: any) => console.error('[trips] earnings insert error:', err));
@@ -886,112 +886,12 @@ router.patch('/:tripId/status', (_req, res: Response) => {
   });
 });
 
-// ── POST /:tripId/rate — Rate trip ────────────────────────────────────────────
-router.post('/:tripId/rate', async (req: AuthRequest, res: Response) => {
-  try {
-    const { tripId } = req.params;
-    const { rating, review } = req.body;
-    const userId = req.user?.id;
-
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    if (!rating || rating < 1 || rating > 5) {
-      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
-    }
-
-    const checkResult = await pool.query(
-      'SELECT passenger_id, driver_id, status, passenger_rating, driver_rating FROM trips WHERE id = $1',
-      [tripId]
-    );
-
-    if (checkResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Trip not found' });
-    }
-
-    const trip = checkResult.rows[0];
-    if (trip.status !== 'COMPLETED') {
-      return res.status(400).json({ error: 'Can only rate completed trips' });
-    }
-
-    if (trip.passenger_id !== userId && trip.driver_id !== userId) {
-      return res.status(403).json({ error: 'Not authorized to rate this trip' });
-    }
-
-    const isPassenger = trip.passenger_id === userId;
-
-    // Prevent silent overwrite of an existing rating (finding: duplicate-rating-no-guard).
-    // Return 409 if this user has already submitted a rating for this trip.
-    if (isPassenger && checkResult.rows[0].passenger_rating != null) {
-      return res.status(409).json({ error: 'You have already rated this trip' });
-    }
-    if (!isPassenger && checkResult.rows[0].driver_rating != null) {
-      return res.status(409).json({ error: 'You have already rated this trip' });
-    }
-
-    if (isPassenger) {
-      const ratingClient = await pool.connect();
-      try {
-        await ratingClient.query('BEGIN');
-        await ratingClient.query(
-          `UPDATE trips SET passenger_rating = $1, passenger_review = $2, updated_at = NOW()
-           WHERE id = $3`,
-          [rating, review ?? null, tripId]
-        );
-        // Recalculate driver's average rating inside the same transaction so
-        // the user.rating column is always consistent with the trips rows.
-        await ratingClient.query(
-          `UPDATE users
-           SET rating = (
-             SELECT AVG(passenger_rating)
-             FROM trips
-             WHERE driver_id = $1 AND passenger_rating IS NOT NULL
-           )
-           WHERE id = $1`,
-          [trip.driver_id]
-        );
-        await ratingClient.query('COMMIT');
-      } catch (txErr) {
-        try { await ratingClient.query('ROLLBACK'); } catch (_) { /* ignore */ }
-        throw txErr;
-      } finally {
-        ratingClient.release();
-      }
-    } else {
-      const ratingClient = await pool.connect();
-      try {
-        await ratingClient.query('BEGIN');
-        await ratingClient.query(
-          `UPDATE trips SET driver_rating = $1, driver_review = $2, updated_at = NOW()
-           WHERE id = $3`,
-          [rating, review ?? null, tripId]
-        );
-        // Recalculate passenger's average rating inside the same transaction.
-        await ratingClient.query(
-          `UPDATE users
-           SET rating = (
-             SELECT AVG(driver_rating)
-             FROM trips
-             WHERE passenger_id = $1 AND driver_rating IS NOT NULL
-           )
-           WHERE id = $1`,
-          [trip.passenger_id]
-        );
-        await ratingClient.query('COMMIT');
-      } catch (txErr) {
-        try { await ratingClient.query('ROLLBACK'); } catch (_) { /* ignore */ }
-        throw txErr;
-      } finally {
-        ratingClient.release();
-      }
-    }
-
-    res.json({ message: 'Rating submitted successfully' });
-  } catch (error) {
-    console.error('Rate trip error:', error);
-    res.status(500).json({ error: 'Failed to rate trip' });
-  }
+// ── POST /:tripId/rate — DEPRECATED: use POST /v1/ratings instead ─────────────
+router.post('/:tripId/rate', (_req, res: Response) => {
+  res.status(410).json({
+    error: 'ENDPOINT_REMOVED',
+    message: 'Use POST /v1/ratings instead. See ratings.ts route.',
+  });
 });
 
 export default router;

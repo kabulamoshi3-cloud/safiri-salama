@@ -11,7 +11,7 @@ const router = Router();
 
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.userId;
+    const userId = (req as any).user?.id;
     const { trip_id, ratee_id, rating, review } = req.body;
 
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
@@ -80,7 +80,7 @@ router.post('/', async (req: Request, res: Response) => {
 
 router.get('/my', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.userId;
+    const userId = (req as any).user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const result = await pool.query(
