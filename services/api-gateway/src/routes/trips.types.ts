@@ -73,18 +73,19 @@ export interface AllowedTransition {
 export const TRANSITIONS: Record<TripStatus, AllowedTransition[]> = {
   REQUESTED: [
     { to: 'ACCEPTED',        actor: 'driver',    timestampCol: 'accepted_at' },
-    { to: 'CANCELLED',       actor: 'any' },
+    { to: 'CANCELLED',       actor: 'any',       timestampCol: 'cancelled_at' },
   ],
   ACCEPTED: [
     { to: 'DRIVER_ARRIVING', actor: 'driver',    timestampCol: 'driver_arriving_at' },
-    { to: 'CANCELLED',       actor: 'any' },
+    { to: 'CANCELLED',       actor: 'any',       timestampCol: 'cancelled_at' },
   ],
   DRIVER_ARRIVING: [
     { to: 'ARRIVED',         actor: 'driver',    timestampCol: 'arrived_at' },
-    { to: 'CANCELLED',       actor: 'driver' },
+    { to: 'CANCELLED',       actor: 'driver',    timestampCol: 'cancelled_at' },
   ],
   ARRIVED: [
     { to: 'IN_PROGRESS',     actor: 'driver',    timestampCol: 'started_at' },
+    { to: 'CANCELLED',       actor: 'driver',    timestampCol: 'cancelled_at' },
   ],
   IN_PROGRESS: [
     { to: 'COMPLETED',       actor: 'driver',    timestampCol: 'completed_at' },

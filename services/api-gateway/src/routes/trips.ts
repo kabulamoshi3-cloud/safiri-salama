@@ -266,6 +266,18 @@ router.get('/', async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    // Validate status against known TripStatus values
+    const VALID_STATUSES = new Set<string>([
+      'REQUESTED', 'ACCEPTED', 'DRIVER_ARRIVING', 'ARRIVED',
+      'IN_PROGRESS', 'COMPLETED', 'CANCELLED',
+    ]);
+    if (status && !VALID_STATUSES.has(status as string)) {
+      return res.status(400).json({
+        error: 'Invalid status value',
+        valid_values: Array.from(VALID_STATUSES),
+      });
+    }
+
     let query = `
       SELECT
         t.*,
@@ -349,26 +361,30 @@ router.post('/', async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Prevent passenger from having multiple active trips
-    const activeCheck = await pool.query(
-      `SELECT id FROM trips
-       WHERE passenger_id = $1
-         AND status IN ('REQUESTED','ACCEPTED','DRIVER_ARRIVING','ARRIVED','IN_PROGRESS')
-       LIMIT 1`,
-      [userId]
-    );
-
-    if (activeCheck.rows.length > 0) {
-      return res.status(409).json({
-        error: 'You already have an active trip',
-        active_trip_id: activeCheck.rows[0].id,
-      });
-    }
-
-    // Create trip + initial state log in one transaction
+    // Create trip + initial state log in one transaction.
+    // The active-trip guard runs INSIDE the transaction with FOR UPDATE to prevent
+    // a TOCTOU race where two concurrent requests both pass the check and both insert.
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
+
+      // Lock any existing active trip rows for this passenger to prevent concurrent inserts
+      const activeCheck = await client.query(
+        `SELECT id FROM trips
+         WHERE passenger_id = $1
+           AND status IN ('REQUESTED','ACCEPTED','DRIVER_ARRIVING','ARRIVED','IN_PROGRESS')
+         LIMIT 1
+         FOR UPDATE`,
+        [userId]
+      );
+
+      if (activeCheck.rows.length > 0) {
+        await client.query('ROLLBACK');
+        return res.status(409).json({
+          error: 'You already have an active trip',
+          active_trip_id: activeCheck.rows[0].id,
+        });
+      }
 
       const tripRes = await client.query<TripRow>(
         `INSERT INTO trips (
@@ -699,6 +715,23 @@ router.patch('/:tripId/cancel', async (req: AuthRequest, res: Response) => {
 
     const { cancellation_reason } = req.body;
 
+    // ARRIVED → CANCELLED requires a reason (driver no-show scenario)
+    // Check the current trip status first to enforce this requirement
+    if (req.user!.type === 'driver') {
+      const statusCheck = await pool.query<{ status: string }>(
+        'SELECT status FROM trips WHERE id = $1',
+        [tripId]
+      );
+      if (statusCheck.rows.length > 0 && statusCheck.rows[0].status === 'ARRIVED') {
+        if (!cancellation_reason || (cancellation_reason as string).trim() === '') {
+          return res.status(400).json({
+            error: 'Sababu ya kufuta inahitajika (e.g. "Abiria hakuwepo")',
+            message: 'Cancellation reason is required when cancelling after arriving at pickup',
+          });
+        }
+      }
+    }
+
     const { trip, log } = await transitionTrip(
       tripId,
       'CANCELLED',
@@ -708,7 +741,7 @@ router.patch('/:tripId/cancel', async (req: AuthRequest, res: Response) => {
         extraCols: {
           cancelled_by: userId,
           ...(cancellation_reason != null && { cancellation_reason }),
-          cancelled_at: new Date(), // belt-and-suspenders; timestampCol also sets it
+          // cancelled_at is set via timestampCol: 'cancelled_at' in TRANSITIONS (uses DB NOW())
         },
       }
     );
