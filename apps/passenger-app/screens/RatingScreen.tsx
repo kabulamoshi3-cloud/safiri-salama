@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, TextInput, Alert,
+  View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -8,23 +8,54 @@ import axios from 'axios';
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
 
 export default function RatingScreen({ route, navigation }: any) {
-  const { driver, fare, pickup, destination, tripId, driverId } = route.params;
+  const { driver: driverParam, fare, pickup, destination, tripId, driverId: driverIdParam } = route.params ?? {};
   const [rating, setRating] = useState(5);
   const [tip, setTip] = useState(0);
   const [comment, setComment] = useState('');
 
+  // When navigated from a push notification tap, only tripId is available.
+  // Fetch the trip to resolve the driver identity so the rating POST can proceed.
+  const [resolvedDriver, setResolvedDriver] = useState<{ id: string; name?: string; plate?: string } | null>(
+    driverIdParam ? { id: driverIdParam, ...driverParam } : driverParam ?? null
+  );
+  const [fetching, setFetching] = useState(false);
+
+  useEffect(() => {
+    if (resolvedDriver?.id) return; // already have what we need
+    if (!tripId) return;
+
+    setFetching(true);
+    (async () => {
+      try {
+        const token = await AsyncStorage.getItem('@dalasmart:token');
+        const resp = await axios.get(`${API_BASE}/trips/${tripId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const tripData = resp.data;
+        const d = tripData.driver;
+        if (d?.id) {
+          setResolvedDriver({ id: d.id, name: d.name, plate: d.vehicle?.plate });
+        }
+      } catch (err) {
+        console.warn('[RatingScreen] failed to fetch trip for driver id:', err);
+      } finally {
+        setFetching(false);
+      }
+    })();
+  }, [tripId]);
+
   const submitRating = async () => {
     try {
       const token = await AsyncStorage.getItem('@dalasmart:token');
-      const rateeId = driverId ?? driver?.id ?? null;
-      if (tripId && rateeId) {
+      // ratee_id is no longer sent — the server derives it from the trip.
+      if (tripId) {
         await axios.post(
           `${API_BASE}/ratings`,
-          { trip_id: tripId, ratee_id: rateeId, rating, review: comment || null },
+          { trip_id: tripId, rating, review: comment || null },
           { headers: { Authorization: `Bearer ${token}` } }
         );
       }
-      Alert.alert('Asante! 🌟', `Umempa ${driver?.name ?? 'dereva'} nyota ${rating}`, [
+      Alert.alert('Asante! 🌟', `Umempa ${resolvedDriver?.name ?? 'dereva'} nyota ${rating}`, [
         { text: 'Sawa', onPress: () => navigation.popToTop() },
       ]);
     } catch {
@@ -32,26 +63,43 @@ export default function RatingScreen({ route, navigation }: any) {
     }
   };
 
+  const displayFare = fare ?? null;
+  const displayPickup = pickup ?? null;
+  const displayDestination = destination ?? null;
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.checkmark}>✅</Text>
         <Text style={styles.title}>Safari Imekamilika</Text>
-        <Text style={styles.route}>{pickup} → {destination}</Text>
-        <Text style={styles.fare}>Sh {fare?.toLocaleString()}</Text>
+        {displayPickup && displayDestination
+          ? <Text style={styles.route}>{displayPickup} → {displayDestination}</Text>
+          : null}
+        {displayFare != null
+          ? <Text style={styles.fare}>Sh {displayFare?.toLocaleString()}</Text>
+          : null}
       </View>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Kadirisha dereva wako</Text>
-        <View style={styles.driverRow}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{(driver?.name ?? 'D').charAt(0)}</Text>
+
+        {fetching ? (
+          <ActivityIndicator size="small" color="#00d46a" style={{ marginBottom: 16 }} />
+        ) : (
+          <View style={styles.driverRow}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>
+                {(resolvedDriver?.name ?? 'D').charAt(0)}
+              </Text>
+            </View>
+            <View>
+              <Text style={styles.driverName}>{resolvedDriver?.name ?? 'Dereva'}</Text>
+              {resolvedDriver?.plate
+                ? <Text style={styles.driverPlate}>{resolvedDriver.plate}</Text>
+                : null}
+            </View>
           </View>
-          <View>
-            <Text style={styles.driverName}>{driver?.name ?? 'Dereva'}</Text>
-            {driver?.plate ? <Text style={styles.driverPlate}>{driver.plate}</Text> : null}
-          </View>
-        </View>
+        )}
 
         {/* Stars */}
         <View style={styles.starsRow}>
@@ -90,7 +138,7 @@ export default function RatingScreen({ route, navigation }: any) {
           multiline
         />
 
-        <TouchableOpacity style={styles.submitBtn} onPress={submitRating}>
+        <TouchableOpacity style={styles.submitBtn} onPress={submitRating} disabled={fetching}>
           <Text style={styles.submitText}>Wasilisha</Text>
         </TouchableOpacity>
 

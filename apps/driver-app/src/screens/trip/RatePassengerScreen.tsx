@@ -28,9 +28,10 @@ const RatePassengerScreen: React.FC<Props> = ({ navigation, route }) => {
   const submitRating = async () => {
     try {
       const token = await AsyncStorage.getItem('@dalasmart:token');
+      // ratee_id is omitted — the server derives it from the trip via JWT role.
       await axios.post(
         `${API_BASE}/ratings`,
-        { trip_id: tripId, ratee_id: passengerId, rating, review: comment || null },
+        { trip_id: tripId, rating, review: comment || null },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       navigation.reset({ index: 0, routes: [{ name: 'HomeMain' }] });
