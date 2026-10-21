@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Linking,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import axios from 'axios';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
@@ -26,6 +26,17 @@ interface Driver {
   phone: string;
 }
 
+// Haversine distance in km
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 export default function TripActiveScreen({ route, navigation }: any) {
   const { pickup, destination, vehicle, fare, paymentMethod } = route.params;
   const tripId: string = route.params?.tripId ?? 'mock-trip-1';
@@ -41,8 +52,54 @@ export default function TripActiveScreen({ route, navigation }: any) {
     longitudeDelta: 0.02,
   });
 
+  // Polyline state
+  const [polylineCoords, setPolylineCoords] = useState<Array<{ latitude: number; longitude: number }>>(
+    []
+  );
+
+  // Driver marker snapped to polyline
+  const [driverPolylineIndex, setDriverPolylineIndex] = useState(0);
+
+  // ETA in minutes (computed from distance remaining)
+  const [etaMinutes, setEtaMinutes] = useState<number | null>(null);
+
   const trackingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasTripId = route.params?.tripId !== undefined;
+
+  // Destination coords from params
+  const destLat: number | null = route.params?.to_lat ?? null;
+  const destLng: number | null = route.params?.to_lng ?? null;
+
+  // Pickup coords from params (may not exist)
+  const pickupLat: number | null = route.params?.pickupCoords?.lat ?? null;
+  const pickupLng: number | null = route.params?.pickupCoords?.lng ?? null;
+
+  // Fetch route on mount if destination coords available and polyline is empty
+  useEffect(() => {
+    if (destLat !== null && destLng !== null && polylineCoords.length === 0) {
+      const fromLat = pickupLat ?? region.latitude;
+      const fromLng = pickupLng ?? region.longitude;
+      axios
+        .post(`${API_BASE}/tracking/calculate-route`, {
+          from_lat: fromLat,
+          from_lng: fromLng,
+          to_lat: destLat,
+          to_lng: destLng,
+        })
+        .then((res) => {
+          const coords: Array<[number, number]> = res.data?.polyline_coords ?? [];
+          if (coords.length > 0) {
+            setPolylineCoords(
+              coords.map(([lat, lng]) => ({ latitude: lat, longitude: lng }))
+            );
+          }
+        })
+        .catch(() => {
+          // silently ignore, map will still show pickup/destination markers
+        });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Simulated flow — only when no real tripId provided
   useEffect(() => {
@@ -77,6 +134,28 @@ export default function TripActiveScreen({ route, navigation }: any) {
           );
           const loc = response.data;
           setDriverLocation(loc);
+
+          // Snap driver marker to polyline
+          if (polylineCoords.length > 0) {
+            let closestIdx = 0;
+            let closestDist = Infinity;
+            polylineCoords.forEach((pt, idx) => {
+              const d = haversineKm(loc.lat, loc.lng, pt.latitude, pt.longitude);
+              if (d < closestDist) {
+                closestDist = d;
+                closestIdx = idx;
+              }
+            });
+            setDriverPolylineIndex(closestIdx);
+          }
+
+          // Update ETA based on distance to destination
+          if (destLat !== null && destLng !== null) {
+            const distKm = haversineKm(loc.lat, loc.lng, destLat, destLng);
+            const eta = Math.max(1, Math.round((distKm / 30) * 60));
+            setEtaMinutes(eta);
+          }
+
           setRegion({
             latitude: loc.lat,
             longitude: loc.lng,
@@ -100,7 +179,7 @@ export default function TripActiveScreen({ route, navigation }: any) {
     return () => {
       if (trackingRef.current) clearInterval(trackingRef.current);
     };
-  }, [status, hasTripId, tripId]);
+  }, [status, hasTripId, tripId, polylineCoords]);
 
   // Elapsed timer during in_progress
   useEffect(() => {
@@ -149,6 +228,16 @@ export default function TripActiveScreen({ route, navigation }: any) {
 
   const ui = getStatusUI();
 
+  // Compute driver marker coordinate — snapped to polyline if available
+  const driverMarkerCoord = driverLocation
+    ? polylineCoords.length > 0
+      ? { latitude: polylineCoords[driverPolylineIndex].latitude, longitude: polylineCoords[driverPolylineIndex].longitude }
+      : { latitude: driverLocation.lat, longitude: driverLocation.lng }
+    : null;
+
+  // ETA display: prefer computed etaMinutes, fall back to server value
+  const displayEta = etaMinutes ?? driverLocation?.eta_minutes ?? null;
+
   return (
     <View style={styles.container}>
       {/* Map area */}
@@ -163,26 +252,41 @@ export default function TripActiveScreen({ route, navigation }: any) {
             showsUserLocation
             showsMyLocationButton={false}
           >
+            {/* Route polyline */}
+            {polylineCoords.length > 0 && (
+              <Polyline
+                coordinates={polylineCoords}
+                strokeColor="#00d46a"
+                strokeWidth={4}
+              />
+            )}
+
             {/* Pickup marker */}
             <Marker
-              coordinate={{ latitude: region.latitude - 0.005, longitude: region.longitude - 0.005 }}
+              coordinate={
+                pickupLat !== null && pickupLng !== null
+                  ? { latitude: pickupLat, longitude: pickupLng }
+                  : { latitude: region.latitude - 0.005, longitude: region.longitude - 0.005 }
+              }
               anchor={{ x: 0.5, y: 0.5 }}
             >
               <Text style={{ fontSize: 20 }}>📍</Text>
             </Marker>
 
             {/* Destination marker */}
-            <Marker
-              coordinate={{ latitude: region.latitude + 0.005, longitude: region.longitude + 0.005 }}
-              anchor={{ x: 0.5, y: 0.5 }}
-            >
-              <Text style={{ fontSize: 20 }}>🏁</Text>
-            </Marker>
-
-            {/* Live driver marker */}
-            {driverLocation !== null && (
+            {destLat !== null && destLng !== null && (
               <Marker
-                coordinate={{ latitude: driverLocation.lat, longitude: driverLocation.lng }}
+                coordinate={{ latitude: destLat, longitude: destLng }}
+                anchor={{ x: 0.5, y: 0.5 }}
+              >
+                <Text style={{ fontSize: 20 }}>🏁</Text>
+              </Marker>
+            )}
+
+            {/* Live driver marker — snapped to polyline */}
+            {driverMarkerCoord !== null && (
+              <Marker
+                coordinate={driverMarkerCoord}
                 anchor={{ x: 0.5, y: 0.5 }}
               >
                 <Text style={{ fontSize: 24 }}>🚕</Text>
@@ -192,9 +296,9 @@ export default function TripActiveScreen({ route, navigation }: any) {
         )}
 
         {/* ETA overlay */}
-        {driverLocation !== null && (
+        {displayEta !== null && (
           <View style={styles.etaOverlay}>
-            <Text style={styles.etaText}>Unafika dakika {driverLocation.eta_minutes}</Text>
+            <Text style={styles.etaText}>Dakika {displayEta} zimesalia</Text>
           </View>
         )}
       </View>

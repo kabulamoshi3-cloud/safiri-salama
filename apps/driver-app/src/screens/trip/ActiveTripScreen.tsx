@@ -9,8 +9,11 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RouteProp } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
+import { HomeStackParamList } from '../../navigation/MainNavigator';
 
 interface Trip {
   id: string;
@@ -23,7 +26,15 @@ interface Trip {
   status: 'in_progress' | 'completed';
 }
 
-const ActiveTripScreen: React.FC = () => {
+type ActiveTripScreenNavigationProp = StackNavigationProp<HomeStackParamList, 'ActiveTrip'>;
+type ActiveTripScreenRouteProp = RouteProp<HomeStackParamList, 'ActiveTrip'>;
+
+interface Props {
+  navigation: ActiveTripScreenNavigationProp;
+  route: ActiveTripScreenRouteProp;
+}
+
+const ActiveTripScreen: React.FC<Props> = ({ navigation, route }) => {
   const { theme } = useTheme();
   const { t } = useTranslation();
   
@@ -78,10 +89,15 @@ const ActiveTripScreen: React.FC = () => {
   };
 
   const handleStartTrip = () => {
-    Alert.alert(
-      t('tripStarted') || 'Trip Started',
-      t('navigateToDestination') || 'Navigate to destination'
-    );
+    navigation.navigate('Navigation', {
+      tripId: route.params.tripId,
+      pickup_lat: route.params.pickup_lat ?? 0,
+      pickup_lng: route.params.pickup_lng ?? 0,
+      destination_lat: route.params.destination_lat ?? 0,
+      destination_lng: route.params.destination_lng ?? 0,
+      passenger_name: route.params.passenger_name ?? trip.passengerName,
+      fare: route.params.fare ?? trip.fare,
+    });
   };
 
   const handleArrived = () => {
@@ -189,7 +205,7 @@ const ActiveTripScreen: React.FC = () => {
           style={[styles.button, styles.primaryButton, { backgroundColor: theme.colors.primary }]}
           onPress={handleStartTrip}
         >
-          <Text style={styles.buttonText}>🚀 {t('startTrip') || 'Start Trip'}</Text>
+          <Text style={styles.buttonText}>🧭 {t('startTrip') || 'Anza Safari / Nenda'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity

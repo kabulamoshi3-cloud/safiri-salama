@@ -60,7 +60,15 @@ const HomeScreen: React.FC = () => {
     setIsLoading(true);
     try {
       const activeTrip = await DriverAPI.acceptTrip(tripId);
-      navigation.navigate('ActiveTrip', { tripId: activeTrip.id });
+      navigation.navigate('ActiveTrip', {
+        tripId: activeTrip.id,
+        pickup_lat: activeTrip.pickup?.lat ?? 0,
+        pickup_lng: activeTrip.pickup?.lng ?? 0,
+        destination_lat: activeTrip.destination?.lat ?? 0,
+        destination_lng: activeTrip.destination?.lng ?? 0,
+        passenger_name: activeTrip.passengerName ?? '',
+        fare: activeTrip.fare ?? 0,
+      });
     } catch (error) {
       Alert.alert(t('common.error'), 'Failed to accept trip');
     } finally {

@@ -12,6 +12,7 @@ import EarningsScreen from '../screens/main/EarningsScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
 import TripDetailsScreen from '../screens/trip/TripDetailsScreen';
 import ActiveTripScreen from '../screens/trip/ActiveTripScreen';
+import NavigationScreen from '../screens/trip/NavigationScreen';
 import VehicleInfoScreen from '../screens/profile/VehicleInfoScreen';
 import SettingsScreen from '../screens/profile/SettingsScreen';
 
@@ -24,8 +25,25 @@ export type MainTabParamList = {
 
 export type HomeStackParamList = {
   HomeMain: undefined;
-  ActiveTrip: { tripId: string };
+  ActiveTrip: {
+    tripId: string;
+    pickup_lat?: number;
+    pickup_lng?: number;
+    destination_lat?: number;
+    destination_lng?: number;
+    passenger_name?: string;
+    fare?: number;
+  };
   TripDetails: { tripId: string };
+  Navigation: {
+    tripId: string;
+    pickup_lat: number;
+    pickup_lng: number;
+    destination_lat: number;
+    destination_lng: number;
+    passenger_name: string;
+    fare: number;
+  };
 };
 
 export type ProfileStackParamList = {
@@ -41,20 +59,25 @@ const ProfileStack = createStackNavigator<ProfileStackParamList>();
 const HomeNavigator: React.FC = () => {
   return (
     <HomeStack.Navigator>
-      <HomeStack.Screen 
-        name="HomeMain" 
+      <HomeStack.Screen
+        name="HomeMain"
         component={HomeScreen}
         options={{ headerShown: false }}
       />
-      <HomeStack.Screen 
-        name="ActiveTrip" 
+      <HomeStack.Screen
+        name="ActiveTrip"
         component={ActiveTripScreen}
         options={{ headerShown: false }}
       />
-      <HomeStack.Screen 
-        name="TripDetails" 
+      <HomeStack.Screen
+        name="TripDetails"
         component={TripDetailsScreen}
         options={{ title: 'Trip Details' }}
+      />
+      <HomeStack.Screen
+        name="Navigation"
+        component={NavigationScreen}
+        options={{ headerShown: false }}
       />
     </HomeStack.Navigator>
   );
@@ -63,18 +86,18 @@ const HomeNavigator: React.FC = () => {
 const ProfileNavigator: React.FC = () => {
   return (
     <ProfileStack.Navigator>
-      <ProfileStack.Screen 
-        name="ProfileMain" 
+      <ProfileStack.Screen
+        name="ProfileMain"
         component={ProfileScreen}
         options={{ title: 'Profile' }}
       />
-      <ProfileStack.Screen 
-        name="VehicleInfo" 
+      <ProfileStack.Screen
+        name="VehicleInfo"
         component={VehicleInfoScreen}
         options={{ title: 'Vehicle Information' }}
       />
-      <ProfileStack.Screen 
-        name="Settings" 
+      <ProfileStack.Screen
+        name="Settings"
         component={SettingsScreen}
         options={{ title: 'Settings' }}
       />

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
-  ScrollView, Alert, ActivityIndicator, Modal,
+  ScrollView, Alert, ActivityIndicator, Modal, FlatList,
 } from 'react-native';
 import * as Location from 'expo-location';
 import AnimatedButton from '../components/AnimatedButton';
@@ -10,6 +10,24 @@ const FARES: Record<string, { perKm: number; base: number; perMin: number }> = {
   car: { perKm: 1500, base: 3000, perMin: 50 },
   bajaji: { perKm: 1000, base: 2000, perMin: 30 },
   'boda-boda': { perKm: 800, base: 1500, perMin: 25 },
+};
+
+// Haversine distance in km
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+type AutocompleteResult = {
+  place_id: number;
+  display_name: string;
+  lat: string;
+  lon: string;
 };
 
 export default function RideRequestScreen({ navigation }: any) {
@@ -23,6 +41,19 @@ export default function RideRequestScreen({ navigation }: any) {
   const [showPayment, setShowPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cash');
 
+  // Coords
+  const [pickupCoords, setPickupCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [destinationCoords, setDestinationCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  // Routing state
+  const [routeError, setRouteError] = useState(false);
+  const [polylineCoords, setPolylineCoords] = useState<Array<[number, number]>>([]);
+
+  // Autocomplete state
+  const [autocompleteResults, setAutocompleteResults] = useState<AutocompleteResult[]>([]);
+  const [autocompleteQuery, setAutocompleteQuery] = useState('');
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     getLocation();
   }, []);
@@ -31,6 +62,7 @@ export default function RideRequestScreen({ navigation }: any) {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status === 'granted') {
       const loc = await Location.getCurrentPositionAsync({});
+      setPickupCoords({ lat: loc.coords.latitude, lng: loc.coords.longitude });
       const address = await Location.reverseGeocodeAsync(loc.coords);
       if (address[0]) {
         const addr = `${address[0].street || ''} ${address[0].district || ''}, ${address[0].city || 'Dar es Salaam'}`;
@@ -40,22 +72,108 @@ export default function RideRequestScreen({ navigation }: any) {
     }
   };
 
+  // Nominatim autocomplete for destination
+  const handleDestinationChange = (text: string) => {
+    setDestination(text);
+    setAutocompleteQuery(text);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (text.length < 3) {
+      setAutocompleteResults([]);
+      return;
+    }
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(text)}&countrycodes=tz&format=json&limit=5`;
+        const res = await fetch(url, { headers: { 'Accept-Language': 'sw,en' } });
+        const json: AutocompleteResult[] = await res.json();
+        setAutocompleteResults(json);
+      } catch {
+        // silently ignore autocomplete failures
+      }
+    }, 500);
+  };
+
+  const handleAutocompleteSelect = (result: AutocompleteResult) => {
+    const name = result.display_name.length > 60
+      ? result.display_name.slice(0, 60) + '…'
+      : result.display_name;
+    setDestination(name);
+    setDestinationCoords({ lat: parseFloat(result.lat), lng: parseFloat(result.lon) });
+    setAutocompleteResults([]);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+  };
+
+  const calculateRoute = async () => {
+    setRouteError(false);
+    if (!pickupCoords || !destinationCoords) return;
+    try {
+      const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
+      const res = await fetch(`${API_BASE}/tracking/calculate-route`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from_lat: pickupCoords.lat,
+          from_lng: pickupCoords.lng,
+          to_lat: destinationCoords.lat,
+          to_lng: destinationCoords.lng,
+        }),
+      });
+      if (!res.ok) throw new Error('Route fetch failed');
+      const data = await res.json();
+      setPolylineCoords(data.polyline_coords ?? []);
+      if (data.distance_km) {
+        const distKm: number = data.distance_km;
+        const fare = FARES[selectedVehicle];
+        const total = Math.round((fare.base + fare.perKm * distKm) / 100) * 100;
+        setEstimatedFare(total);
+        setEstimatedTime(data.duration_minutes ?? Math.round(distKm * 2));
+      }
+    } catch {
+      setRouteError(true);
+    }
+  };
+
   const estimateFare = () => {
     if (!pickup || !destination) {
       Alert.alert('Error', 'Enter both pickup and destination');
       return;
     }
     setLoading(true);
-    // Simulate distance calculation (5-15km random for demo)
-    setTimeout(() => {
-      const distance = Math.random() * 10 + 5; // 5-15 km
-      const time = Math.round(distance * 3 + Math.random() * 10); // minutes
-      const fare = FARES[selectedVehicle];
-      const total = Math.round(fare.base + fare.perKm * distance + fare.perMin * time);
-      setEstimatedFare(total);
-      setEstimatedTime(time);
-      setLoading(false);
-    }, 1500);
+    if (pickupCoords && destinationCoords) {
+      // Try real route first, fallback to haversine
+      calculateRoute().finally(() => {
+        if (!estimatedFare) {
+          // haversine fallback already set in catch, but if no coords-based estimate yet, compute
+          const dist = haversineKm(pickupCoords.lat, pickupCoords.lng, destinationCoords.lat, destinationCoords.lng);
+          const roadDist = dist * 1.3;
+          const fare = FARES[selectedVehicle];
+          const total = Math.round((fare.base + fare.perKm * roadDist) / 100) * 100;
+          setEstimatedFare(total);
+          setEstimatedTime(Math.round(roadDist * 2));
+        }
+        setLoading(false);
+      });
+    } else {
+      // Simulate distance calculation (5-15km random for demo)
+      setTimeout(() => {
+        const distance = Math.random() * 10 + 5; // 5-15 km
+        const time = Math.round(distance * 3 + Math.random() * 10); // minutes
+        const fare = FARES[selectedVehicle];
+        const total = Math.round(fare.base + fare.perKm * distance + fare.perMin * time);
+        setEstimatedFare(total);
+        setEstimatedTime(time);
+        setLoading(false);
+      }, 1500);
+    }
+  };
+
+  // Haversine-based fare estimate for when routing fails
+  const getFallbackFareEstimate = (): number | null => {
+    if (!pickupCoords || !destinationCoords) return null;
+    const dist = haversineKm(pickupCoords.lat, pickupCoords.lng, destinationCoords.lat, destinationCoords.lng);
+    const roadDist = dist * 1.3;
+    return Math.round((roadDist * 500) / 100) * 100;
   };
 
   const confirmRide = () => {
@@ -65,6 +183,11 @@ export default function RideRequestScreen({ navigation }: any) {
       vehicle: selectedVehicle,
       fare: estimatedFare,
       paymentMethod,
+      to_lat: destinationCoords?.lat ?? null,
+      to_lng: destinationCoords?.lng ?? null,
+      tripId: null,
+      polylineCoords,
+      destinationCoords,
     });
   };
 
@@ -102,10 +225,51 @@ export default function RideRequestScreen({ navigation }: any) {
             style={styles.input}
             placeholder="Where to?"
             value={destination}
-            onChangeText={setDestination}
+            onChangeText={handleDestinationChange}
           />
         </View>
       </View>
+
+      {/* Autocomplete results */}
+      {autocompleteResults.length > 0 && (
+        <View style={styles.autocompleteCard}>
+          {autocompleteResults.map((result) => (
+            <TouchableOpacity
+              key={result.place_id}
+              style={styles.autocompleteRow}
+              onPress={() => handleAutocompleteSelect(result)}
+            >
+              <Text style={styles.autocompleteText} numberOfLines={2}>
+                📍 {result.display_name.length > 60
+                  ? result.display_name.slice(0, 60) + '…'
+                  : result.display_name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
+      {/* Route error card */}
+      {routeError && (
+        <View style={styles.errorCard}>
+          <Text style={styles.errorTitle}>🚫 Njia haipatikani</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={calculateRoute}>
+            <Text style={styles.retryText}>Jaribu Tena</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Fallback fare estimate when routing fails but both coords known */}
+      {routeError && pickupCoords && destinationCoords && (() => {
+        const est = getFallbackFareEstimate();
+        if (!est) return null;
+        return (
+          <View style={styles.estimateCard}>
+            <Text style={styles.estimateLabel}>Bei ya Kadirio</Text>
+            <Text style={styles.estimateAmount}>Sh {est.toLocaleString()}</Text>
+          </View>
+        );
+      })()}
 
       {/* Vehicle selection */}
       <View style={styles.vehicleSection}>
@@ -215,6 +379,38 @@ const styles = StyleSheet.create({
   inputIcon: { fontSize: 12, marginRight: 10 },
   input: { flex: 1, fontSize: 15, color: '#333' },
   divider: { height: 1, backgroundColor: '#eee', marginLeft: 34 },
+
+  // Autocomplete
+  autocompleteCard: {
+    backgroundColor: '#fff', marginHorizontal: 16, marginTop: -8, borderRadius: 12,
+    elevation: 4, borderWidth: 1, borderColor: '#e0e0e0', zIndex: 10,
+  },
+  autocompleteRow: {
+    padding: 12, borderBottomWidth: 1, borderBottomColor: '#f0f0f0',
+  },
+  autocompleteText: { fontSize: 13, color: '#333' },
+
+  // Route error card
+  errorCard: {
+    borderWidth: 1, borderColor: '#ff3b30', borderRadius: 12,
+    padding: 12, marginHorizontal: 16, marginTop: 8,
+    backgroundColor: '#fff5f5',
+  },
+  errorTitle: { fontSize: 15, fontWeight: 'bold', color: '#ff3b30', marginBottom: 8 },
+  retryBtn: {
+    backgroundColor: '#ff3b30', borderRadius: 8, padding: 8, alignItems: 'center',
+  },
+  retryText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+
+  // Fallback fare estimate card
+  estimateCard: {
+    backgroundColor: '#fff', borderRadius: 12, padding: 12,
+    marginHorizontal: 16, marginTop: 8, elevation: 1,
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+  },
+  estimateLabel: { fontSize: 14, color: '#666' },
+  estimateAmount: { fontSize: 16, fontWeight: 'bold', color: '#1a73e8' },
+
   vehicleSection: { marginHorizontal: 16, marginTop: 8 },
   sectionTitle: { fontSize: 15, fontWeight: '600', color: '#333', marginBottom: 10 },
   vehicleRow: { flexDirection: 'row', justifyContent: 'space-between' },
