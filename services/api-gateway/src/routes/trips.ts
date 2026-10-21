@@ -311,18 +311,30 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     //   Drivers: see only trips where they are the assigned driver — not trips where
     //     they happen to match passenger_id. Passenger phone is excluded from the
     //     driver view; only first name is returned.
-    //   Admins/operators: see all trips (both sides).
-    const isPassenger  = userType === 'passenger';
-    const isDriver     = userType === 'driver';
+    //   Admins: see ALL trips — no party filter applied.
+    //   Operators/support_agent: see trips they are party to (same as driver/passenger).
+    const isAdmin     = userType === 'admin';
+    const isPassenger = userType === 'passenger';
+    const isDriver    = userType === 'driver';
 
+    // Admins skip the party filter entirely; all other roles are scoped to their own trips.
     let whereClause: string;
-    if (isPassenger) {
-      whereClause = 't.passenger_id = $1';
-    } else if (isDriver) {
-      whereClause = 't.driver_id = $1';
+    const params: unknown[] = [];
+    let paramCount = 1;
+
+    if (isAdmin) {
+      whereClause = '1 = 1'; // no restriction
     } else {
-      // admin / operator / support_agent — see everything
-      whereClause = '(t.passenger_id = $1 OR t.driver_id = $1)';
+      params.push(userId);
+      if (isPassenger) {
+        whereClause = `t.passenger_id = $${paramCount}`;
+      } else if (isDriver) {
+        whereClause = `t.driver_id = $${paramCount}`;
+      } else {
+        // operator / support_agent — see trips they are a party to
+        whereClause = `(t.passenger_id = $${paramCount} OR t.driver_id = $${paramCount})`;
+      }
+      paramCount++;
     }
 
     // Drivers receive only the passenger's first name (no phone) to prevent
@@ -346,9 +358,6 @@ router.get('/', async (req: AuthRequest, res: Response) => {
       LEFT JOIN users p ON t.passenger_id = p.id
       WHERE ${whereClause}
     `;
-
-    const params: unknown[] = [userId];
-    let paramCount = 2;
 
     if (status) {
       query += ` AND t.status = $${paramCount}`;
@@ -512,7 +521,22 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     // (catches the race where two concurrent requests both pass the FOR UPDATE
     //  check because there are no rows yet to lock)
     if ((error as any)?.code === '23505') {
-      return res.status(409).json({ error: 'You already have an active trip' });
+      // Query the active trip so the client can navigate to it
+      try {
+        const activeRes = await pool.query<{ id: string }>(
+          `SELECT id FROM trips
+           WHERE passenger_id = $1
+             AND status IN ('REQUESTED','ACCEPTED','DRIVER_ARRIVING','ARRIVED','IN_PROGRESS')
+           LIMIT 1`,
+          [req.user?.id]
+        );
+        return res.status(409).json({
+          error: 'Una safari inayoendelea tayari',
+          active_trip_id: activeRes.rows[0]?.id ?? null,
+        });
+      } catch (_) {
+        return res.status(409).json({ error: 'Una safari inayoendelea tayari' });
+      }
     }
     console.error('Create trip error:', error);
     res.status(500).json({ error: 'Failed to create trip' });
@@ -569,6 +593,8 @@ router.get('/:tripId', async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    const isAdmin = req.user?.type === 'admin';
+
     const result = await pool.query(
       `SELECT
         t.*,
@@ -599,8 +625,8 @@ router.get('/:tripId', async (req: AuthRequest, res: Response) => {
       LEFT JOIN users    d ON t.driver_id    = d.id
       LEFT JOIN vehicles v ON d.id           = v.driver_id
       WHERE t.id = $1
-        AND (t.passenger_id = $2 OR t.driver_id = $2)`,
-      [tripId, userId]
+        AND ($2::boolean OR t.passenger_id = $3 OR t.driver_id = $3)`,
+      [tripId, isAdmin, userId]
     );
 
     if (result.rows.length === 0) {
@@ -888,39 +914,60 @@ router.post('/:tripId/rate', async (req: AuthRequest, res: Response) => {
     }
 
     if (isPassenger) {
-      await pool.query(
-        `UPDATE trips SET passenger_rating = $1, passenger_review = $2, updated_at = NOW()
-         WHERE id = $3`,
-        [rating, review ?? null, tripId]
-      );
-      // Recalculate driver's average rating
-      await pool.query(
-        `UPDATE users
-         SET rating = (
-           SELECT AVG(passenger_rating)
-           FROM trips
-           WHERE driver_id = $1 AND passenger_rating IS NOT NULL
-         )
-         WHERE id = $1`,
-        [trip.driver_id]
-      );
+      const ratingClient = await pool.connect();
+      try {
+        await ratingClient.query('BEGIN');
+        await ratingClient.query(
+          `UPDATE trips SET passenger_rating = $1, passenger_review = $2, updated_at = NOW()
+           WHERE id = $3`,
+          [rating, review ?? null, tripId]
+        );
+        // Recalculate driver's average rating inside the same transaction so
+        // the user.rating column is always consistent with the trips rows.
+        await ratingClient.query(
+          `UPDATE users
+           SET rating = (
+             SELECT AVG(passenger_rating)
+             FROM trips
+             WHERE driver_id = $1 AND passenger_rating IS NOT NULL
+           )
+           WHERE id = $1`,
+          [trip.driver_id]
+        );
+        await ratingClient.query('COMMIT');
+      } catch (txErr) {
+        try { await ratingClient.query('ROLLBACK'); } catch (_) { /* ignore */ }
+        throw txErr;
+      } finally {
+        ratingClient.release();
+      }
     } else {
-      await pool.query(
-        `UPDATE trips SET driver_rating = $1, driver_review = $2, updated_at = NOW()
-         WHERE id = $3`,
-        [rating, review ?? null, tripId]
-      );
-      // Recalculate passenger's average rating
-      await pool.query(
-        `UPDATE users
-         SET rating = (
-           SELECT AVG(driver_rating)
-           FROM trips
-           WHERE passenger_id = $1 AND driver_rating IS NOT NULL
-         )
-         WHERE id = $1`,
-        [trip.passenger_id]
-      );
+      const ratingClient = await pool.connect();
+      try {
+        await ratingClient.query('BEGIN');
+        await ratingClient.query(
+          `UPDATE trips SET driver_rating = $1, driver_review = $2, updated_at = NOW()
+           WHERE id = $3`,
+          [rating, review ?? null, tripId]
+        );
+        // Recalculate passenger's average rating inside the same transaction.
+        await ratingClient.query(
+          `UPDATE users
+           SET rating = (
+             SELECT AVG(driver_rating)
+             FROM trips
+             WHERE passenger_id = $1 AND driver_rating IS NOT NULL
+           )
+           WHERE id = $1`,
+          [trip.passenger_id]
+        );
+        await ratingClient.query('COMMIT');
+      } catch (txErr) {
+        try { await ratingClient.query('ROLLBACK'); } catch (_) { /* ignore */ }
+        throw txErr;
+      } finally {
+        ratingClient.release();
+      }
     }
 
     res.json({ message: 'Rating submitted successfully' });
