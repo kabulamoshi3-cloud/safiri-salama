@@ -96,8 +96,10 @@ async function transitionTrip(
       trip.driver_id !== actor.id &&
       actor.type !== 'admin'
     ) {
-      // Special case: a driver accepting a REQUESTED trip has no driver_id yet
-      if (!(toState === 'ACCEPTED' && actor.type === 'driver')) {
+      // Special case: a driver accepting a REQUESTED trip has no driver_id yet.
+      // Keyed on currentStatus === 'REQUESTED' (not toState === 'ACCEPTED') so
+      // this bypass cannot silently apply to any future transition added later.
+      if (!(currentStatus === 'REQUESTED' && actor.type === 'driver')) {
         await client.query('ROLLBACK');
         const err = new Error('Not a party to this trip') as any;
         err.statusCode = 403;
@@ -234,27 +236,28 @@ router.get('/available/nearby', async (req: AuthRequest, res: Response) => {
     // Cap radius at 50 km to prevent full-table scans (finding: unbounded radius)
     const rad = Math.min(parseFloat(radius as string) || 5, 50);
 
-    // Haversine-filtered REQUESTED trips created within the last 2 minutes
+    // Haversine-filtered REQUESTED trips created within the last 2 minutes.
+    // SELECT is scoped to dispatch-relevant columns only — no passenger_id,
+    // no passenger name/phone (privacy requirement: available-nearby-pii-leak).
     const result = await pool.query(
       `SELECT
-        t.*,
-        json_build_object(
-          'latitude', t.pickup_latitude,
-          'longitude', t.pickup_longitude,
-          'address',  t.pickup_address
-        ) AS pickup_location,
-        json_build_object(
-          'latitude', t.dropoff_latitude,
-          'longitude', t.dropoff_longitude,
-          'address',  t.dropoff_address
-        ) AS dropoff_location,
+        t.id                    AS trip_id,
+        t.pickup_latitude,
+        t.pickup_longitude,
+        t.pickup_address,
+        t.dropoff_latitude,
+        t.dropoff_longitude,
+        t.dropoff_address       AS destination_address,
+        t.estimated_fare        AS fare_tzs,
+        t.estimated_distance    AS distance_km,
+        t.created_at,
         (
           6371 * acos(
             cos(radians($1)) * cos(radians(t.pickup_latitude)) *
             cos(radians(t.pickup_longitude) - radians($2)) +
             sin(radians($1)) * sin(radians(t.pickup_latitude))
           )
-        ) AS distance_km
+        ) AS distance_from_driver_km
       FROM trips t
       WHERE t.status = 'REQUESTED'
         AND t.driver_id IS NULL
@@ -268,7 +271,7 @@ router.get('/available/nearby', async (req: AuthRequest, res: Response) => {
             sin(radians($1)) * sin(radians(t.pickup_latitude))
           )
         ) <= $3
-      ORDER BY distance_km ASC
+      ORDER BY distance_from_driver_km ASC
       LIMIT 20`,
       [lat, lng, rad]
     );
@@ -284,6 +287,7 @@ router.get('/available/nearby', async (req: AuthRequest, res: Response) => {
 router.get('/', async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
+    const userType = req.user?.type;
     const { status, limit = 50, offset = 0 } = req.query;
 
     if (!userId) {
@@ -302,6 +306,31 @@ router.get('/', async (req: AuthRequest, res: Response) => {
       });
     }
 
+    // Privacy scoping:
+    //   Passengers: see all trips where they are the passenger (full counterparty info).
+    //   Drivers: see only trips where they are the assigned driver — not trips where
+    //     they happen to match passenger_id. Passenger phone is excluded from the
+    //     driver view; only first name is returned.
+    //   Admins/operators: see all trips (both sides).
+    const isPassenger  = userType === 'passenger';
+    const isDriver     = userType === 'driver';
+
+    let whereClause: string;
+    if (isPassenger) {
+      whereClause = 't.passenger_id = $1';
+    } else if (isDriver) {
+      whereClause = 't.driver_id = $1';
+    } else {
+      // admin / operator / support_agent — see everything
+      whereClause = '(t.passenger_id = $1 OR t.driver_id = $1)';
+    }
+
+    // Drivers receive only the passenger's first name (no phone) to prevent
+    // enumeration of passenger contact details from history.
+    const passengerCols = isDriver
+      ? `json_build_object('id', p.id, 'name', split_part(p.name, ' ', 1))`
+      : `json_build_object('id', p.id, 'name', p.name, 'phone', p.phone)`;
+
     let query = `
       SELECT
         t.*,
@@ -311,15 +340,11 @@ router.get('/', async (req: AuthRequest, res: Response) => {
           'phone',  d.phone,
           'rating', d.rating
         ) AS driver,
-        json_build_object(
-          'id',     p.id,
-          'name',   p.name,
-          'phone',  p.phone
-        ) AS passenger
+        ${passengerCols} AS passenger
       FROM trips t
       LEFT JOIN users d ON t.driver_id    = d.id
       LEFT JOIN users p ON t.passenger_id = p.id
-      WHERE (t.passenger_id = $1 OR t.driver_id = $1)
+      WHERE ${whereClause}
     `;
 
     const params: unknown[] = [userId];
@@ -834,7 +859,7 @@ router.post('/:tripId/rate', async (req: AuthRequest, res: Response) => {
     }
 
     const checkResult = await pool.query(
-      'SELECT passenger_id, driver_id, status FROM trips WHERE id = $1',
+      'SELECT passenger_id, driver_id, status, passenger_rating, driver_rating FROM trips WHERE id = $1',
       [tripId]
     );
 
@@ -852,6 +877,15 @@ router.post('/:tripId/rate', async (req: AuthRequest, res: Response) => {
     }
 
     const isPassenger = trip.passenger_id === userId;
+
+    // Prevent silent overwrite of an existing rating (finding: duplicate-rating-no-guard).
+    // Return 409 if this user has already submitted a rating for this trip.
+    if (isPassenger && checkResult.rows[0].passenger_rating != null) {
+      return res.status(409).json({ error: 'You have already rated this trip' });
+    }
+    if (!isPassenger && checkResult.rows[0].driver_rating != null) {
+      return res.status(409).json({ error: 'You have already rated this trip' });
+    }
 
     if (isPassenger) {
       await pool.query(

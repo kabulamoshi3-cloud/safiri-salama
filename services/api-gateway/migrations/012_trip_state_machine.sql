@@ -9,7 +9,9 @@
 --   DRIVER_ARRIVING → ARRIVED  (driver at pickup)
 --   DRIVER_ARRIVING → CANCELLED (driver only)
 --   ARRIVED    → IN_PROGRESS   (driver starts trip)
---   ARRIVED    → CANCELLED     (driver only)
+--   ARRIVED    → CANCELLED     (driver only — intentional; covers driver no-show
+--                                scenarios where the passenger does not board.
+--                                Requires a cancellation_reason in the API.)
 --   IN_PROGRESS → COMPLETED    (driver completes trip)
 --   COMPLETED  → (terminal)
 --   CANCELLED  → (terminal)
