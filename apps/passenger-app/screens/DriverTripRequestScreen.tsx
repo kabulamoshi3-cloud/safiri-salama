@@ -2,9 +2,15 @@ import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Vibration,
 } from 'react-native';
+import i18n from '../i18n';
 
 export default function DriverTripRequestScreen({ navigation }: any) {
   const [timeLeft, setTimeLeft] = useState(30);
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
   const [trip] = useState({
     passenger: 'Sarah M.',
     pickup: 'Kariakoo Market',
@@ -45,7 +51,7 @@ export default function DriverTripRequestScreen({ navigation }: any) {
       </View>
 
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>New Trip Request!</Text>
+        <Text style={styles.headerTitle}>{i18n.t('new_trip_request')}</Text>
         <Text style={styles.timerText}>{timeLeft}s</Text>
       </View>
 
@@ -75,25 +81,25 @@ export default function DriverTripRequestScreen({ navigation }: any) {
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{trip.distance}</Text>
-            <Text style={styles.statLabel}>Distance</Text>
+            <Text style={styles.statLabel}>{i18n.t('distance')}</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{trip.time}</Text>
-            <Text style={styles.statLabel}>Est. Time</Text>
+            <Text style={styles.statLabel}>{i18n.t('est_time')}</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{trip.fare}</Text>
-            <Text style={styles.statLabel}>Fare</Text>
+            <Text style={styles.statLabel}>{i18n.t('fare')}</Text>
           </View>
         </View>
       </View>
 
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.rejectBtn} onPress={rejectTrip}>
-          <Text style={styles.rejectText}>✕ Reject</Text>
+          <Text style={styles.rejectText}>✕ {i18n.t('reject')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.acceptBtn} onPress={acceptTrip}>
-          <Text style={styles.acceptText}>✓ Accept</Text>
+          <Text style={styles.acceptText}>✓ {i18n.t('accept')}</Text>
         </TouchableOpacity>
       </View>
     </View>

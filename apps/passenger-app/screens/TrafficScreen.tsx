@@ -6,6 +6,7 @@ import MapView, { Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import i18n from '../i18n';
 
 const API = 'https://simon-daladala-api.vercel.app/api/v1';
 
@@ -37,17 +38,12 @@ const STATUS_COLORS: Record<string, string> = {
   jam: '#ff3b30',
 };
 
-const OVERALL_LABELS: Record<string, string> = {
-  clear: 'Nzuri',
-  slow: 'Wastani',
-  jam: 'Msongamano',
-};
-
 export default function TrafficScreen({ navigation }: any) {
 
   const [segments, setSegments] = useState<TrafficSegment[]>([]);
   const [loading, setLoading] = useState(true);
   const [overallStatus, setOverallStatus] = useState<string>('clear');
+  const [, forceUpdate] = useState(0);
   const [region, setRegion] = useState({
     latitude: -6.7924,
     longitude: 39.2083,
@@ -63,6 +59,10 @@ export default function TrafficScreen({ navigation }: any) {
   const [confidenceLabel, setConfidenceLabel] = useState<string>('');
   const [bestTime, setBestTime] = useState<{ best_time: string; savings_minutes: number } | null>(null);
   const [usingCache, setUsingCache] = useState(false);
+
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
 
   const fetchTraffic = async () => {
     setUsingCache(false);
@@ -103,9 +103,9 @@ export default function TrafficScreen({ navigation }: any) {
       if (preds && preds.length > 0) {
         setPredictions(preds);
         const avgConf = preds.reduce((sum, p) => sum + (p.confidence || 0), 0) / preds.length;
-        if (avgConf >= 0.7) setConfidenceLabel('Utabiri wa juu');
-        else if (avgConf >= 0.4) setConfidenceLabel('Utabiri wa wastani');
-        else setConfidenceLabel('Mfumo wa msingi');
+        if (avgConf >= 0.7) setConfidenceLabel(i18n.t('high_confidence'));
+        else if (avgConf >= 0.4) setConfidenceLabel(i18n.t('medium_confidence'));
+        else setConfidenceLabel(i18n.t('baseline_prediction'));
       }
       setUsingCache(false);
 
@@ -182,10 +182,12 @@ export default function TrafficScreen({ navigation }: any) {
 
       {/* Top card */}
       <View style={styles.topCard}>
-        <Text style={styles.topTitle}>🗺️ Hali ya Barabara</Text>
+        <Text style={styles.topTitle}>🗺️ {i18n.t('road_conditions')}</Text>
         <View style={styles.statusBadgeRow}>
           <View style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[overallStatus] }]}>
-            <Text style={styles.statusBadgeText}>{OVERALL_LABELS[overallStatus]}</Text>
+            <Text style={styles.statusBadgeText}>
+              {overallStatus === 'clear' ? i18n.t('traffic_good') : overallStatus === 'slow' ? i18n.t('traffic_fair') : i18n.t('traffic_jam')}
+            </Text>
           </View>
           {confidenceLabel ? (
             <Text style={styles.confidenceText}>{confidenceLabel}</Text>
@@ -200,7 +202,7 @@ export default function TrafficScreen({ navigation }: any) {
           onPress={() => setDepartureOffset(0)}
         >
           <Text style={[styles.departureBtnText, departureOffset === 0 && styles.departureBtnTextActive]}>
-            Ondoka Sasa
+            {i18n.t('depart_now')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -208,7 +210,7 @@ export default function TrafficScreen({ navigation }: any) {
           onPress={() => setDepartureOffset(30)}
         >
           <Text style={[styles.departureBtnText, departureOffset === 30 && styles.departureBtnTextActive]}>
-            +Dakika 30
+            {i18n.t('depart_30min')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -216,7 +218,7 @@ export default function TrafficScreen({ navigation }: any) {
           onPress={() => setDepartureOffset(60)}
         >
           <Text style={[styles.departureBtnText, departureOffset === 60 && styles.departureBtnTextActive]}>
-            +Saa 1
+            {i18n.t('depart_1hr')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -255,14 +257,14 @@ export default function TrafficScreen({ navigation }: any) {
         {/* No data banner */}
         {!loading && segments.length === 0 && (
           <View style={styles.noDataBanner}>
-            <Text style={styles.noDataText}>Taarifa za msongamano hazipatikani</Text>
+            <Text style={styles.noDataText}>{i18n.t('no_traffic_data')}</Text>
           </View>
         )}
 
         {/* Cached-data / offline banner */}
         {usingCache && (
           <View style={styles.cacheBanner}>
-            <Text style={styles.cacheText}>Kutumia data ya zamani</Text>
+            <Text style={styles.cacheText}>{i18n.t('traffic_unavailable')}</Text>
           </View>
         )}
 
@@ -270,7 +272,7 @@ export default function TrafficScreen({ navigation }: any) {
         {bestTime && bestTime.savings_minutes > 5 && (
           <View style={styles.bestTimeCard}>
             <Text style={styles.bestTimeText}>
-              Ondoka {formatBestTime(bestTime.best_time)} — okoa dakika {Math.round(bestTime.savings_minutes)} 🕒
+              {i18n.t('best_time')} {formatBestTime(bestTime.best_time)} — {i18n.t('save_minutes').replace('{n}', String(Math.round(bestTime.savings_minutes)))} 🕒
             </Text>
           </View>
         )}
@@ -278,14 +280,14 @@ export default function TrafficScreen({ navigation }: any) {
 
       {/* Legend */}
       <View style={styles.legend}>
-        <Text style={styles.legendItem}>🟢 Nzuri</Text>
-        <Text style={styles.legendItem}>🟠 Wastani</Text>
-        <Text style={styles.legendItem}>🔴 Msongamano</Text>
+        <Text style={styles.legendItem}>{i18n.t('legend_clear')}</Text>
+        <Text style={styles.legendItem}>{i18n.t('legend_slow')}</Text>
+        <Text style={styles.legendItem}>{i18n.t('legend_congested')}</Text>
       </View>
 
       {/* CTA */}
       <TouchableOpacity style={styles.ctaBtn} onPress={() => navigation.goBack()}>
-        <Text style={styles.ctaBtnText}>Anza Safari 🚀</Text>
+        <Text style={styles.ctaBtnText}>{i18n.t('start_journey')} 🚀</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
