@@ -125,8 +125,8 @@ router.post('/calculate', async (req, res) => {
       return res.status(400).json({
         error: 'origin and destination required',
         required: {
-          origin: { latitude: number, longitude: number },
-          destination: { latitude: number, longitude: number }
+          origin: { latitude: 'number', longitude: 'number' },
+          destination: { latitude: 'number', longitude: 'number' }
         }
       });
     }

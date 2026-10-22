@@ -29,7 +29,11 @@ async function notifyTrackingService(event: string, payload: object): Promise<vo
   const url = process.env.TRACKING_SERVICE_URL;
   if (!url) return;
   try {
-    await axios.post(`${url}/internal/trip-event`, { event, ...payload });
+    const headers: Record<string, string> = {};
+    if (process.env.INTERNAL_API_SECRET) {
+      headers['x-internal-secret'] = process.env.INTERNAL_API_SECRET;
+    }
+    await axios.post(`${url}/api/internal/trip-event`, { event, ...payload }, { headers });
   } catch (_) {
     // best-effort — never block the trip transition
   }

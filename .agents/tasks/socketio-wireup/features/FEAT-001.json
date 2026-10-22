@@ -1,0 +1,24 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Create the tracking-service internal HTTP endpoint that receives trip events from api-gateway and re-broadcasts them to the correct Socket.io trip room. Also update api-gateway .env.example with a proper default for TRACKING_SERVICE_URL.",
+  "status": "completed",
+  "steps": [
+    "Create services/tracking-service/src/routes/internal.ts. This file exports a factory function createInternalRouter(io: Server): Router. The router handles POST /trip-event. It reads { event, tripId, ...data } from req.body. It calls io.to(`trip:${tripId}`).emit(event, { tripId, ...data }) then responds 204. No auth guard (internal only — caller is api-gateway on the same private network). Import Router and Server from 'express' and 'socket.io' respectively.",
+    "Mount the internal router in services/tracking-service/src/index.ts. After the existing app.use('/api/safety', safetyRouter) line, add: import { createInternalRouter } from './routes/internal'; then app.use('/api/internal', createInternalRouter(io)). The io variable is already defined in scope at module level.",
+    "Update services/api-gateway/.env.example: change the existing empty TRACKING_SERVICE_URL= line to TRACKING_SERVICE_URL=http://localhost:3001 (the value already documented in the comment block below 'Internal Services')."
+  ],
+  "acceptance_criteria": [
+    "services/tracking-service/src/routes/internal.ts exists and exports createInternalRouter",
+    "services/tracking-service/src/index.ts imports and mounts the internal router at /api/internal with the io instance passed in",
+    "POST /api/internal/trip-event with body { event: 'trip:accepted', tripId: 'abc', driverId: 'xyz' } causes io.to('trip:abc').emit('trip:accepted', { tripId:'abc', driverId:'xyz' })",
+    "services/api-gateway/.env.example has TRACKING_SERVICE_URL=http://localhost:3001",
+    "npx tsc --noEmit in services/tracking-service passes with zero errors"
+  ],
+  "verification": [
+    "cd services/tracking-service && npx tsc --noEmit",
+    "cd services/api-gateway && npx tsc --noEmit"
+  ],
+  "blocked_reason": null,
+  "findings": "Pre-existing TS errors found in intelligence.ts (lines 128-129: TypeScript primitive types used as runtime values in an object literal) and in api-gateway middleware (rbac.ts: missing @dalasmart/shared-types package; validation.ts: AJV JSONSchemaType strictNullChecks requirement). These are unrelated to FEAT-001 and the files are either forbidden (intelligence.ts) or outside FEAT-001 scope. tracking-service was missing @types/jsonwebtoken and @types/cors devDependencies — both installed. All new code in internal.ts and the index.ts mount line are TypeScript-clean."
+}

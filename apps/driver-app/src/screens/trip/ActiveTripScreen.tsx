@@ -9,11 +9,14 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Location from 'expo-location';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { HomeStackParamList } from '../../navigation/MainNavigator';
+import * as TrackingSocket from '../../services/TrackingSocket';
 
 interface Trip {
   id: string;
@@ -53,6 +56,14 @@ const ActiveTripScreen: React.FC<Props> = ({ navigation, route }) => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
   const [transactionId, setTransactionId] = useState('');
 
+  // Cleanup socket on unmount
+  useEffect(() => {
+    return () => {
+      TrackingSocket.stopLocationEmit();
+      TrackingSocket.disconnect();
+    };
+  }, []);
+
   const handleCompleteTrip = () => {
     setShowPaymentModal(true);
   };
@@ -81,6 +92,8 @@ const ActiveTripScreen: React.FC<Props> = ({ navigation, route }) => {
           onPress: () => {
             setTrip({ ...trip, status: 'completed' });
             setShowPaymentModal(false);
+            TrackingSocket.stopLocationEmit();
+            TrackingSocket.disconnect();
             // Navigate to rate passenger screen
             navigation.replace('RatePassenger', {
               tripId: route.params.tripId,
@@ -95,6 +108,21 @@ const ActiveTripScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const handleStartTrip = () => {
+    AsyncStorage.getItem('@dalasmart:token').then((token) => {
+      if (token) {
+        TrackingSocket.connect(token);
+        TrackingSocket.startLocationEmit(route.params.tripId, async () => {
+          const loc = await Location.getCurrentPositionAsync({});
+          return {
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude,
+            heading: loc.coords.heading ?? undefined,
+            speed: loc.coords.speed ?? undefined,
+          };
+        });
+      }
+    }).catch(() => {});
+
     navigation.navigate('Navigation', {
       tripId: route.params.tripId,
       pickup_lat: route.params.pickup_lat ?? 0,

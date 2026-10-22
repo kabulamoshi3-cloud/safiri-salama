@@ -14,6 +14,7 @@ import jwt from 'jsonwebtoken';
 import axios from 'axios';
 import intelligenceRouter from './routes/intelligence';
 import safetyRouter from './routes/safety';
+import { createInternalRouter } from './routes/internal';
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ app.use(express.json());
 // Mount API routes
 app.use('/api/routes', intelligenceRouter);
 app.use('/api/safety', safetyRouter);
+app.use('/api/internal', createInternalRouter(io));
 
 const PORT = process.env.TRACKING_PORT || 3001;
 

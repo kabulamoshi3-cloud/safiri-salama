@@ -2,8 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Linking,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import axios from 'axios';
+import * as TrackingSocket from '../services/TrackingSocket';
+import i18n from '../i18n';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
 
@@ -40,6 +43,11 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
 export default function TripActiveScreen({ route, navigation }: any) {
   const { pickup, destination, vehicle, fare, paymentMethod } = route.params;
   const tripId: string = route.params?.tripId ?? 'mock-trip-1';
+
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
 
   const [status, setStatus] = useState<TripStatus>('searching');
   const [driver, setDriver] = useState<Driver>({ name: '', plate: '', rating: 0, vehicle: '', phone: '' });
@@ -127,6 +135,40 @@ export default function TripActiveScreen({ route, navigation }: any) {
     if (liveStatuses.includes(status)) {
       if (trackingRef.current) clearInterval(trackingRef.current);
 
+      // Unsub refs must be captured synchronously so the cleanup function can
+      // always call them — even if the async token fetch hasn't resolved yet.
+      let unsubMove: () => void = () => {};
+      let unsubStatus: () => void = () => {};
+      let unsubETA: () => void = () => {};
+      let cancelled = false; // guards against a resolved promise after cleanup
+
+      AsyncStorage.getItem('@dalasmart:token').then((token) => {
+        if (cancelled) return; // effect was already cleaned up
+        if (token) {
+          TrackingSocket.connect(token);
+          TrackingSocket.joinTrip(tripId);
+
+          unsubMove = TrackingSocket.onDriverMoved((loc) => {
+            setDriverLocation({
+              lat: loc.latitude,
+              lng: loc.longitude,
+              bearing: loc.heading ?? 0,
+              speed_kmh: loc.speed ?? 0,
+              eta_minutes: loc.eta,
+              progress_percent: driverLocation?.progress_percent ?? 0,
+            });
+          });
+
+          unsubStatus = TrackingSocket.onTripStatus((trip) => {
+            if (trip.status) setStatus(trip.status as TripStatus);
+          });
+
+          unsubETA = TrackingSocket.onETAChanged(({ newETA }: { newETA: number }) => {
+            setEtaMinutes(newETA);
+          });
+        }
+      }).catch(() => {});
+
       const fetchLocation = async () => {
         try {
           const response = await axios.get<DriverLocation>(
@@ -169,6 +211,16 @@ export default function TripActiveScreen({ route, navigation }: any) {
 
       fetchLocation();
       trackingRef.current = setInterval(fetchLocation, 5000);
+
+      return () => {
+        cancelled = true;
+        unsubMove();
+        unsubStatus();
+        unsubETA();
+        TrackingSocket.leaveTrip();
+        TrackingSocket.disconnect();
+        if (trackingRef.current) clearInterval(trackingRef.current);
+      };
     } else if (stopStatuses.includes(status)) {
       if (trackingRef.current) {
         clearInterval(trackingRef.current);
@@ -199,30 +251,32 @@ export default function TripActiveScreen({ route, navigation }: any) {
   }, [status]);
 
   const cancelTrip = () => {
-    Alert.alert('Cancel Trip', 'Are you sure you want to cancel?', [
-      { text: 'No' },
-      { text: 'Yes, Cancel', style: 'destructive', onPress: () => navigation.goBack() },
+    Alert.alert(i18n.t('cancel_trip'), i18n.t('cancel_confirm'), [
+      { text: i18n.t('no') },
+      { text: i18n.t('yes_cancel'), style: 'destructive', onPress: () => navigation.goBack() },
     ]);
   };
 
   const getStatusUI = () => {
+    const mins = Math.floor(elapsed / 60);
+    const secs = (elapsed % 60).toString().padStart(2, '0');
     switch (status) {
       case 'searching':
-        return { emoji: '🔍', title: 'Finding your driver...', subtitle: 'Looking for nearby drivers', color: '#1a73e8' };
+        return { emoji: '🔍', title: i18n.t('finding_driver'), subtitle: i18n.t('finding_driver_sub'), color: '#1a73e8' };
       case 'accepted':
-        return { emoji: '✅', title: 'Driver found!', subtitle: `${driver.name} is on the way`, color: '#2e7d32' };
+        return { emoji: '✅', title: i18n.t('driver_found'), subtitle: i18n.t('driver_on_way_sub').replace('{name}', driver.name), color: '#2e7d32' };
       case 'arriving':
-        return { emoji: '🚗', title: 'Driver is arriving', subtitle: `${driver.name} will arrive in 2 min`, color: '#f57c00' };
+        return { emoji: '🚗', title: i18n.t('driver_arriving'), subtitle: i18n.t('driver_arriving_sub').replace('{name}', driver.name), color: '#f57c00' };
       case 'in_progress':
         return {
-          emoji: '🛣️', title: 'Trip in progress',
-          subtitle: `${Math.floor(elapsed / 60)}:${(elapsed % 60).toString().padStart(2, '0')} elapsed`,
+          emoji: '🛣️', title: i18n.t('trip_in_progress'),
+          subtitle: i18n.t('trip_elapsed').replace('{m}', String(mins)).replace('{s}', secs),
           color: '#1a73e8',
         };
       case 'completed':
-        return { emoji: '🎉', title: 'Trip completed!', subtitle: 'Thank you for riding with DalaSmart', color: '#2e7d32' };
+        return { emoji: '🎉', title: i18n.t('trip_completed'), subtitle: i18n.t('thank_you_ride'), color: '#2e7d32' };
       case 'cancelled':
-        return { emoji: '❌', title: 'Trip cancelled', subtitle: '', color: '#ff3b30' };
+        return { emoji: '❌', title: i18n.t('trip_cancelled'), subtitle: '', color: '#ff3b30' };
     }
   };
 
@@ -298,7 +352,9 @@ export default function TripActiveScreen({ route, navigation }: any) {
         {/* ETA overlay */}
         {displayEta !== null && (
           <View style={styles.etaOverlay}>
-            <Text style={styles.etaText}>Dakika {displayEta} zimesalia</Text>
+            <Text style={styles.etaText}>
+              {i18n.t('eta_minutes').replace('{n}', String(displayEta))}
+            </Text>
           </View>
         )}
       </View>
@@ -347,9 +403,9 @@ export default function TripActiveScreen({ route, navigation }: any) {
           <Text style={styles.detailText}>{destination}</Text>
         </View>
         <View style={styles.fareRow}>
-          <Text style={styles.fareLabel}>Fare: Sh {fare?.toLocaleString()}</Text>
+          <Text style={styles.fareLabel}>{i18n.t('fare_label')} Sh {fare?.toLocaleString()}</Text>
           <Text style={styles.farePayment}>
-            {paymentMethod === 'cash' ? '💵 Cash' : '📱 Mobile'}
+            {paymentMethod === 'cash' ? i18n.t('cash_payment') : i18n.t('mobile_payment')}
           </Text>
         </View>
       </View>
@@ -357,7 +413,7 @@ export default function TripActiveScreen({ route, navigation }: any) {
       {/* Cancel button (only before in_progress) */}
       {(status === 'searching' || status === 'accepted') && (
         <TouchableOpacity style={styles.cancelBtn} onPress={cancelTrip}>
-          <Text style={styles.cancelText}>Cancel Trip</Text>
+          <Text style={styles.cancelText}>{i18n.t('cancel_trip')}</Text>
         </TouchableOpacity>
       )}
     </View>
