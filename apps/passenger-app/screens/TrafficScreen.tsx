@@ -102,7 +102,7 @@ export default function TrafficScreen({ navigation }: any) {
       if (preds && preds.length > 0) {
         setPredictions(preds);
         const avgConf = preds.reduce((sum, p) => sum + (p.confidence || 0), 0) / preds.length;
-        if (avgConf > 0.7) setConfidenceLabel('Utabiri wa juu');
+        if (avgConf >= 0.7) setConfidenceLabel('Utabiri wa juu');
         else if (avgConf >= 0.4) setConfidenceLabel('Utabiri wa wastani');
         else setConfidenceLabel('Mfumo wa msingi');
       }
