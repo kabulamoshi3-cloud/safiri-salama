@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 
-const TRACKING_URL = process.env.EXPO_PUBLIC_TRACKING_URL ?? 'http://localhost:3001';
+const TRACKING_URL = process.env.EXPO_PUBLIC_TRACKING_URL ?? 'https://dalasmart-tracking.fly.dev';
 
 let socket: Socket | null = null;
 

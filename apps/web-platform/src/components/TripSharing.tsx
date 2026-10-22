@@ -39,7 +39,7 @@ const TripSharing: React.FC<TripSharingProps> = ({
       setLoading(true);
 
       const response = await axios.post(
-        `${process.env.REACT_APP_TRACKING_URL || 'http://localhost:3001'}/api/safety/trip-share`,
+        `${import.meta.env.VITE_TRACKING_URL || 'http://localhost:3001'}/api/safety/trip-share`,
         {
           tripId,
           passengerId,

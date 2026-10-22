@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import i18n from '../i18n';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiri-salama.vercel.app/api/v1';
 
 interface EarningsSummary {
   today: number;

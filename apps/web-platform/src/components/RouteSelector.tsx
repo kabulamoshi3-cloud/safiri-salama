@@ -50,7 +50,7 @@ const RouteSelector: React.FC<RouteSelectorProps> = ({
       setError(null);
 
       const response = await axios.post(
-        `${process.env.REACT_APP_TRACKING_URL || 'http://localhost:3001'}/api/routes/calculate`,
+        `${import.meta.env.VITE_TRACKING_URL || 'http://localhost:3001'}/api/routes/calculate`,
         {
           origin,
           destination,

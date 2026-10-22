@@ -8,7 +8,7 @@ import axios from 'axios';
 import AnimatedButton from '../components/AnimatedButton';
 import i18n from '../i18n';
 
-const API = 'https://simon-daladala-api.vercel.app/api/v1';
+const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiri-salama.vercel.app/api/v1';
 
 export default function LoginScreen({ route, navigation }: any) {
   const role = route?.params?.role || 'passenger';

@@ -18,7 +18,7 @@ try {
 const PUSH_TOKEN_KEY = '@dalasmart:push_token';
 const PENDING_NAV_KEY = '@dalasmart:pending_nav';
 const PROJECT_ID = '5f7ad6c8-510e-4f1b-a526-2933af25b604';
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiri-salama.vercel.app/api/v1';
 
 /**
  * Request notification permission and register the Expo push token with the backend.

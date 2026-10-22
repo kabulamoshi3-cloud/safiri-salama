@@ -10,6 +10,10 @@
       }
     },
     "production": {
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://safiri-salama.vercel.app/api/v1",
+        "EXPO_PUBLIC_TRACKING_URL": "https://dalasmart-tracking.fly.dev"
+      },
       "android": {
         "buildType": "app-bundle"
       }

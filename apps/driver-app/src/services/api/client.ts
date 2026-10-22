@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = 'https://simon-daladala-api.vercel.app/api';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiri-salama.vercel.app/api/v1';
 const TOKEN_KEY = '@dalasmart:token';
 
 export class APIClient {

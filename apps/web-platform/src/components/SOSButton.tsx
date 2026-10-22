@@ -39,7 +39,7 @@ const SOSButton: React.FC<SOSButtonProps> = ({
 
       // Trigger SOS alert
       const response = await axios.post(
-        `${process.env.REACT_APP_TRACKING_URL || 'http://localhost:3001'}/api/safety/sos`,
+        `${import.meta.env.VITE_TRACKING_URL || 'http://localhost:3001'}/api/safety/sos`,
         {
           tripId,
           userId,

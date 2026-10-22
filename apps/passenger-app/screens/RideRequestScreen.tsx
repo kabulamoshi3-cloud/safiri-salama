@@ -110,7 +110,7 @@ export default function RideRequestScreen({ navigation }: any) {
     setRouteError(false);
     if (!pickupCoords || !destinationCoords) return;
     try {
-      const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
+      const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiri-salama.vercel.app/api/v1';
       const res = await fetch(`${API_BASE}/tracking/calculate-route`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

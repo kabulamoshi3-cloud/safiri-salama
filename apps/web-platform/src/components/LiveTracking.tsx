@@ -147,7 +147,7 @@ const LiveTracking: React.FC<LiveTrackingProps> = ({
   const fetchAndDrawRoute = async (origin: Location, destination: Location) => {
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_TRACKING_URL || 'http://localhost:3001'}/api/routes/calculate`,
+        `${import.meta.env.VITE_TRACKING_URL || 'http://localhost:3001'}/api/routes/calculate`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -200,7 +200,7 @@ const LiveTracking: React.FC<LiveTrackingProps> = ({
 
   // Connect to WebSocket
   useEffect(() => {
-    const socketConnection = io(process.env.REACT_APP_TRACKING_URL || 'http://localhost:3001', {
+    const socketConnection = io(import.meta.env.VITE_TRACKING_URL || 'http://localhost:3001', {
       auth: { token }
     });
 
