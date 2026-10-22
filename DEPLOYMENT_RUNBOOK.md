@@ -1,6 +1,6 @@
 # DalaSmart deployment runbook
 
-This repository has three deployable parts: the API on Vercel, the passenger web app on Vercel, and the persistent tracking/socket service on Fly.io. Passenger and driver Android/iOS apps are built separately with Expo EAS.
+This repository has three deployable parts: the API on Vercel, the passenger web app on Vercel, and the persistent tracking/socket service on Koyeb. Passenger and driver Android/iOS apps are built separately with Expo EAS.
 
 ## 1. Vercel API
 
@@ -14,8 +14,8 @@ Set these Production environment variables in the Vercel API project:
 | `DATABASE_URL` | TLS-enabled PostgreSQL connection string |
 | `JWT_SECRET` | Unique random secret, at least 32 characters |
 | `CORS_ORIGIN` | Exact deployed passenger web origin, such as `https://<web-project>.vercel.app` |
-| `TRACKING_SERVICE_URL` | `https://dalasmart-tracking.fly.dev` |
-| `INTERNAL_API_SECRET` | Random secret shared with the Fly tracking service |
+| `TRACKING_SERVICE_URL` | The public Koyeb domain for the tracking service |
+| `INTERNAL_API_SECRET` | Random secret shared with the Koyeb tracking service |
 
 Set provider credentials only when those integrations are configured. Never commit production secrets or put them in Vite/Expo variables. Those client variables are public by design.
 
@@ -32,19 +32,19 @@ Set these Production variables:
 | Variable | Value |
 | --- | --- |
 | `VITE_API_URL` | `https://safiri-salama.vercel.app/api/v1` |
-| `VITE_TRACKING_URL` | `https://dalasmart-tracking.fly.dev` |
+| `VITE_TRACKING_URL` | The public Koyeb domain for the tracking service |
 
 The app-local `vercel.json` sends client-side routes to `index.html`. `apps/web-platform/.env.example` documents the same variables for local setup. When the web project has its final domain, update the API project's `CORS_ORIGIN` to that exact origin and redeploy the API.
 
-## 3. Persistent tracking and sockets on Fly.io
+## 3. Persistent tracking and sockets on Koyeb
 
-The tracking service uses long-lived Socket.IO connections and in-memory active trip state, so run it as a persistent Fly.io service rather than a Vercel function. Its Fly configuration is `services/tracking-service/fly.toml`.
+The tracking service uses long-lived Socket.IO connections and in-memory active trip state, so run it as a persistent Koyeb service rather than a Vercel function. Koyeb can deploy a GitHub repository with a Dockerfile, runtime environment variables, exposed ports, and health checks. Configure the working directory as `services/tracking-service`, Dockerfile as `Dockerfile`, exposed port as `3001`, and health check path as `/health`.
 
-From `services/tracking-service`, configure Fly secrets for `JWT_SECRET`, `DATABASE_URL`, `REDIS_URL`, and `INTERNAL_API_SECRET`. The JWT and internal secrets must match the API project. Set `CORS_ORIGIN` to the deployed web origin, then deploy with `fly deploy`. Confirm `/health`, HTTP route calls, and a real Socket.IO connection before relying on live tracking. If the Fly app name or domain differs, update the Vercel, web, and EAS URL settings.
+Configure `JWT_SECRET`, `DATABASE_URL`, `REDIS_URL`, and `INTERNAL_API_SECRET` in the Koyeb service environment. The JWT and internal secrets must match the API project. Set `TRACKING_PORT=3001` and `CORS_ORIGIN` to the deployed web origin. After deployment, copy the service's public Koyeb domain into the API's `TRACKING_SERVICE_URL`, the web project's `VITE_TRACKING_URL`, and the EAS production environment variable `EXPO_PUBLIC_TRACKING_URL`. Confirm `/health`, HTTP route calls, and a real Socket.IO connection before relying on live tracking.
 
 ## 4. Passenger and driver mobile apps
 
-Production EAS profiles now point at the API and tracking service URLs. Build Android store bundles with:
+Production EAS profiles set the API URL. Add `EXPO_PUBLIC_TRACKING_URL` to the EAS Production environment using the Koyeb service domain before building. Build Android store bundles with:
 
 ```bash
 cd apps/passenger-app && npx eas-cli build --platform android --profile production
@@ -55,11 +55,11 @@ For iOS, build each project with `--platform ios --profile production`; Apple De
 
 ## 5. Release sequence
 
-1. Configure PostgreSQL, Redis, Vercel environment variables, and Fly secrets.
+1. Configure PostgreSQL, Redis, Vercel environment variables, and Koyeb service variables.
 2. Apply and verify database migrations.
 3. Deploy and check the API.
-4. Deploy the Fly tracking service and verify HTTP plus Socket.IO connectivity.
+4. Deploy the Koyeb tracking service and verify HTTP plus Socket.IO connectivity.
 5. Deploy the web Vercel project and confirm login, navigation, and API calls on its final domain.
 6. Build mobile preview artifacts, validate them on devices, then create production store builds.
 
-Vercel can build the API and web app when their Git projects are connected to `main`. EAS mobile builds and Fly deployments are separate release actions and do not happen automatically just because code is pushed.
+Vercel can build the API and web app when their Git projects are connected to `main`. Koyeb can also build from the GitHub repository with automatic deployments enabled. EAS mobile builds are separate release actions and do not happen automatically just because code is pushed.

@@ -1,12 +1,16 @@
 import { io, Socket } from 'socket.io-client';
 
-const TRACKING_URL = process.env.EXPO_PUBLIC_TRACKING_URL ?? 'https://dalasmart-tracking.fly.dev';
+const TRACKING_URL = process.env.EXPO_PUBLIC_TRACKING_URL;
 
 let socket: Socket | null = null;
 let intervalHandle: ReturnType<typeof setInterval> | null = null;
 
 export function connect(token: string): void {
   if (socket?.connected) return;
+  if (!TRACKING_URL) {
+    console.warn('[TrackingSocket] EXPO_PUBLIC_TRACKING_URL is not configured');
+    return;
+  }
   try {
     socket = io(TRACKING_URL, {
       auth: { token },
