@@ -82,7 +82,7 @@ CORS_ORIGIN=http://localhost:5173,http://localhost:5174,http://localhost:3000
 JWT_SECRET=your_jwt_secret_key_here
 
 # Google Maps API Key (REQUIRED!)
-GOOGLE_MAPS_API_KEY=AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+GOOGLE_MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY
 
 # Database
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/dalasmart

@@ -11,7 +11,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/dalasmart';
+const DATABASE_URL = process.env.DATABASE_URL;
 
 interface Migration {
   filename: string;
@@ -20,6 +20,9 @@ interface Migration {
 }
 
 async function runMigrations() {
+  if (!DATABASE_URL) {
+    throw new Error('DATABASE_URL must be set before applying database migrations');
+  }
   const client = new Client({ connectionString: DATABASE_URL });
   
   try {

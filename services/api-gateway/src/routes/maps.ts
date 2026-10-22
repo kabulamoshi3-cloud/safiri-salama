@@ -8,7 +8,13 @@ import { Router, Request, Response } from 'express';
 
 const router = Router();
 
-const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY || 'AIzaSyASYw4Rk2vO1qG60l6D6dZQxUUuzSSJZw8';
+const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+
+function requireMapsKey(res: Response): boolean {
+  if (GOOGLE_API_KEY) return true;
+  res.status(503).json({ error: 'Maps integration is not configured' });
+  return false;
+}
 
 /**
  * GET /api/v1/maps/directions
@@ -17,6 +23,7 @@ const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY || 'AIzaSyASYw4Rk2vO1qG60
  */
 router.get('/directions', async (req: Request, res: Response) => {
   try {
+    if (!requireMapsKey(res)) return;
     const { originLat, originLng, destLat, destLng, mode } = req.query;
 
     if (!originLat || !originLng || !destLat || !destLng) {
@@ -70,6 +77,7 @@ router.get('/directions', async (req: Request, res: Response) => {
  */
 router.get('/autocomplete', async (req: Request, res: Response) => {
   try {
+    if (!requireMapsKey(res)) return;
     const { input, lat, lng } = req.query;
 
     if (!input) return res.status(400).json({ error: 'input required' });
@@ -108,6 +116,7 @@ router.get('/autocomplete', async (req: Request, res: Response) => {
  */
 router.get('/place-details', async (req: Request, res: Response) => {
   try {
+    if (!requireMapsKey(res)) return;
     const { placeId } = req.query;
 
     if (!placeId) return res.status(400).json({ error: 'placeId required' });
@@ -141,6 +150,7 @@ router.get('/place-details', async (req: Request, res: Response) => {
  */
 router.get('/geocode', async (req: Request, res: Response) => {
   try {
+    if (!requireMapsKey(res)) return;
     const { lat, lng } = req.query;
 
     if (!lat || !lng) return res.status(400).json({ error: 'lat and lng required' });
@@ -176,6 +186,7 @@ router.get('/geocode', async (req: Request, res: Response) => {
  */
 router.get('/fare-estimate', async (req: Request, res: Response) => {
   try {
+    if (!requireMapsKey(res)) return;
     const { originLat, originLng, destLat, destLng, vehicleType } = req.query;
 
     if (!originLat || !originLng || !destLat || !destLng) {

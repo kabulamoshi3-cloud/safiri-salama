@@ -10,7 +10,7 @@ const router = Router();
 
 // Africa's Talking config
 const AT_USERNAME = process.env.AT_USERNAME || 'sandbox';
-const AT_API_KEY = process.env.AT_API_KEY || 'atsk_933b2689a5050302c52ec633163445c630f0fc9e649a2eb9a2a3739dd92d1c3c9177c716';
+const AT_API_KEY = process.env.AT_API_KEY;
 const AT_SMS_URL = 'https://api.africastalking.com/version1/messaging';
 const AT_SENDER = 'DalaSmart';
 
@@ -45,9 +45,10 @@ router.post('/send', async (req: Request, res: Response) => {
 
     const message = `Your DalaSmart verification code is: ${code}. Valid for 5 minutes.`;
 
-    // Send SMS via Africa's Talking (skip in sandbox if account not activated)
+    // Send SMS only when Africa's Talking credentials are configured.
     let smsSent = false;
     try {
+      if (!AT_API_KEY) throw new Error('Africa\'s Talking credentials are not configured');
       const params = new URLSearchParams({
         username: AT_USERNAME,
         to: phone,
@@ -67,19 +68,24 @@ router.post('/send', async (req: Request, res: Response) => {
 
       const result = await response.json();
       console.log('SMS result:', JSON.stringify(result));
-      smsSent = true;
+      smsSent = response.ok;
+      if (!smsSent) throw new Error(`Africa's Talking returned HTTP ${response.status}`);
     } catch (smsError) {
       console.log('SMS send failed (sandbox mode):', smsError);
       smsSent = false;
     }
 
+    if (process.env.NODE_ENV === 'production' && !smsSent) {
+      otpStore.delete(phone);
+      return res.status(503).json({ error: 'SMS delivery is not available' });
+    }
+
     res.json({
-      sent: true,
+      sent: smsSent,
       phone,
-      message: 'OTP sent successfully',
+      message: smsSent ? 'OTP sent successfully' : 'SMS provider is not configured; development test mode only',
       expiresIn: '5 minutes',
-      // Always return code in sandbox/dev mode for testing
-      testCode: code,
+      ...(process.env.NODE_ENV !== 'production' ? { testCode: code } : {}),
     });
   } catch (error) {
     console.error('Send OTP error:', error);

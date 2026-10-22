@@ -14,9 +14,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.dalasmart.passenger",
-      "config": {
-        "googleMapsApiKey": "AIzaSyASYw4Rk2vO1qG60l6D6dZQxUUuzSSJZw8"
-      }
+      "config": {}
     },
     "android": {
       "adaptiveIcon": {
@@ -24,11 +22,7 @@
         "backgroundColor": "#1a73e8"
       },
       "package": "com.dalasmart.passenger",
-      "config": {
-        "googleMaps": {
-          "apiKey": "AIzaSyASYw4Rk2vO1qG60l6D6dZQxUUuzSSJZw8"
-        }
-      },
+      "config": {},
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
