@@ -3,7 +3,6 @@ import sys
 import psycopg2
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import train_test_split
 import xgboost as xgb
@@ -28,8 +27,8 @@ def main():
         sys.exit(0)
 
     df = pd.DataFrame(rows, columns=["segment_id", "day_of_week", "hour_of_day", "observed_speed_kmh"])
-    le = LabelEncoder()
-    df["segment_encoded"] = le.fit_transform(df["segment_id"])
+    # Use hash-based encoding to match predictor.py (stateless, no pickle needed)
+    df["segment_encoded"] = df["segment_id"].apply(lambda sid: abs(hash(sid)) % 1000)
 
     X = df[["segment_encoded", "day_of_week", "hour_of_day"]].values
     y = df["observed_speed_kmh"].values
