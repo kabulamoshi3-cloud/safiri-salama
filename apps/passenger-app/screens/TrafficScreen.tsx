@@ -65,6 +65,7 @@ export default function TrafficScreen({ navigation }: any) {
   const [usingCache, setUsingCache] = useState(false);
 
   const fetchTraffic = async () => {
+    setUsingCache(false);
     try {
       const token = await AsyncStorage.getItem('@dalasmart:token');
       const res = await axios.get(`${API}/tracking/traffic/segments`, {

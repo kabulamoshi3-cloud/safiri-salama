@@ -102,12 +102,17 @@ async function fetchAllSegments(pool: Pool): Promise<RoadSegment[]> {
   return res.rows;
 }
 
-// ─── predictTraffic ───────────────────────────────────────────────────────────
+// ─── predictTrafficWithSegments (internal) ────────────────────────────────────
 
-export async function predictTraffic(
+/**
+ * Core prediction logic. Accepts pre-fetched segments to avoid redundant DB
+ * round-trips when called in a loop (e.g. findBestDepartureTime).
+ */
+async function predictTrafficWithSegments(
   segmentIds: string[],
   departureTime: string | number | Date,
-  pool: Pool
+  pool: Pool,
+  allSegments: RoadSegment[]
 ): Promise<PredictionResult[]> {
   const dt =
     departureTime instanceof Date
@@ -116,8 +121,6 @@ export async function predictTraffic(
 
   const { day_of_week, hour_of_day } = darLocalTime(dt);
 
-  // Fetch road_segments for name/length lookup
-  const allSegments = await fetchAllSegments(pool);
   const segmentMap = new Map<string, RoadSegment>(
     allSegments.map((s) => [s.id, s])
   );
@@ -150,7 +153,6 @@ export async function predictTraffic(
     const road_name = seg ? seg.road_name : segment_id;
 
     if (!obs) {
-      // Zero observations — pure baseline
       const speed = baselineSpeed(segment_id, day_of_week, hour_of_day);
       const status = speedToStatus(speed);
       return {
@@ -169,7 +171,6 @@ export async function predictTraffic(
     const avgSpeed = parseFloat(obs.avg_speed);
 
     if (count < 10) {
-      // 1–9 observations — insufficient_data, fall back to baseline speed
       const speed = baselineSpeed(segment_id, day_of_week, hour_of_day);
       const status = speedToStatus(speed);
       return {
@@ -184,9 +185,7 @@ export async function predictTraffic(
       };
     }
 
-    // >=10 observations — ML model
     const stddev = obs.stddev_speed != null ? parseFloat(obs.stddev_speed) : 0;
-    // Higher count and lower relative stddev -> higher confidence
     const cv = avgSpeed > 0 ? stddev / avgSpeed : 1;
     const rawConf = 0.7 + (Math.min(count, 200) / 200) * 0.2 - cv * 0.1;
     const confidence = clamp(rawConf, 0.70, 0.95);
@@ -205,6 +204,17 @@ export async function predictTraffic(
   });
 }
 
+// ─── predictTraffic ───────────────────────────────────────────────────────────
+
+export async function predictTraffic(
+  segmentIds: string[],
+  departureTime: string | number | Date,
+  pool: Pool
+): Promise<PredictionResult[]> {
+  const allSegments = await fetchAllSegments(pool);
+  return predictTrafficWithSegments(segmentIds, departureTime, pool, allSegments);
+}
+
 // ─── findBestDepartureTime ────────────────────────────────────────────────────
 
 export async function findBestDepartureTime(
@@ -221,7 +231,7 @@ export async function findBestDepartureTime(
   const from =
     fromTime instanceof Date ? fromTime : new Date(fromTime);
 
-  // Pre-fetch road_segments once for length_m
+  // Fetch road_segments ONCE; reuse across all 12 prediction slots
   const allSegments = await fetchAllSegments(pool);
   const segmentMap = new Map<string, RoadSegment>(
     allSegments.map((s) => [s.id, s])
@@ -229,7 +239,7 @@ export async function findBestDepartureTime(
 
   /** Compute total travel minutes for a given departure time across all segments. */
   async function totalMinutes(departure: Date): Promise<number> {
-    const predictions = await predictTraffic(segmentIds, departure, pool);
+    const predictions = await predictTrafficWithSegments(segmentIds, departure, pool, allSegments);
     return predictions.reduce((sum, p) => {
       const seg = segmentMap.get(p.segment_id);
       const lengthM = seg ? (seg.length_m ?? 1000) : 1000;

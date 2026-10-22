@@ -48,7 +48,11 @@ export function haversineMeters(
   return R * c;
 }
 
-/** Last known observation per driver_id (used when no explicit `previous` is passed). */
+/**
+ * Last known observation per driver_id (used when no explicit `previous` is passed).
+ * Capped at MAX_CACHE_SIZE entries — oldest entry is evicted when the cap is reached.
+ */
+const MAX_CACHE_SIZE = 10000;
 const _lastObservation = new Map<string, GpsObservation>();
 
 /**
@@ -110,6 +114,13 @@ export function validateGpsObservation(
 
   // Observation passed — update module-level cache if we have a driver key
   if (obs._driverId) {
+    if (_lastObservation.size >= MAX_CACHE_SIZE) {
+      // Evict the oldest entry (first key in insertion order)
+      const firstKey = _lastObservation.keys().next().value;
+      if (firstKey !== undefined) {
+        _lastObservation.delete(firstKey);
+      }
+    }
     _lastObservation.set(obs._driverId, obs);
   }
 

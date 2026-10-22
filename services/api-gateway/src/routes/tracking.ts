@@ -727,7 +727,13 @@ router.get('/traffic', async (req: Request, res: Response) => {
   if (!lat || !lng) return res.status(400).json({ error: 'lat and lng required' });
 
   try {
-    const result = await pool.query(`SELECT * FROM traffic_segments LIMIT 50`);
+    const result = await pool.query(
+      `SELECT id AS segment_id, road_name, lat_start, lng_start, lat_end, lng_end,
+              typical_speed_kmh AS speed_kmh, distance_km, is_active
+       FROM road_segments
+       WHERE is_active = true OR is_active IS NULL
+       LIMIT 50`
+    );
     if (result.rows.length > 0) {
       return res.json(result.rows);
     }

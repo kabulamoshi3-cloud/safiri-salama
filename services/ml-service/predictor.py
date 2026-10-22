@@ -23,11 +23,14 @@ class Predictor:
             return None
         try:
             import numpy as np
+            import datetime as _dt_mod
             from datetime import datetime, timezone
             dt = datetime.fromisoformat(departure_time.replace('Z', '+00:00'))
-            utc_hour = dt.hour
-            dar_hour = (utc_hour + 3) % 24
-            dar_day = dt.weekday() + 1 if (utc_hour + 3) < 24 else (dt.weekday() + 2) % 7
+            # Shift UTC to Africa/Dar_es_Salaam (UTC+3)
+            dar_dt = dt + _dt_mod.timedelta(hours=3)
+            # Python weekday: Mon=0, Sun=6 → Postgres DOW: Sun=0, Sat=6
+            dar_day = (dar_dt.weekday() + 1) % 7
+            dar_hour = dar_dt.hour
             # Simple segment hash encoding (must match training; use 0 for unknown)
             segment_hash = abs(hash(segment_id)) % 1000
             X = np.array([[segment_hash, dar_day, dar_hour]])
