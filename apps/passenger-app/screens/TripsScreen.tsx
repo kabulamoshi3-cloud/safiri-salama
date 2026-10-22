@@ -5,6 +5,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import i18n from '../i18n';
 
 const API = 'https://simon-daladala-api.vercel.app/api/v1';
 
@@ -21,7 +22,23 @@ interface Trip {
   passenger_rating: number;
 }
 
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case 'completed': return i18n.t('completed');
+    case 'cancelled': return i18n.t('cancelled');
+    case 'pending': return i18n.t('pending');
+    case 'in_progress': return i18n.t('trip_in_progress');
+    case 'accepted': return i18n.t('accept');
+    default: return status.replace('_', ' ');
+  }
+};
+
 export default function TripsScreen() {
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
+
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -61,8 +78,8 @@ export default function TripsScreen() {
     const d = new Date(dateStr);
     const now = new Date();
     const diff = now.getTime() - d.getTime();
-    if (diff < 86400000) return 'Today';
-    if (diff < 172800000) return 'Yesterday';
+    if (diff < 86400000) return i18n.t('today');
+    if (diff < 172800000) return i18n.t('yesterday');
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   };
 
@@ -78,7 +95,7 @@ export default function TripsScreen() {
           <Text style={styles.tripDate}>{formatDate(item.created_at)}</Text>
           <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
             <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
-              {item.status?.replace('_', ' ')}
+              {getStatusLabel(item.status)}
             </Text>
           </View>
         </View>
@@ -87,12 +104,12 @@ export default function TripsScreen() {
       <View style={styles.routeSection}>
         <View style={styles.routeRow}>
           <View style={[styles.routeDot, { backgroundColor: '#4caf50' }]} />
-          <Text style={styles.routeText} numberOfLines={1}>{item.pickup_address || 'Pickup'}</Text>
+          <Text style={styles.routeText} numberOfLines={1}>{item.pickup_address || i18n.t('pickup_location')}</Text>
         </View>
         <View style={styles.routeLine} />
         <View style={styles.routeRow}>
           <View style={[styles.routeDot, { backgroundColor: '#f44336' }]} />
-          <Text style={styles.routeText} numberOfLines={1}>{item.dropoff_address || 'Destination'}</Text>
+          <Text style={styles.routeText} numberOfLines={1}>{item.dropoff_address || i18n.t('destination')}</Text>
         </View>
       </View>
 
@@ -121,10 +138,10 @@ export default function TripsScreen() {
       {/* Filter tabs */}
       <View style={styles.filterRow}>
         {[
-          { id: 'all', label: 'All' },
-          { id: 'completed', label: 'Completed' },
-          { id: 'cancelled', label: 'Cancelled' },
-          { id: 'pending', label: 'Pending' },
+          { id: 'all', label: i18n.t('all') },
+          { id: 'completed', label: i18n.t('completed') },
+          { id: 'cancelled', label: i18n.t('cancelled') },
+          { id: 'pending', label: i18n.t('pending') },
         ].map((f) => (
           <TouchableOpacity
             key={f.id}
@@ -145,8 +162,8 @@ export default function TripsScreen() {
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Ionicons name="car-outline" size={60} color="#ddd" />
-            <Text style={styles.emptyTitle}>No trips yet</Text>
-            <Text style={styles.emptySubtext}>Your ride history will appear here</Text>
+            <Text style={styles.emptyTitle}>{i18n.t('no_trips')}</Text>
+            <Text style={styles.emptySubtext}>{i18n.t('trip_history_desc')}</Text>
           </View>
         }
       />
@@ -169,7 +186,7 @@ const styles = StyleSheet.create({
   tripInfo: { flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginLeft: 12 },
   tripDate: { fontSize: 13, color: '#999' },
   statusBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 10 },
-  statusText: { fontSize: 11, fontWeight: '600', textTransform: 'capitalize' },
+  statusText: { fontSize: 11, fontWeight: '600' },
   routeSection: { marginBottom: 12 },
   routeRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 3 },
   routeDot: { width: 8, height: 8, borderRadius: 4, marginRight: 10 },
@@ -185,4 +202,3 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 18, fontWeight: '600', color: '#999', marginTop: 16 },
   emptySubtext: { fontSize: 13, color: '#ccc', marginTop: 4 },
 });
-

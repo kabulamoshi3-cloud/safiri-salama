@@ -1,8 +1,10 @@
-# Background tracking, push notifications, ratings, and earnings (Build 3 + Build 5) — v3 pass
+# Background tracking, push notifications, ratings, and earnings (Build 3 + Build 5)
 
-This is a third-pass review. The two blocking issues from v2 — push notification payload field mismatch (`tripId` vs `trip_id`) and uncapped `earnings/history` limit — are both fixed in this build. The notification handler now uses `data.tripId ?? data.trip_id`, and `earnings.ts` applies `Math.min(Number(limit), 200)`. One new blocking issue surfaces: tapping a `trip_completed` push notification navigates to `RatingScreen` with only `{ tripId }` in the params, but `RatingScreen.submitRating` requires `driverId` (or `driver.id`) to post the rating. Both resolve to `undefined` from a notification-sourced navigation, making the rating silently skipped on every notification-tap path.
+This change wires up the full driver-side operational stack: GPS background tracking via `expo-location`, push notifications via Expo Push for both apps, a `ratings` table and route that lets passengers rate drivers and drivers rate passengers, a `driver_earnings` table populated on trip completion, a driver earnings screen with a 7-day bar chart, and push notification tap-handling that routes to the correct screen for each event type. Both the driver and passenger apps register push tokens on startup. Trip status transitions in `trips.ts` fire push notifications to passengers at `ACCEPTED`, `DRIVER_ARRIVING`, and `COMPLETED` — all fire-and-forget so they never block a trip state machine transition.
 
-Watch for: **confirmed** — `RatingScreen` guards `if (tripId && rateeId)` before posting; `rateeId = driverId ?? driver?.id ?? null` where both `driverId` and `driver` are `undefined` when arriving from notification tap, so `rateeId` is `null` and the axios call is never made. The screen renders, the user selects stars, taps "Wasilisha" — nothing posts. **possible** — the platform field in both notification services is hardcoded `'android'`, meaning iOS tokens will be stored but push delivery will silently fail on iOS devices.
+The v2 blocking issue (RatingScreen requiring `rateeId` from params before posting) is resolved: the server now derives the ratee from the trip, and the client posts only `{ trip_id, rating, review }`. The notification-tap path now fetches the trip to resolve the driver for display purposes, which is independent of whether the POST succeeds.
+
+Watch for: **confirmed** — both notification services hardcode `platform: 'android'` when registering tokens, so iOS tokens will be accepted and stored but Expo Push may silently fail to deliver on iOS devices. **confirmed** — `sendPushNotification` in `notifications.ts` reads `push_token` from `users` (a single-token column) rather than `user_push_tokens` (the multi-token table created in migration 014), meaning a driver who logs in on a second device overwrites the first token and the first device goes dark with no error. **confirmed** — the tip UI in `RatingScreen` collects a tip amount (0 / 500 / 1000 / 2000 TSh) but the value is never included in the POST body and there is no tip column in the `ratings` table; the tip field silently does nothing.
 
 **Verdict**: NEEDS_CHANGES
 
@@ -10,99 +12,65 @@ Watch for: **confirmed** — `RatingScreen` guards `if (tripId && rateeId)` befo
 
 ## High-level view
 
-Both previously blocking notification issues are fixed. The `trip_completed` routing now correctly targets `Rating`, and the `tripId`/`trip_id` mismatch is resolved with a fallback. However, the full notification-tap-to-rating flow still breaks one level deeper: the Rating screen needs the driver's identity to post the rating, and the notification payload only carries `tripId`. The screen renders gracefully but submits nothing.
+`BackgroundLocation.ts` correctly guards `expo-task-manager` with a dynamic require try/catch, uses the `expo-location` API properly, and sends location updates to the tracking endpoint with auth token and `trip_id` from AsyncStorage. The guard pattern means the module loads safely when the native module is absent.
 
-The rating route accepts a caller-supplied `ratee_id` without verifying it is actually the counterparty in the trip. A passenger could submit a rating against any user ID as long as they were a party to the trip. This is an integrity gap, not a security hole — the party check (`trip.passenger_id !== userId && trip.driver_id !== userId`) ensures the rater was in the trip, but not that the target was.
+Both notification services guard `expo-notifications` with the same dynamic require pattern. The driver service is class-based with an explicit `cleanup()` that removes the response subscription. The passenger service is functional. Both request permission before fetching the token, and register the token with the backend inside a nested try/catch so a registration failure doesn't abort the initialization sequence.
 
-Both notification services hardcode `platform: 'android'`. iOS tokens will upsert correctly but Expo's push service requires the `sound` field format to differ slightly between platforms. In practice this is likely harmless — Expo handles the platform routing from the token prefix — but the `device_platform` stored in the DB will be wrong for iOS users.
+The `ratings.ts` route correctly derives `ratee_id` server-side from the trip record rather than accepting it from the request body, preventing spoofing. The 409 duplicate check fires before the transaction opens, which is a minor TOCTOU window — two concurrent first ratings for the same trip could both pass the check and then the second INSERT would hit the `UNIQUE(trip_id, rater_id)` constraint and 500 instead of 409. In practice this race is negligible for user-initiated ratings, but it's worth noting.
 
-The earnings insert uses `ON CONFLICT (trip_id) DO NOTHING` so retries don't double-credit, and the fire-and-forget `.catch()` means an earnings DB failure is logged but does not roll back the completed trip.
+`earnings.ts` uses rolling 7-day and 30-day windows (`CURRENT_DATE - INTERVAL '7 days'`), not calendar week/month. The `history` endpoint caps `limit` at 200 via `Math.min`, which is correct. The earnings insert in `trips.ts` on `COMPLETED` uses `ON CONFLICT (trip_id) DO NOTHING` and runs fire-and-forget, so a failed insert logs to stderr but never blocks the response.
 
----
+The push notification wiring from `trips.ts` uses the correct type strings (`driver_assigned`, `driver_arriving`, `trip_completed`) and the passenger notification handler routes anything not `trip_completed` to `TripActive`, so `driver_assigned` navigates correctly even though the comment says `trip_accepted`. The `trip_completed` tap navigates to `Rating` with `{ tripId, driverId }`, and the current `RatingScreen` fetches the trip to resolve the driver for display if `resolvedDriver` is not already set — the POST no longer requires `driverId` in params.
 
 <details>
-<summary>Issues (2)</summary>
+<summary>Issues (4)</summary>
 
-1. **Rating skipped silently on notification tap** — `RatingScreen` computes `rateeId = driverId ?? driver?.id ?? null`. When navigated from a notification tap, the params only contain `{ tripId }`, so both are `undefined` and `rateeId` is `null`. The guard `if (tripId && rateeId)` skips the axios call entirely; the user sees the success alert but no rating is submitted. Fix: fetch trip details from the API on mount (using `tripId`) to retrieve `driver_id`, or include `driverId` in the `trip_completed` notification payload from the server.
+1. **iOS push delivery silent failure** — both notification services register tokens with `platform: 'android'` hardcoded. iOS devices will store tokens but Expo Push will not deliver correctly. Add platform detection: `Platform.OS` from `react-native`, or `Device.osName` from `expo-device`. Fix in both `apps/driver-app/src/services/NotificationService.ts` and `apps/passenger-app/services/NotificationService.ts`.
 
-2. **`ratee_id` not validated as the trip counterparty** — The rating POST verifies the rater is a party to the trip but does not verify that `ratee_id` is the other party. A passenger who was on trip T could submit a 1-star rating targeting an arbitrary user ID (any user in the system, not just their driver). Fix: add a check that `ratee_id === trip.driver_id` when `userId === trip.passenger_id`, and vice versa.
+2. **Single-token column used for dispatch** — `sendPushNotification` queries `users.push_token`, not `user_push_tokens`. A multi-device driver loses notifications on their first device when they log in on a second. Either update `sendPushNotification` to query `user_push_tokens` and fan out, or accept the single-device constraint and document it. The migration and upsert endpoint both support multi-token storage; the send path doesn't use it.
+
+3. **Tip UI silently discarded** — `RatingScreen` lets the passenger select a tip (0–2000 TSh) but the `submitRating` POST sends only `{ trip_id, rating, review }`. The tip is never sent. Either remove the tip UI (it sets a false expectation for users) or add `tip_amount` to the POST body and handle it server-side.
+
+4. **Ratings duplicate 409 has a narrow TOCTOU gap** — `ratings.ts` checks for a duplicate with a plain SELECT before opening the transaction, so two simultaneous first-time rating POSTs for the same trip could both pass the check and then the second INSERT will 500 (constraint violation) rather than 409. Move the duplicate check inside the transaction or rely solely on the UNIQUE constraint and catch error code `23505` to return 409 instead of 500.
 
 </details>
 
 <details>
 <summary>Details</summary>
 
-### Rating screen receives insufficient params from notification tap
+### expo-task-manager guard and location API
 
-The `trip_completed` notification handler in `passenger-app/services/NotificationService.ts` stores:
+`BackgroundLocation.ts` wraps `require('expo-task-manager')` in try/catch at module load time. The `defineTask` call is at module scope inside the guard — the correct placement because Expo requires the task to be defined before the app finishes mounting. A fetch error inside the task handler is caught and logged without re-throwing, so a network outage in the background doesn't kill the task worker.
 
-```typescript
-pendingNav = { screen: 'Rating', params: { tripId: resolvedTripId } };
+### Driver notification service — subscription cleanup
+
+The `setNotificationHandler` call is inside `initialize()` after the token is registered. If `initialize()` runs more than once (e.g. on foreground restore), the handler re-registers — Expo de-duplicates this internally, so no issue.
+
+### Passenger notification handler — routing on notification tap
+
+`setupNotificationHandlers` branches on `data.type`. `trip_completed` goes to `Rating` with `{ tripId, driverId }`. Everything else — including `driver_assigned`, `driver_arriving`, `new_trip_request`, or any unknown type — goes to `TripActive`. This is intentional and correct: the else branch is a safe fallback. The `driverId` in the `trip_completed` payload comes from the server (`userId` at completion time), so `RatingScreen` receives it in params and can skip the trip-fetch for the display case, though the screen is now resilient either way.
+
+The notification handler comment says `trip_accepted, driver_arriving → TripActive` but the server sends `driver_assigned` (not `trip_accepted`) at accept time. This is a comment inconsistency, not a behavioral bug — `driver_assigned` routes to `TripActive` via the else branch.
+
+### Migration 014 — push token schema
+
+The migration creates `user_push_tokens` with `UNIQUE(token)` and an `ON CONFLICT (token) DO UPDATE` upsert in `/push-token` that reassigns `user_id` when a token moves between accounts (device transfer). This is the correct behavior. However, `sendPushNotification` (Issue 2) reads `users.push_token` and never touches `user_push_tokens`, making the multi-token table a write-only store.
+
+### Ratings route — average recalculation
+
+The average recalculation runs inside the same transaction as the INSERT:
+```sql
+UPDATE users SET rating = (SELECT AVG(rating)::NUMERIC(3,2) FROM ratings WHERE ratee_id = $1) WHERE id = $1
 ```
+Full recalculation from history is accurate but O(n) per rating. At current scale this is fine, but it will degrade on active drivers with thousands of ratings.
 
-`RatingScreen` destructures:
+### Earnings route — pagination gap
 
-```typescript
-const { driver, fare, pickup, destination, tripId, driverId } = route.params;
-```
+The `history` endpoint returns `count` (rows returned in this page) but not total available rows, so a client has no way to know whether there are more results. A `has_more` boolean or `total_count` field would be needed for proper infinite scroll.
 
-Both `driver` and `driverId` are `undefined`. The submit path:
+### trips.ts push wiring — sequencing
 
-```typescript
-const rateeId = driverId ?? driver?.id ?? null;
-if (tripId && rateeId) {
-  await axios.post(`${API_BASE}/ratings`, { trip_id: tripId, ratee_id: rateeId, ... });
-}
-// rateeId is null → the block above is skipped
-Alert.alert('Asante! 🌟', ...);  // fires regardless
-```
-
-The success alert fires unconditionally after the guarded block, so the user believes the rating was submitted. This path is only reachable via notification tap — navigating to Rating from `TripActiveScreen` (which passes the full params) works correctly.
-
-The minimal fix is to include `driverId` in the server-side push payload:
-
-```typescript
-// trips.ts, /complete handler
-sendPushNotification(
-  trip.passenger_id, 'Safari Imekamilika 🎉', '...',
-  { type: 'trip_completed', tripId, driverId: userId }
-).catch(() => {});
-```
-
-Or fetch on mount:
-
-```typescript
-// RatingScreen
-useEffect(() => {
-  if (!driverId && !driver?.id && tripId) {
-    fetchTripDetails(tripId).then(t => setResolvedDriverId(t.driver_id));
-  }
-}, []);
-```
-
-### `ratee_id` counterparty validation gap
-
-The POST `/ratings` handler confirms the rater is a party:
-
-```typescript
-if (trip.passenger_id !== userId && trip.driver_id !== userId)
-  return res.status(403).json({ error: 'Not a party to this trip' });
-```
-
-But it does not verify `ratee_id` is the actual counterparty. A passenger authenticated on trip T could send:
-
-```json
-{ "trip_id": "T", "ratee_id": "<any-user-uuid>", "rating": 1 }
-```
-
-The `UNIQUE (trip_id, rater_id)` constraint prevents a second rating, but the first rating silently targets an arbitrary account. The fix is one additional server-side check:
-
-```typescript
-const expectedRateeId =
-  userId === trip.passenger_id ? trip.driver_id : trip.passenger_id;
-if (ratee_id !== expectedRateeId)
-  return res.status(400).json({ error: 'ratee_id does not match trip counterparty' });
-```
+The state transition commits first, `res.json()` sends the response, and then all side effects (push notifications, earnings insert) run fire-and-forget. The driver-dispatch query at trip creation filters `d.status = 'available'` and `u.push_token IS NOT NULL` — drivers without tokens are silently skipped, which is correct.
 
 </details>
 
@@ -111,24 +79,20 @@ if (ratee_id !== expectedRateeId)
 <details>
 <summary>File map</summary>
 
-| File | What changed |
-|---|---|
-| `apps/driver-app/src/services/BackgroundLocation.ts` | expo-task-manager guard, background GPS with foreground service notification |
-| `apps/driver-app/src/services/NotificationService.ts` | Replaces Firebase/Notifee — guarded expo-notifications, Expo push token registration |
-| `apps/passenger-app/services/NotificationService.ts` | Guarded expo-notifications, push token registration, tap-to-navigate handler (`trip_completed` → Rating, others → TripActive; camelCase/snake_case fallback) |
-| `services/api-gateway/migrations/014_push_tokens.sql` | `user_push_tokens` (UNIQUE on token), push_token/device_platform on users |
-| `services/api-gateway/migrations/015_ratings_earnings.sql` | `ratings` (UNIQUE trip_id+rater_id, CHECK 1–5), `driver_earnings` (UNIQUE trip_id) |
-| `services/api-gateway/src/routes/ratings.ts` | Submit rating, get my ratings, driver rating summary; transactional average recalculation |
-| `services/api-gateway/src/routes/earnings.ts` | Summary with FILTER aggregates, paginated history (limit capped at 200) |
-| `services/api-gateway/src/routes/notifications.ts` | Push token upsert (UNIQUE conflict on token), `sendPushNotification` exported |
-| `services/api-gateway/src/routes/trips.ts` | Push wiring at accept/driver-arriving/complete, fire-and-forget earnings insert on complete (20/80 split) |
-| `apps/driver-app/src/screens/main/EarningsScreen.tsx` | Period toggle, 7-day bar chart (pure RN Views), pull-to-refresh, history list |
-| `apps/driver-app/src/screens/trip/RatePassengerScreen.tsx` | 5-star UI, posts to /ratings |
-| `apps/passenger-app/screens/RatingScreen.tsx` | 5-star UI with tip selection, posts to /ratings |
-| `apps/passenger-app/screens/EarningsScreen.tsx` | Replaced static stub — calls GET /earnings/summary |
-| `apps/driver-app/src/App.tsx` | Registers NotificationService.initialize() in useEffect |
-| `apps/passenger-app/App.tsx` | Calls registerForPushNotifications and setupNotificationHandlers in initialization |
-
-Full diff: `git diff main -- apps/driver-app apps/passenger-app services/api-gateway`
+| File | Change |
+|------|--------|
+| `apps/driver-app/src/services/BackgroundLocation.ts` | New — expo-task-manager guard, location tracking start/stop/status |
+| `apps/driver-app/src/services/NotificationService.ts` | New — expo-notifications guard, token registration, tap handler |
+| `apps/passenger-app/services/NotificationService.ts` | New — expo-notifications guard, token registration, tap routing |
+| `services/api-gateway/migrations/014_push_tokens.sql` | New — push_token column on users, user_push_tokens table |
+| `services/api-gateway/migrations/015_ratings_earnings.sql` | New — ratings table with star CHECK, driver_earnings table |
+| `apps/driver-app/src/App.tsx` | Modified — NotificationService.initialize() + cleanup() wired |
+| `apps/passenger-app/App.tsx` | Modified — registerForPushNotifications + setupNotificationHandlers on mount |
+| `services/api-gateway/src/routes/ratings.ts` | New — server-side ratee derivation, 409 on duplicate, transactional average update |
+| `services/api-gateway/src/routes/earnings.ts` | New — summary (today/week/month/total) + paginated history |
+| `apps/driver-app/src/screens/main/EarningsScreen.tsx` | New — pull-to-refresh, period selector, pure-RN bar chart, history list |
+| `apps/passenger-app/screens/RatingScreen.tsx` | Modified — server-derived ratee, trip fetch for notification-tap path |
+| `apps/driver-app/src/screens/trip/RatePassengerScreen.tsx` | New — 5-star UI, server-derived ratee, skip option |
+| `services/api-gateway/src/routes/trips.ts` | Modified — fire-and-forget push at 4 transitions, fire-and-forget earnings insert at COMPLETED |
 
 </details>

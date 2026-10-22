@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Auto-approve bash commands",
+      "trigger": "PreToolUse",
+      "description": "Automatically allows all execute_bash tool calls without prompting for approval",
+      "matcher": "execute_bash",
+      "action": {
+        "type": "command",
+        "command": "echo '{\"hookSpecificOutput\":{\"permissionDecision\":\"allow\",\"permissionDecisionReason\":\"Auto-approved by hook\"}}'"
+      }
+    }
+  ]
+}

@@ -8,17 +8,22 @@ DalaSmart is a ride-hailing platform built for the **daladala** (minibus) transp
 
 ```
 apps/passenger-app      ──┐
-apps/driver-app         ──┤──► services/api-gateway (Node.js / TypeScript / Express)
-apps/driver-dashboard   ──┤       ├── PostgreSQL  (pg pool, 15 migrations)
-apps/operator-dashboard ──┤       ├── Redis       (optional cache)
-apps/admin-panel        ──┤       └── External: OpenRouteService, M-Pesa / Airtel
-apps/web-platform       ──┘            Money / Tigo Pesa / Halotel, Expo push / FCM
-                                 
-packages/shared-types             (TypeScript interfaces shared across apps)
+apps/driver-app         ──┤──► services/api-gateway (Node.js/TS, Express)
+apps/operator-dashboard ──┤        ├── PostgreSQL (pg pool)
+apps/admin-panel        ──┘        ├── Redis (optional cache)
+                                   └── External: ORS, M-Pesa, Airtel, Expo/FCM
 ```
 
-### Planned (not yet built)
-A Go fleet-tracker microservice, Python AI / trip-planner services, Kafka message bus, TimescaleDB, and Elasticsearch are planned for a future phase. The current implementation is a Node.js monolith in `services/api-gateway`.
+**Current implementation:** Single Node.js/TypeScript API gateway serving all client apps. PostgreSQL provides data persistence. Redis is optional for caching. External services include OpenRouteService for routing, mobile money providers (M-Pesa, Airtel Money, Tigo Pesa, Halotel), and push notification services (Expo Push, Firebase Cloud Messaging).
+
+### Planned Future Architecture
+
+The following services are planned but not yet implemented:
+- **Go fleet-tracker** — High-throughput GPS ingestion and real-time tracking
+- **Python AI engine** — ML-based trip planning, demand prediction, and traffic forecasting
+- **Kafka** — Message bus for event streaming
+- **TimescaleDB** — Time-series GPS and analytics data
+- **Elasticsearch** — Full-text search for trips, drivers, and locations
 
 ---
 
@@ -50,20 +55,21 @@ daladala/
 ├── apps/
 │   ├── passenger-app/          # React Native (Expo) — Android & iOS passenger app
 │   ├── driver-app/             # React Native (Expo) — Android & iOS driver app
-│   ├── driver-dashboard/       # Vite SPA — advanced driver analytics dashboard
-│   ├── operator-dashboard/     # Vite SPA — fleet operator web SPA
-│   ├── admin-panel/            # Vite SPA — system administrator web SPA
+│   ├── operator-dashboard/     # Vite SPA — fleet operator web interface
+│   ├── admin-panel/            # Vite SPA — system administrator web interface
 │   └── web-platform/           # Vite SPA — responsive web app for passengers
 │
 ├── services/
-│   └── api-gateway/            # Node.js / TypeScript — the only built backend service
+│   └── api-gateway/            # Node.js/TypeScript Express API (only implemented backend)
 │       ├── src/
-│       │   ├── routes/         # Express routers (26 route prefixes)
+│       │   ├── routes/         # Express routers (30+ route prefixes)
 │       │   ├── middleware/     # auth, RBAC, validation, rate limiter, error handler
 │       │   ├── database/       # pg Pool wrappers
-│       │   └── __tests__/     # Jest + supertest route tests
-│       ├── migrations/         # 15 numbered SQL migration files
-│       └── scripts/            # run-migrations.ts, seed-data.ts
+│       │   ├── services/       # Business logic (GPS validation, traffic prediction)
+│       │   └── __tests__/      # Jest + supertest tests
+│       ├── migrations/         # SQL migration files
+│       ├── scripts/            # run-migrations.ts, seed-data.ts
+│       └── .env.example        # Environment variable template
 │
 ├── packages/
 │   └── shared-types/           # TypeScript interfaces shared across apps
@@ -71,8 +77,7 @@ daladala/
 ├── infrastructure/
 │   └── database/               # DB schema reference and docker-compose
 │
-├── .env.example                # Environment variable template
-├── SETUP.md                    # Step-by-step setup guide
+├── SETUP.md                    # Step-by-step setup guide (see this first!)
 └── README.md                   # This file
 ```
 
@@ -82,38 +87,39 @@ daladala/
 
 All routes are served from `services/api-gateway`. Public routes require no token; protected routes require `Authorization: Bearer <token>`.
 
-| Prefix | Auth | Description |
+| Route Prefix | Auth | Description |
 |---|---|---|
-| `GET /health` | None | Health check |
-| `POST /api/v1/auth/register` | None | Register a new user |
-| `POST /api/v1/auth/login` | None | Login, receive JWT |
-| `GET /api/v1/auth/me` | Bearer | Get current user profile |
-| `PATCH /api/v1/auth/me` | Bearer | Update profile |
-| `POST /api/v1/auth/change-password` | Bearer | Change password |
-| `GET /api/v1/trips` | Bearer | List / history of trips |
-| `POST /api/v1/trips` | Bearer (passenger) | Create a trip request |
-| `PATCH /api/v1/trips/:id/accept` | Bearer (driver) | Driver accepts trip |
-| `PATCH /api/v1/trips/:id/driver-arriving` | Bearer (driver) | Driver en route |
-| `PATCH /api/v1/trips/:id/arrived` | Bearer (driver) | Driver arrived at pickup |
-| `PATCH /api/v1/trips/:id/start` | Bearer (driver) | Trip begins |
-| `PATCH /api/v1/trips/:id/complete` | Bearer (driver) | Trip completed |
-| `PATCH /api/v1/trips/:id/cancel` | Bearer | Cancel trip |
-| `POST /api/v1/tracking/calculate-route` | None | Route + fare estimate |
-| `POST /api/v1/tracking/driver/update` | Bearer | Driver location update |
-| `GET /api/v1/tracking/driver/:id` | Bearer | Get driver location |
-| `GET /api/v1/tracking/nearby` | Bearer | Online drivers near a point |
-| `GET /api/v1/tracking/trip/:id` | Bearer | Live trip tracking |
-| `GET /api/v1/payments/info` | Bearer | Available payment methods |
-| `POST /api/v1/payments/pay` | Bearer | Initiate payment (M-Pesa / Airtel / Tigo / Halotel / Wallet / Cash) |
-| `GET /api/v1/payments/status/:ref` | Bearer | Poll payment status |
-| `GET /api/v1/payments/receipt/:ref` | Bearer | Get payment receipt |
-| `POST /api/v1/ratings` | Bearer | Submit trip rating |
-| `GET /api/v1/earnings` | Bearer (driver) | Driver earnings summary |
-| `POST /api/v1/notifications/register` | Bearer | Register push token |
-| `GET /api/v1/promo/available` | Bearer | List available promo codes |
-| `POST /api/v1/promo/validate` | Bearer | Validate a promo code |
-| `GET /api/v1/drivers` | Bearer | Driver list |
-| `GET /api/v1/admin/*` | Bearer (admin) | Admin management endpoints |
+| `/health` | None | Health check endpoint |
+| `/api/v1/status` | None | API status and feature list |
+| `/api/v1/auth` | Mixed | Authentication (register, login, profile, change password) |
+| `/api/v1/trips` | Bearer | Trip lifecycle management (create, accept, start, complete, cancel, rate) |
+| `/api/v1/drivers` | Bearer | Driver management and availability |
+| `/api/v1/tracking` | Mixed | Real-time GPS tracking, driver location updates, route calculation (ORS with fallback) |
+| `/api/v1/payments` | Bearer | Payment processing (M-Pesa, Airtel, Tigo, Halotel, Wallet, Cash, QR Code; receipts; bill payments) |
+| `/api/v1/ratings` | Bearer | Trip ratings and reviews |
+| `/api/v1/earnings` | Bearer | Driver earnings, payouts, and revenue reports |
+| `/api/v1/notifications` | Bearer | Push notification registration (Expo Push, FCM) |
+| `/api/v1/promo` | Bearer | Promo code management and validation |
+| `/api/v1/referral` | Bearer | Referral program and rewards |
+| `/api/v1/driver-incentives` | Bearer | Driver incentive programs and bonuses |
+| `/api/v1/subscription` | Bearer | Subscription plans and billing |
+| `/api/v1/support` | Bearer | Customer support tickets and chat |
+| `/api/v1/corporate` | Bearer | Corporate account management |
+| `/api/v1/food` | Bearer | Food delivery orders and restaurant management |
+| `/api/v1/shop` | Bearer | Shop delivery orders and inventory |
+| `/api/v1/advertising` | Bearer | In-app advertising campaigns |
+| `/api/v1/money` | Bearer | P2P money transfers and wallet top-ups |
+| `/api/v1/insurance` | Bearer | Trip insurance and claims |
+| `/api/v1/university` | Bearer | University marketplace for students |
+| `/api/v1/upload` | Bearer | File uploads (Cloudinary integration) |
+| `/api/v1/maps` | Bearer | Map data, tiles, and geocoding |
+| `/api/v1/chat` | Bearer | In-app chat support between passengers and drivers |
+| `/api/v1/pricing` | Bearer | Dynamic pricing and fare calculation |
+| `/api/v1/features` | Bearer | Feature flags and A/B testing |
+| `/api/v1/otp` | Mixed | OTP verification (SMS via Africa's Talking) |
+| `/api/v1/admin` | Bearer (admin) | Admin management endpoints and dashboards |
+
+For detailed endpoint documentation, see route files in `services/api-gateway/src/routes/`.
 
 ---
 
@@ -151,95 +157,181 @@ CANCELLED ◄──────────────────────�
 
 ## Environment Variables
 
-Copy `.env.example` to `services/api-gateway/.env` and fill in the required values. See `.env.example` for the full annotated list. Minimum required for local development:
+The API requires specific environment variables to run. See `services/api-gateway/.env.example` for the complete list with descriptions.
 
-```env
-DATABASE_URL=postgresql://postgres:password@localhost:5432/dalasmart
-JWT_SECRET=<64-char random hex string>
-NODE_ENV=development
-```
+### Required (minimum for local development)
 
-Optional (enables extra features):
+| Variable | Description | Example |
+|---|---|---|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:password@localhost:5432/dalasmart` |
+| `JWT_SECRET` | 64-character random hex string | Generate: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"` |
+| `NODE_ENV` | Environment | `development` / `production` |
+| `PORT` | Server port | `3000` |
 
-```env
-ORS_API_KEY=           # turn-by-turn routing; falls back to straight-line without it
-MPESA_CONSUMER_KEY=    # M-Pesa STK push
-AIRTEL_CLIENT_ID=      # Airtel Money
-TIGO_MERCHANT_ACCOUNT= # Tigo Pesa
-HALOTEL_MERCHANT_CODE= # Halotel
-EXPO_ACCESS_TOKEN=     # Expo push notifications
-FCM_SERVER_KEY=        # Firebase Cloud Messaging
-```
+### Optional (enables additional features)
+
+| Variable | Description |
+|---|---|
+| `ORS_API_KEY` | OpenRouteService API key for turn-by-turn routing (falls back to straight-line estimate without it) |
+| `REDIS_URL` | Redis connection string for caching |
+| `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET`, etc. | M-Pesa payment integration |
+| `AIRTEL_CLIENT_ID`, `AIRTEL_CLIENT_SECRET` | Airtel Money integration |
+| `TIGO_MERCHANT_ACCOUNT`, `TIGO_MERCHANT_PIN` | Tigo Pesa integration |
+| `HALOTEL_MERCHANT_CODE` | Halotel payment integration |
+| `EXPO_ACCESS_TOKEN` | Expo push notifications |
+| `FCM_SERVER_KEY` | Firebase Cloud Messaging |
+| `CORS_ORIGIN` | CORS allowed origin (use `*` for development) |
+| `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX_REQUESTS` | Rate limiting configuration |
+| `LOG_LEVEL` | Logging verbosity (`info`, `debug`, `error`) |
 
 ---
 
 ## Setup
 
-See **[SETUP.md](./SETUP.md)** for the full step-by-step guide. Quick summary:
+See **[SETUP.md](./SETUP.md)** for the complete step-by-step setup guide with troubleshooting.
+
+### Quick Start
 
 ```bash
-# 1. Install
+# 1. Install dependencies
 npm install
 
-# 2. Configure
-cp .env.example services/api-gateway/.env
-# Edit DATABASE_URL and JWT_SECRET
+# 2. Configure environment
+cp services/api-gateway/.env.example services/api-gateway/.env
+# Edit DATABASE_URL and JWT_SECRET in services/api-gateway/.env
 
-# 3. Migrate
+# 3. Create database and run migrations
+createdb dalasmart
 cd services/api-gateway && npm run migrate
 
-# 4. Run
+# 4. Start development server
 npm run dev
 
-# 5. Smoke test
+# 5. Verify it's running
 curl http://localhost:3000/health
+```
+
+Expected response from health check:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "uptime": 5.123
+}
 ```
 
 ---
 
 ## Running Tests
 
-Tests use Jest + supertest. The database and all external services (ORS, M-Pesa) are mocked — no live DB or internet connection required.
+All tests use Jest + supertest with mocked database and external services (ORS, M-Pesa, Airtel, etc.). No live database connection or internet access is required to run tests.
 
 ```bash
 cd services/api-gateway
 npm test
 ```
 
-Expected output: all test suites pass.
-
----
-
-## Features Completed
-
-- User authentication — register, login, JWT, profile, password change
-- Trip lifecycle with full state machine (REQUESTED → ACCEPTED → DRIVER_ARRIVING → ARRIVED → IN_PROGRESS → COMPLETED / CANCELLED)
-- Real-time driver location tracking — in-memory store + PostgreSQL fallback, ORS route calculation, straight-line estimate fallback
-- Payments — M-Pesa STK push, Airtel Money, Tigo Pesa, Halotel, DalaSmart Wallet, Cash, QR Code; receipts; status polling; P2P transfers; bill payments (LUKU/DAWASCO/DSTV/NHIF)
-- Ratings and driver earnings
-- Push notifications — Expo Push + FCM
-- Promo codes and referral program
-- Driver incentives and subscription plans
-- Corporate accounts
-- Food delivery, shop delivery, university marketplace
-- Advertising, money transfer, insurance modules
-- Admin panel API routes
-- OTP, pricing, feature flags, upload, maps, chat support
-
----
-
-## Known Limitations / Features Remaining
-
-- WebSocket real-time updates are not yet implemented — clients poll the API
-- The Go fleet-tracker, Python AI/ML engine, and separate microservices (payment-service, safety-module, notification-service) are scaffolded but not implemented
-- Unit test coverage for trips, ratings, and earnings routes is not yet written
-- No end-to-end tests
+Expected output:
+```
+PASS  src/__tests__/auth.test.ts
+PASS  src/__tests__/health.test.ts
+...
+Test Suites: X passed, X total
+Tests:       X passed, X total
+```
 
 ---
 
 ## Deployment
 
-See **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** for production deployment steps. The API exports `default app` (no `app.listen()`) for Vercel serverless.
+DalaSmart API is designed for **Vercel serverless** deployment. The application exports `default app` without calling `app.listen()` — Vercel handles the HTTP server automatically.
+
+### Deployment Steps
+
+1. **Link repository to Vercel:**
+   ```bash
+   vercel link
+   ```
+
+2. **Configure environment variables:**
+   - Navigate to Project Settings → Environment Variables in Vercel dashboard
+   - Add all required variables from your `.env` file:
+     - `DATABASE_URL` (production PostgreSQL connection string)
+     - `JWT_SECRET` (same 64-char hex string)
+     - `NODE_ENV=production`
+     - `CORS_ORIGIN` (your frontend URL)
+     - Optional: payment provider credentials, push notification tokens, etc.
+
+3. **Deploy:**
+   ```bash
+   vercel --prod
+   ```
+
+### Production Database
+
+For production, use a managed PostgreSQL service:
+- **Vercel Postgres** (integrated)
+- **Neon** (serverless Postgres)
+- **Supabase**
+- **Railway**
+- **AWS RDS**
+
+Ensure your production `DATABASE_URL` uses SSL: the connection pool automatically enables SSL when `NODE_ENV=production`.
+
+---
+
+## Troubleshooting
+
+See [SETUP.md](./SETUP.md#troubleshooting) for detailed troubleshooting steps. Common issues:
+
+| Issue | Solution |
+|---|---|
+| Database connection refused | Verify PostgreSQL is running (`pg_isready`), check `DATABASE_URL` |
+| JWT authentication errors | Ensure `JWT_SECRET` is set and at least 32 characters |
+| Port already in use | Change `PORT` in `.env` or stop the process using that port |
+| Routes return straight-line estimates | Set `ORS_API_KEY` for turn-by-turn routing (optional) |
+
+---
+
+---
+
+## Features Implemented
+
+### Core Features
+- **Authentication** — User registration, login, JWT tokens, profile management, password change
+- **Trip Management** — Complete state machine (REQUESTED → ACCEPTED → DRIVER_ARRIVING → ARRIVED → IN_PROGRESS → COMPLETED / CANCELLED)
+- **Real-time Tracking** — Driver location updates, in-memory store with PostgreSQL fallback, nearby driver search
+- **Route Calculation** — OpenRouteService integration with straight-line fallback
+- **Payments** — M-Pesa, Airtel Money, Tigo Pesa, Halotel STK push; DalaSmart Wallet; Cash; QR Code payments
+- **Payment Features** — Receipts, status polling, P2P transfers, bill payments (LUKU, DAWASCO, DSTV, NHIF)
+- **Ratings & Reviews** — Trip rating system
+- **Driver Earnings** — Earnings tracking and payout management
+- **Push Notifications** — Expo Push and Firebase Cloud Messaging integration
+
+### Business Features
+- Promo codes and validation
+- Referral program
+- Driver incentive programs
+- Subscription plans
+- Corporate account management
+- Food delivery orders
+- Shop delivery orders
+- University marketplace
+- In-app advertising
+- P2P money transfers
+- Trip insurance
+- Chat support
+- Dynamic pricing
+- Feature flags
+- OTP verification
+- File uploads
+- Admin management panel
+
+### Known Limitations
+- **WebSocket** — Real-time updates use polling; WebSocket not yet implemented
+- **Microservices** — Planned Go fleet-tracker, Python AI engine, Kafka, TimescaleDB, and Elasticsearch are not yet built
+- **Test Coverage** — Some route tests not yet written
+- **E2E Tests** — No end-to-end tests currently
 
 ---
 

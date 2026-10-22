@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput,
 } from 'react-native';
@@ -27,8 +27,13 @@ const languages = [
 export default function CountryLanguageScreen({ navigation }: any) {
   const [step, setStep] = useState<'country' | 'language'>('country');
   const [selectedCountry, setSelectedCountry] = useState('TZ');
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>('en');
+  const [selectedLanguage, setSelectedLanguage] = useState<Language>(i18n.getLanguage());
   const [search, setSearch] = useState('');
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
 
   const filteredCountries = countries.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase())
@@ -56,15 +61,15 @@ export default function CountryLanguageScreen({ navigation }: any) {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.logo}>DalaSmart</Text>
-          <Text style={styles.title}>Select your country</Text>
+          <Text style={styles.logo}>{i18n.t('app_name')}</Text>
+          <Text style={styles.title}>{i18n.t('country_select')}</Text>
         </View>
 
         <View style={styles.searchBox}>
           <Ionicons name="search" size={18} color="#999" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search country..."
+            placeholder={i18n.t('search_country')}
             value={search}
             onChangeText={setSearch}
             placeholderTextColor="#999"
@@ -96,9 +101,8 @@ export default function CountryLanguageScreen({ navigation }: any) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.logo}>DalaSmart</Text>
-        <Text style={styles.title}>Choose your language</Text>
-        <Text style={styles.subtitle}>Chagua lugha yako</Text>
+        <Text style={styles.logo}>{i18n.t('app_name')}</Text>
+        <Text style={styles.title}>{i18n.t('language_select')}</Text>
       </View>
 
       <View style={styles.languageList}>

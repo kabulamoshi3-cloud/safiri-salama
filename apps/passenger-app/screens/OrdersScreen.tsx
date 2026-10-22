@@ -12,6 +12,11 @@ export default function OrdersScreen({ navigation }: any) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
 
   useEffect(() => { fetchTrips(); }, []);
 
@@ -25,6 +30,14 @@ export default function OrdersScreen({ navigation }: any) {
 
   const getStatusColor = (s: string) => s === 'completed' ? '#34c759' : s === 'cancelled' ? '#ff3b30' : '#ff9500';
   const getVehicle = (t: string) => t === 'bajaji' ? '🛺' : t === 'boda-boda' ? '🏍️' : '🚗';
+  const getStatusLabel = (s: string) => {
+    if (s === 'completed') return i18n.t('completed');
+    if (s === 'cancelled') return i18n.t('cancelled');
+    if (s === 'pending') return i18n.t('pending');
+    if (s === 'in_progress') return i18n.t('trip_in_progress');
+    if (s === 'accepted') return i18n.t('accept');
+    return s;
+  };
 
   const filtered = filter === 'all' ? trips : trips.filter(t => t.status === filter);
 
@@ -49,13 +62,13 @@ export default function OrdersScreen({ navigation }: any) {
             <View style={styles.cardTop}>
               <Text style={styles.vehicle}>{getVehicle(item.vehicle_type)}</Text>
               <View style={[styles.badge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
-                <Text style={[styles.badgeText, { color: getStatusColor(item.status) }]}>{item.status}</Text>
+                <Text style={[styles.badgeText, { color: getStatusColor(item.status) }]}>{getStatusLabel(item.status)}</Text>
               </View>
             </View>
             <View style={styles.route}>
-              <View style={styles.routeRow}><View style={[styles.dot, { backgroundColor: '#34c759' }]} /><Text style={styles.routeText}>{item.pickup_address || 'Pickup'}</Text></View>
+              <View style={styles.routeRow}><View style={[styles.dot, { backgroundColor: '#34c759' }]} /><Text style={styles.routeText}>{item.pickup_address || i18n.t('pickup_location')}</Text></View>
               <View style={styles.line} />
-              <View style={styles.routeRow}><View style={[styles.dot, { backgroundColor: '#ff3b30' }]} /><Text style={styles.routeText}>{item.dropoff_address || 'Destination'}</Text></View>
+              <View style={styles.routeRow}><View style={[styles.dot, { backgroundColor: '#ff3b30' }]} /><Text style={styles.routeText}>{item.dropoff_address || i18n.t('destination')}</Text></View>
             </View>
             <View style={styles.cardBottom}>
               <Text style={styles.fare}>Sh {(item.final_fare || item.estimated_fare || 0).toLocaleString()}</Text>

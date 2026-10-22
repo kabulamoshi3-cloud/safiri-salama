@@ -30,6 +30,7 @@ export default function MainScreen({ navigation }: any) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [currentAddress, setCurrentAddress] = useState('Getting location...');
+  const [, forceUpdate] = useState(0);
   const [region, setRegion] = useState({
     latitude: -6.7924,
     longitude: 39.2083,
@@ -53,6 +54,10 @@ export default function MainScreen({ navigation }: any) {
     return () => {
       if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
     };
+  }, []);
+
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
   }, []);
 
   useEffect(() => {
@@ -169,7 +174,7 @@ export default function MainScreen({ navigation }: any) {
               coordinate={{ latitude: d.lat, longitude: d.lng }}
               onPress={() => { setSelectedDriver(d); setShowDriverCard(true); }}
               title={d.name}
-              description={`${d.vehicle_plate} • ${d.distance_km.toFixed(1)} km • ${d.eta_minutes} dak`}
+              description={`${d.vehicle_plate} • ${d.distance_km.toFixed(1)} km • ${d.eta_minutes} ${i18n.t('minutes')}`}
             >
               <View style={styles.driverMarker}>
                 <Text style={{ fontSize: 22 }}>
@@ -186,7 +191,7 @@ export default function MainScreen({ navigation }: any) {
             <Ionicons name="menu" size={26} color="#1c1c1e" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.trafficBtn} onPress={() => navigation.navigate('Traffic')}>
-            <Text style={{ fontSize: 13, fontWeight: '600', color: '#1c1c1e' }}>🚦 Msongamano</Text>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: '#1c1c1e' }}>🚦 {i18n.t('traffic')}</Text>
           </TouchableOpacity>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             {isPolling && (
@@ -218,15 +223,15 @@ export default function MainScreen({ navigation }: any) {
         </TouchableOpacity>
 
         {/* Categories */}
-        <Text style={styles.catTitle}>Services</Text>
+        <Text style={styles.catTitle}>{i18n.t('services')}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.catScroll}>
           {[
             { icon: '🚗', label: i18n.t('car'), color: '#e3f2fd' },
             { icon: '🛺', label: i18n.t('bajaji'), color: '#fff3e0' },
             { icon: '🏍️', label: i18n.t('boda'), color: '#e8f5e9' },
-            { icon: '📦', label: 'Delivery', color: '#f3e5f5' },
-            { icon: '🍔', label: 'Food', color: '#fce4ec' },
-            { icon: '🎁', label: 'Rewards', color: '#fff8e1' },
+            { icon: '📦', label: i18n.t('delivery'), color: '#f3e5f5' },
+            { icon: '🍔', label: i18n.t('food'), color: '#fce4ec' },
+            { icon: '🎁', label: i18n.t('rewards'), color: '#fff8e1' },
           ].map((cat) => (
             <TouchableOpacity key={cat.label} style={[styles.catCard, { backgroundColor: cat.color }]}
               onPress={() => navigation.navigate('RideRequest')}>
@@ -301,7 +306,7 @@ export default function MainScreen({ navigation }: any) {
           </TouchableOpacity>
         </ScrollView>
 
-        <Text style={styles.drawerVersion}>DalaSmart v1.0.0 🇹🇿</Text>
+        <Text style={styles.drawerVersion}>{i18n.t('app_name')} v1.0.0 🇹🇿</Text>
       </Animated.View>
 
       {/* Driver detail bottom card */}
@@ -323,7 +328,7 @@ export default function MainScreen({ navigation }: any) {
             <Text style={styles.driverCardPlate}>{selectedDriver.vehicle_plate}</Text>
             <View style={styles.driverCardRow}>
               <Text style={styles.driverCardStat}>📍 {selectedDriver.distance_km.toFixed(1)} km</Text>
-              <Text style={styles.driverCardStat}>⏱ {selectedDriver.eta_minutes} dak</Text>
+              <Text style={styles.driverCardStat}>⏱ {selectedDriver.eta_minutes} {i18n.t('minutes')}</Text>
             </View>
             <TouchableOpacity
               style={styles.bookBtn}
@@ -332,7 +337,7 @@ export default function MainScreen({ navigation }: any) {
                 navigation.navigate('RideRequest');
               }}
             >
-              <Text style={styles.bookBtnText}>Piga Basi 🚗</Text>
+              <Text style={styles.bookBtnText}>{i18n.t('book_ride')} 🚗</Text>
             </TouchableOpacity>
           </View>
         )}

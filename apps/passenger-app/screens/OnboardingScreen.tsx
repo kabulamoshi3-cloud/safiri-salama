@@ -1,24 +1,28 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, FlatList,
-  Dimensions, Animated,
+  View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions,
 } from 'react-native';
+import i18n from '../i18n';
 
 const { width } = Dimensions.get('window');
 
-const slides = [
-  { id: '1', emoji: '🚗', bg: '#1a73e8', title: 'Book a Ride Instantly', desc: 'Choose Car, Bajaji, or Boda-Boda. Get picked up in minutes.' },
-  { id: '2', emoji: '📍', bg: '#00897b', title: 'Real-Time Tracking', desc: 'Track your driver live on the map. Share trips with family.' },
-  { id: '3', emoji: '💰', bg: '#f57c00', title: 'Easy & Safe Payments', desc: 'Pay with Cash, M-Pesa, Tigo Pesa, or Airtel Money.' },
-  { id: '4', emoji: '🏍️', bg: '#6a1b9a', title: 'Drive & Earn', desc: 'Join as a driver. Accept trips, earn money, and grow.' },
-];
+const SLIDE_IDS = ['1', '2', '3', '4'];
+const SLIDE_BOGS = ['#1a73e8', '#00897b', '#f57c00', '#6a1b9a'];
+const SLIDE_EMOJIS = ['🚗', '📍', '💰', '🏍️'];
+const SLIDE_TITLE_KEYS = ['onboarding_1_title', 'onboarding_2_title', 'onboarding_3_title', 'onboarding_4_title'];
+const SLIDE_DESC_KEYS = ['onboarding_1_desc', 'onboarding_2_desc', 'onboarding_3_desc', 'onboarding_4_desc'];
 
 export default function OnboardingScreen({ navigation }: any) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [, forceUpdate] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
+
   const handleNext = () => {
-    if (currentIndex < slides.length - 1) {
+    if (currentIndex < SLIDE_IDS.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
       setCurrentIndex(currentIndex + 1);
     } else {
@@ -26,13 +30,13 @@ export default function OnboardingScreen({ navigation }: any) {
     }
   };
 
-  const renderSlide = ({ item }: any) => (
-    <View style={[styles.slide, { backgroundColor: item.bg }]}>  
+  const renderSlide = ({ item, index }: { item: string; index: number }) => (
+    <View style={[styles.slide, { backgroundColor: SLIDE_BOGS[index] }]}>
       <View style={styles.emojiCircle}>
-        <Text style={styles.emoji}>{item.emoji}</Text>
+        <Text style={styles.emoji}>{SLIDE_EMOJIS[index]}</Text>
       </View>
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.desc}>{item.desc}</Text>
+      <Text style={styles.title}>{i18n.t(SLIDE_TITLE_KEYS[index])}</Text>
+      <Text style={styles.desc}>{i18n.t(SLIDE_DESC_KEYS[index])}</Text>
     </View>
   );
 
@@ -40,12 +44,12 @@ export default function OnboardingScreen({ navigation }: any) {
     <View style={styles.container}>
       <FlatList
         ref={flatListRef}
-        data={slides}
+        data={SLIDE_IDS}
         renderItem={renderSlide}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item}
         onMomentumScrollEnd={(e) => {
           setCurrentIndex(Math.round(e.nativeEvent.contentOffset.x / width));
         }}
@@ -53,18 +57,18 @@ export default function OnboardingScreen({ navigation }: any) {
 
       <View style={styles.footer}>
         <View style={styles.dots}>
-          {slides.map((_, i) => (
+          {SLIDE_IDS.map((_, i) => (
             <View key={i} style={[styles.dot, currentIndex === i && styles.dotActive]} />
           ))}
         </View>
 
         <View style={styles.buttons}>
           <TouchableOpacity onPress={() => navigation.replace('Welcome')}>
-            <Text style={styles.skipText}>Skip</Text>
+            <Text style={styles.skipText}>{i18n.t('skip')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.nextBtn} onPress={handleNext}>
             <Text style={styles.nextText}>
-              {currentIndex === slides.length - 1 ? 'Get Started' : 'Next →'}
+              {currentIndex === SLIDE_IDS.length - 1 ? i18n.t('get_started') : `${i18n.t('next')} →`}
             </Text>
           </TouchableOpacity>
         </View>

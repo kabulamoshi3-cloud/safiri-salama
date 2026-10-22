@@ -1,0 +1,25 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Update apps/passenger-app/screens/TrafficScreen.tsx (depends on FEAT-002 endpoints) to add a departure-time selector, fetch segments from GET /tracking/traffic/segments, call POST /tracking/traffic/predict to color the polylines by predicted status, show a Swahili confidence label, show a best-time card when savings >5 min, and fall back to cached data with a 'Kutumia data ya zamani' banner on API failure. Keep hardcoded Swahili style (no i18n lib in this screen).",
+  "status": "pending",
+  "steps": [
+    "Read apps/passenger-app/screens/TrafficScreen.tsx fully. Keep existing imports/style. Add state: `departureOffset` (0|30|60), `predictions` (array of {segment_id, road_name, predicted_speed_kmh, status, color, confidence, model_type, observations_used}), `confidenceLabel`, `bestTime` ({best_time, savings_minutes}|null), `usingCache` (boolean). Compute `departure_time` = `new Date(Date.now() + departureOffset*60000).toISOString()`.",
+    "Add a departure-time selector row (three TouchableOpacity buttons): 'Ondoka Sasa' (offset 0), '+Dakika 30' (30), '+Saa 1' (60). On press set departureOffset (which triggers a re-predict via the effect below).",
+    "Change fetchTraffic to GET `${API}/tracking/traffic/segments` (Authorization Bearer token from AsyncStorage). Map the response `segments` into the existing TrafficSegment-shaped state (id, road_name, lat/lng start/end, status, speed_kmh). Keep the 30s polling interval for the segment list. Reuse STATUS_COLORS/OVERALL_LABELS.",
+    "Add `fetchPredict(segmentIds)` that POSTs `${API}/tracking/traffic/predict` with `{ segment_ids, departure_time }`; store `predictions`; compute avg confidence -> `>0.7 'Utabiri wa juu'`, `0.4-0.7 'Utabiri wa wastani'`, `<0.4 'Mfumo wa msingi'`. Add a useEffect that runs fetchPredict whenever segments are loaded and/or departureOffset changes. Wrap fetchPredict in try/catch: on failure set `usingCache=true` and KEEP the last successful predictions (do not clear).",
+    "Render each <Polyline> using the matching prediction's `color` (lookup by segment_id), falling back to STATUS_COLORS[seg.status] when no prediction exists. Render the confidence label near the top card.",
+    "On a successful predict, also GET `${API}/tracking/traffic/best-time?segment_ids=<ids joined>&from_time=<now ISO>`; if `savings_minutes > 5` set bestTime and render a card: `Ondoka HH:MM — okoa dakika N 🕒` where HH:MM is best_time formatted to local time. If savings <= 5 hide the card.",
+    "Render an offline/cached-data banner when `usingCache` is true: a small Text 'Kutumia data ya zamani' (style consistent with noDataBanner)."
+  ],
+  "acceptance_criteria": [
+    "apps/passenger-app/screens/TrafficScreen.tsx contains the three-option departure selector ('Ondoka Sasa', '+Dakika 30', '+Saa 1'), calls POST /tracking/traffic/predict and GET /tracking/traffic/segments, colors polylines from predictions, shows the confidence label, shows the best-time card when savings>5, and shows 'Kutumia data ya zamani' on failure.",
+    "`cd apps/passenger-app && npx tsc --noEmit 2>&1 | grep TrafficScreen` introduces no NEW TypeScript errors attributable to TrafficScreen.tsx (pre-existing unrelated RN/Expo type errors are acceptable)."
+  ],
+  "verification": [
+    "cd apps/passenger-app && npx tsc --noEmit 2>&1 | grep TrafficScreen  -> no errors introduced by TrafficScreen.tsx",
+    "grep -nE \"Ondoka Sasa|Dakika 30|Saa 1|traffic/predict|traffic/segments|traffic/best-time|Kutumia data ya zamani|Utabiri wa juu|Utabiri wa wastani|Mfumo wa msingi\" apps/passenger-app/screens/TrafficScreen.tsx  -> all present"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

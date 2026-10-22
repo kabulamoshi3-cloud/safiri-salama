@@ -1,0 +1,25 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "Create the Python ML microservice scaffold under services/ml-service/ (independent of Node; FEAT order is last because it is independent of FEAT-001..003). README + requirements.txt + main.py (FastAPI POST /predict, GET /health) + trainer.py (read segment_speed_observations, train XGBoost, save model) + predictor.py (load model, predict) + .env.example. The Node.js gateway NEVER depends on this service and always falls back to the SQL baseline.",
+  "status": "pending",
+  "steps": [
+    "Create services/ml-service/README.md with: prerequisites (Python >=3.12), setup (python -m venv venv && source venv/bin/activate && pip install -r requirements.txt), training (python trainer.py), serving (uvicorn main:app --reload), and how Node calls POST /predict. State explicitly that the api-gateway does NOT depend on this service and degrades to the SQL baseline if it is unavailable.",
+    "Create services/ml-service/requirements.txt with pinned, recent, mutually-compatible versions of: fastapi, uvicorn[standard], psycopg2-binary, scikit-learn, xgboost, pandas, numpy.",
+    "Create services/ml-service/main.py: a FastAPI app; GET /health -> {\"status\":\"ok\"}; POST /predict accepting JSON {segment_id, departure_time} and delegating to predictor.predict(...); load config from os.environ (DATABASE_URL, MODEL_PATH, MIN_TRAINING_SAMPLES).",
+    "Create services/ml-service/trainer.py: connect to PostgreSQL via DATABASE_URL (psycopg2), SELECT segment_id, day_of_week, hour_of_day, observed_speed_kmh FROM segment_speed_observations; require >= MIN_TRAINING_SAMPLES rows else print a message and exit without training; build features (encode segment_id, day_of_week, hour_of_day), train an xgboost.XGBRegressor, evaluate MAE, save the model to MODEL_PATH, and INSERT/UPDATE an ml_model_versions row (model_type='traffic_speed', is_active=true) with training_samples and accuracy_mae.",
+    "Create services/ml-service/predictor.py: load the model from MODEL_PATH (lazy/global), expose `predict(segment_id, departure_time) -> {segment_id, predicted_speed_kmh, confidence}`; if no model is trained/available, raise/return a clear unavailable signal so main.py can return 503 (Node then falls back to SQL baseline).",
+    "Create services/ml-service/.env.example with: DATABASE_URL=postgresql://postgres:postgres@localhost:5432/dalasmart  MODEL_PATH=./models/traffic_speed_xgb.json  MIN_TRAINING_SAMPLES=500"
+  ],
+  "acceptance_criteria": [
+    "All six files exist: services/ml-service/{README.md,requirements.txt,main.py,trainer.py,predictor.py,.env.example}.",
+    "README states Node.js never depends on the service; main.py exposes POST /predict and GET /health; trainer.py reads segment_speed_observations and trains/saves an XGBoost model honoring MIN_TRAINING_SAMPLES.",
+    "If python3 is available: `python3 -m py_compile services/ml-service/main.py services/ml-service/trainer.py services/ml-service/predictor.py` succeeds (syntax only; third-party imports need not be installed)."
+  ],
+  "verification": [
+    "ls services/ml-service/README.md services/ml-service/requirements.txt services/ml-service/main.py services/ml-service/trainer.py services/ml-service/predictor.py services/ml-service/.env.example  -> all six exist",
+    "python3 -m py_compile services/ml-service/main.py services/ml-service/trainer.py services/ml-service/predictor.py  -> succeeds when python3 is present (skip gracefully if python3 is absent)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

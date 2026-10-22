@@ -1,8 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import i18n from '../i18n';
 
 export default function WelcomeScreen({ navigation }: any) {
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
+
   const selectRole = async (role: 'passenger' | 'driver') => {
     try {
       await AsyncStorage.setItem('@dalasmart:onboarded', 'true');
@@ -14,19 +20,19 @@ export default function WelcomeScreen({ navigation }: any) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.logoEmoji}>🚗</Text>
-        <Text style={styles.title}>DalaSmart</Text>
-        <Text style={styles.subtitle}>Smart, safe & affordable transport</Text>
-        <Text style={styles.city}>🇹🇿 Dar es Salaam, Tanzania</Text>
+        <Text style={styles.title}>{i18n.t('app_name')}</Text>
+        <Text style={styles.subtitle}>{i18n.t('tagline')}</Text>
+        <Text style={styles.city}>{i18n.t('dar_es_salaam')}</Text>
       </View>
 
       <View style={styles.roleSection}>
-        <Text style={styles.roleTitle}>I am a...</Text>
+        <Text style={styles.roleTitle}>{i18n.t('i_am_a')}</Text>
 
         <TouchableOpacity style={styles.roleCard} onPress={() => selectRole('passenger')}>
           <Text style={styles.roleEmoji}>🚗</Text>
           <View style={styles.roleInfo}>
-            <Text style={styles.roleName}>Passenger</Text>
-            <Text style={styles.roleDesc}>Book rides, track trips, pay easily</Text>
+            <Text style={styles.roleName}>{i18n.t('passenger')}</Text>
+            <Text style={styles.roleDesc}>{i18n.t('passenger_desc')}</Text>
           </View>
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
@@ -34,8 +40,8 @@ export default function WelcomeScreen({ navigation }: any) {
         <TouchableOpacity style={[styles.roleCard, styles.driverCard]} onPress={() => selectRole('driver')}>
           <Text style={styles.roleEmoji}>🏍️</Text>
           <View style={styles.roleInfo}>
-            <Text style={styles.roleName}>Driver</Text>
-            <Text style={styles.roleDesc}>Accept trips, earn money, grow</Text>
+            <Text style={styles.roleName}>{i18n.t('driver')}</Text>
+            <Text style={styles.roleDesc}>{i18n.t('driver_desc')}</Text>
           </View>
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>

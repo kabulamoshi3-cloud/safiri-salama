@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import i18n from '../i18n';
 
 export default function PaymentScreen() {
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
+
   const [defaultMethod, setDefaultMethod] = useState('cash');
 
   const methods = [

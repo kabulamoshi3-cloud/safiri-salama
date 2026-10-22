@@ -1,0 +1,29 @@
+{
+  "project_type": "Monorepo. api-gateway = Node.js + Express + TypeScript (serverless-ish, deploys to Vercel). passenger-app = React Native via Expo. Migrations are plain SQL. A new Python FastAPI ml-service scaffold is added but the Node gateway never depends on it.",
+  "language": "TypeScript (api-gateway + passenger-app), SQL (migrations), Python (ml-service scaffold)",
+  "build_system": "npm. api-gateway: `tsc` build, `ts-node` dev, `npm run migrate` runs scripts/run-migrations.ts (ts-node). No workspaces wiring needed for these changes. passenger-app is Expo (no build/typecheck script). Quirk: api-gateway tsconfig has strict:false, rootDir ./src, includes src/**/*.",
+  "test_framework": "jest (api-gateway, script `test`). No test runner for passenger-app. No existing tests cover tracking/traffic; features.test.ts only covers promo/referral/food/corporate and uses a `mockAuthToken` variable (not mock data), so tracking changes won't break it.",
+  "build_command": "cd services/api-gateway && npx tsc --noEmit  (typecheck; this is the verification command)",
+  "test_command": "cd services/api-gateway && npm test  (jest; optional — no tracking tests exist)",
+  "verification_instructions": "1) cd services/api-gateway && npx tsc --noEmit 2>&1 | grep -E 'GpsValidator|TrafficPredictor|tracking' | grep -v node_modules — expect EMPTY (0 errors). 2) grep -n mock services/api-gateway/src/routes/tracking.ts — every mock array must be inside a !isProd gate and tagged _mock:true (no mock reachable when NODE_ENV=production). 3) All new files exist and compile/parse. 4) Commit message exactly: feat: GPS integrity, observation storage, traffic ML predictor with baseline model. Passenger-app: cd apps/passenger-app && npx tsc --noEmit 2>&1 | grep TrafficScreen — no errors attributable to TrafficScreen.tsx.",
+  "snapshot_or_generated_files": null,
+  "environment_constraints": "NO live database is available here — migration 016 is verified by file presence + valid SQL, NOT by applying it (do not block on `npm run migrate`). NO new npm packages may be added to the Node service (use only existing pg/express/axios). services/ml-service/.env.example is matched by .gitignore patterns `.env*` and `.env.*` — force-add with `git add -f`. `.agents/` is NOT gitignored — stage ONLY code files, never `.agents/` planning artifacts. The repo root is the worktree: /run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala. No worktree, no merge step — commit directly to the current branch, never push.",
+  "contribution_requirements": "No AGENTS.md/CONTRIBUTING.md; README.md is the main doc. Driver-app sends {lat,lng,bearing,speed,trip_id} to POST /tracking/driver/location every ~5s (no accuracy, no timestamp). The brief requires: never return mock GPS in production; if no real drivers return {drivers:[],count:0,message:'Hakuna madereva karibu sasa'}; stale GPS (>30s) flagged is_stale + last_seen_seconds; ML is optional (trip still works); never use simulated GPS as training data; test mock labeled _mock:true.",
+  "key_patterns": "DB pool: `import { pool } from '../database/connection';` then `pool.query(sql,params)`; from src/services/*.ts the same relative path works (services is a sibling of routes/database). Type pool param as `import { Pool } from 'pg'`. Migrations use gen_random_uuid() (pgcrypto already enabled), CREATE TABLE IF NOT EXISTS, CREATE INDEX IF NOT EXISTS, INSERT ... ON CONFLICT DO NOTHING. Route mounting is via safeUse in src/routes/index.ts (tracking already mounted at /v1/tracking — add endpoints in tracking.ts, do NOT edit index.ts). tracking.ts has a flat-earth haversineKm helper and mock fallbacks to gate. Passenger-app uses axios + AsyncStorage('@dalasmart:token') + base const API='https://simon-daladala-api.vercel.app/api/v1', renders react-native-maps Polyline with STATUS_COLORS {clear:#00d46a, slow:#ff9500, jam:#ff3b30}.",
+  "relevant_files": [
+    "services/api-gateway/src/routes/tracking.ts (EDIT: gate mocks, stale detection, wire GpsValidator + ingestion, add 3 endpoints)",
+    "services/api-gateway/src/services/GpsValidator.ts (NEW)",
+    "services/api-gateway/src/services/TrafficPredictor.ts (NEW)",
+    "services/api-gateway/migrations/016_gps_ml_pipeline.sql (NEW)",
+    "services/api-gateway/src/database/connection.ts (READ: pool export + import path)",
+    "services/api-gateway/scripts/run-migrations.ts (READ: how migrations apply)",
+    "services/api-gateway/migrations/009_add_tracking_features.sql (READ: migration SQL pattern)",
+    "services/api-gateway/tsconfig.json (READ: strict:false, rootDir src)",
+    "services/api-gateway/src/routes/index.ts (READ: tracking already mounted at /v1/tracking)",
+    "apps/passenger-app/screens/TrafficScreen.tsx (EDIT: departure selector, predict colors, confidence, best-time, offline fallback)",
+    "apps/passenger-app/package.json (READ: no typecheck script)",
+    "apps/driver-app/src/screens/trip/NavigationScreen.tsx (READ: ingestion payload shape)",
+    "services/ml-service/{README.md,requirements.txt,main.py,trainer.py,predictor.py,.env.example} (NEW)"
+  ],
+  "directory_structure": "services/api-gateway/src/{routes,database,middleware,utils,types} — NOTE src/services/ does NOT exist yet and must be created. migrations/ holds numbered .sql (current max 015). scripts/run-migrations.ts applies them. apps/passenger-app/screens/TrafficScreen.tsx is the traffic UI. apps/driver-app posts GPS to /tracking/driver/location. services/ml-service/ is a new Python scaffold directory."
+}

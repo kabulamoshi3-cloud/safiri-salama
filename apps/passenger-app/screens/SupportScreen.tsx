@@ -1,43 +1,49 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking,
 } from 'react-native';
+import i18n from '../i18n';
 
 export default function SupportScreen() {
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
+
   const faqs = [
-    { q: 'How do I book a ride?', a: 'Open the app, enter destination, choose vehicle, and confirm.' },
-    { q: 'How do I pay?', a: 'You can pay with Cash, M-Pesa, Tigo Pesa, or Airtel Money.' },
-    { q: 'How do I become a driver?', a: 'Register as a driver, submit your documents, and start earning.' },
-    { q: 'How do I cancel a trip?', a: 'Tap "Cancel Trip" before the driver starts the trip. Cancellation may incur a fee.' },
-    { q: 'How do I report an issue?', a: 'Go to trip history, select the trip, and tap "Report Issue".' },
+    { q: i18n.t('faq_q1'), a: i18n.t('faq_a1') },
+    { q: i18n.t('faq_q2'), a: i18n.t('faq_a2') },
+    { q: i18n.t('faq_q3'), a: i18n.t('faq_a3') },
+    { q: i18n.t('faq_q4'), a: i18n.t('faq_a4') },
+    { q: i18n.t('faq_q5'), a: i18n.t('faq_a5') },
   ];
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Help & Support</Text>
-        <Text style={styles.headerSubtitle}>We're here to help 24/7</Text>
+        <Text style={styles.headerTitle}>{i18n.t('help')}</Text>
+        <Text style={styles.headerSubtitle}>{i18n.t('we_help_247')}</Text>
       </View>
 
       {/* Contact options */}
       <View style={styles.contactRow}>
         <TouchableOpacity style={styles.contactCard} onPress={() => Linking.openURL('tel:+255700000000')}>
           <Text style={styles.contactEmoji}>📞</Text>
-          <Text style={styles.contactLabel}>Call Us</Text>
+          <Text style={styles.contactLabel}>{i18n.t('call_us')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.contactCard} onPress={() => Linking.openURL('https://wa.me/255700000000')}>
           <Text style={styles.contactEmoji}>💬</Text>
-          <Text style={styles.contactLabel}>WhatsApp</Text>
+          <Text style={styles.contactLabel}>{i18n.t('whatsapp')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.contactCard} onPress={() => Linking.openURL('mailto:support@dalasmart.com')}>
           <Text style={styles.contactEmoji}>✉️</Text>
-          <Text style={styles.contactLabel}>Email</Text>
+          <Text style={styles.contactLabel}>{i18n.t('email')}</Text>
         </TouchableOpacity>
       </View>
 
       {/* FAQs */}
       <View style={styles.faqSection}>
-        <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
+        <Text style={styles.sectionTitle}>{i18n.t('faq')}</Text>
         {faqs.map((faq, i) => (
           <View key={i} style={styles.faqCard}>
             <Text style={styles.faqQ}>{faq.q}</Text>
@@ -48,7 +54,7 @@ export default function SupportScreen() {
 
       {/* Emergency */}
       <TouchableOpacity style={styles.emergencyBtn}>
-        <Text style={styles.emergencyText}>🆘 Emergency? Call 112</Text>
+        <Text style={styles.emergencyText}>🆘 {i18n.t('emergency_call')}</Text>
       </TouchableOpacity>
     </ScrollView>
   );

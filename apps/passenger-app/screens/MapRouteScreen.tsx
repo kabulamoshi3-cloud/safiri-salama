@@ -1,8 +1,9 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
+import i18n from '../i18n';
 
 type RootStackParamList = Record<string, object | undefined>;
 type NavProp = NativeStackNavigationProp<RootStackParamList>;
@@ -33,6 +34,11 @@ export default function MapRouteScreen({
   route: MapRouteRouteProps;
   navigation: NavProp;
 }) {
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
+
   const { pickupCoords, destinationCoords, polylineCoords, driverCoords, etaMinutes } =
     route.params;
 
@@ -104,7 +110,9 @@ export default function MapRouteScreen({
 
       {/* ETA pill */}
       <View style={styles.etaPill}>
-        <Text style={styles.etaText}>Unafika dakika {etaMinutes}</Text>
+        <Text style={styles.etaText}>
+          {i18n.t('arriving_min').replace('{minutes}', String(etaMinutes))}
+        </Text>
       </View>
 
       {/* Back arrow */}
@@ -126,7 +134,6 @@ const styles = StyleSheet.create({
   markerEmoji: { fontSize: 22 },
   driverEmoji: { fontSize: 26 },
 
-  // ETA pill — top right
   etaPill: {
     position: 'absolute',
     top: 50,
@@ -138,7 +145,6 @@ const styles = StyleSheet.create({
   },
   etaText: { color: '#ffffff', fontSize: 13, fontWeight: '600' },
 
-  // Back arrow — top left
   backBtn: {
     position: 'absolute',
     top: 50,
@@ -152,7 +158,6 @@ const styles = StyleSheet.create({
   },
   backText: { color: '#ffffff', fontSize: 20, fontWeight: 'bold' },
 
-  // Recenter — bottom right
   recenterBtn: {
     position: 'absolute',
     bottom: 40,

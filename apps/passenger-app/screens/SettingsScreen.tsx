@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import i18n, { Language } from '../i18n';
@@ -6,12 +6,21 @@ import i18n, { Language } from '../i18n';
 export default function SettingsScreen() {
   const [language, setLanguage] = useState<Language>(i18n.getLanguage());
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    return i18n.subscribe(() => {
+      setLanguage(i18n.getLanguage());
+      forceUpdate(n => n + 1);
+    });
+  }, []);
 
   const changeLanguage = async (lang: Language) => {
-    setLanguage(lang);
     await i18n.setLanguage(lang);
-    Alert.alert(lang === 'sw' ? 'Lugha imebadilishwa' : 'Language changed', lang === 'sw' ? 'Kiswahili kimechaguliwa' : 'English selected');
+    Alert.alert(
+      i18n.t('language_changed'),
+      lang === 'sw' ? i18n.t('kiswahili_selected') : i18n.t('english_selected')
+    );
   };
 
   return (
@@ -35,11 +44,11 @@ export default function SettingsScreen() {
       <Text style={styles.sectionTitle}>{i18n.t('notifications')}</Text>
       <View style={styles.card}>
         <View style={styles.switchRow}>
-          <Text style={styles.switchLabel}>Push Notifications</Text>
+          <Text style={styles.switchLabel}>{i18n.t('push_notifications')}</Text>
           <Switch value={notifications} onValueChange={setNotifications} trackColor={{ true: '#34c759' }} />
         </View>
         <View style={styles.switchRow}>
-          <Text style={styles.switchLabel}>SMS Alerts</Text>
+          <Text style={styles.switchLabel}>{i18n.t('sms_alerts')}</Text>
           <Switch value={true} trackColor={{ true: '#34c759' }} />
         </View>
       </View>
@@ -49,17 +58,17 @@ export default function SettingsScreen() {
       <View style={styles.card}>
         <TouchableOpacity style={styles.menuItem}>
           <Ionicons name="call-outline" size={20} color="#ff3b30" />
-          <Text style={styles.menuText}>Emergency Contacts</Text>
+          <Text style={styles.menuText}>{i18n.t('emergency_contacts')}</Text>
           <Ionicons name="chevron-forward" size={18} color="#ddd" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.menuItem}>
           <Ionicons name="shield-checkmark-outline" size={20} color="#007aff" />
-          <Text style={styles.menuText}>Share Trip</Text>
+          <Text style={styles.menuText}>{i18n.t('share_trip')}</Text>
           <Ionicons name="chevron-forward" size={18} color="#ddd" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.menuItem}>
           <Ionicons name="warning-outline" size={20} color="#ff9500" />
-          <Text style={styles.menuText}>SOS Button</Text>
+          <Text style={styles.menuText}>{i18n.t('sos_button')}</Text>
           <Ionicons name="chevron-forward" size={18} color="#ddd" />
         </TouchableOpacity>
       </View>

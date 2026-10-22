@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import i18n from '../i18n';
@@ -8,6 +8,11 @@ export default function ScheduleRideScreen({ navigation }: any) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedHour, setSelectedHour] = useState(7);
   const [selectedMinute, setSelectedMinute] = useState(0);
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
 
   const today = new Date();
   const dates = Array.from({ length: 7 }, (_, i) => {
@@ -20,9 +25,9 @@ export default function ScheduleRideScreen({ navigation }: any) {
   const minutes = [0, 15, 30, 45];
 
   const formatDay = (d: Date) => {
-    if (d.toDateString() === today.toDateString()) return 'Today';
+    if (d.toDateString() === today.toDateString()) return i18n.t('today');
     const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
-    if (d.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
+    if (d.toDateString() === tomorrow.toDateString()) return i18n.t('tomorrow');
     return d.toLocaleDateString('en', { weekday: 'short', day: 'numeric' });
   };
 
@@ -31,15 +36,15 @@ export default function ScheduleRideScreen({ navigation }: any) {
     scheduled.setHours(selectedHour, selectedMinute, 0);
 
     if (scheduled <= new Date()) {
-      Alert.alert('Error', 'Please select a future time');
+      Alert.alert(i18n.t('error'), i18n.t('future_time_error'));
       return;
     }
 
     const timeStr = `${selectedHour.toString().padStart(2, '0')}:${selectedMinute.toString().padStart(2, '0')}`;
     Alert.alert(
       i18n.t('scheduled_success'),
-      `${formatDay(selectedDate)} at ${timeStr}`,
-      [{ text: 'OK', onPress: () => navigation.goBack() }]
+      `${formatDay(selectedDate)} ${i18n.t('at_time')} ${timeStr}`,
+      [{ text: i18n.t('ok'), onPress: () => navigation.goBack() }]
     );
   };
 

@@ -1,13 +1,19 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated,
 } from 'react-native';
 import AnimatedButton from '../components/AnimatedButton';
+import i18n from '../i18n';
 
 export default function HomeScreen({ navigation }: any) {
+  const [, forceUpdate] = useState(0);
   const fadeIn = useRef(new Animated.Value(0)).current;
   const slideUp = useRef(new Animated.Value(30)).current;
   const cardScale = useRef(new Animated.Value(0.95)).current;
+
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
 
   useEffect(() => {
     Animated.parallel([
@@ -23,11 +29,11 @@ export default function HomeScreen({ navigation }: any) {
       <Animated.View style={{ transform: [{ scale: cardScale }], opacity: fadeIn }}>
         <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('RideRequest')}>
           <View style={styles.heroCard}>
-            <Text style={styles.heroGreeting}>Habari! 👋</Text>
-            <Text style={styles.heroTitle}>Where are you going?</Text>
+            <Text style={styles.heroGreeting}>{i18n.t('greeting')}</Text>
+            <Text style={styles.heroTitle}>{i18n.t('where_are_you_going')}</Text>
             <View style={styles.searchBar}>
               <Text style={styles.searchIcon}>🔍</Text>
-              <Text style={styles.searchText}>Enter destination...</Text>
+              <Text style={styles.searchText}>{i18n.t('where_to')}</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -35,12 +41,12 @@ export default function HomeScreen({ navigation }: any) {
 
       {/* Vehicle options */}
       <Animated.View style={[styles.section, { opacity: fadeIn, transform: [{ translateY: slideUp }] }]}>
-        <Text style={styles.sectionTitle}>Choose your ride</Text>
+        <Text style={styles.sectionTitle}>{i18n.t('choose_ride')}</Text>
         <View style={styles.vehicleRow}>
           {[
-            { emoji: '🚗', name: 'Car', desc: 'Comfort', price: 'Sh 3,000+', colors: ['#e3f2fd', '#bbdefb'] },
-            { emoji: '🛺', name: 'Bajaji', desc: 'Affordable', price: 'Sh 2,000+', colors: ['#fff3e0', '#ffe0b2'] },
-            { emoji: '🏍️', name: 'Boda', desc: 'Fast', price: 'Sh 1,500+', colors: ['#e8f5e9', '#c8e6c9'] },
+            { emoji: '🚗', name: i18n.t('car'), desc: i18n.t('comfort'), price: 'Sh 3,000+', colors: ['#e3f2fd', '#bbdefb'] },
+            { emoji: '🛺', name: i18n.t('bajaji'), desc: i18n.t('affordable'), price: 'Sh 2,000+', colors: ['#fff3e0', '#ffe0b2'] },
+            { emoji: '🏍️', name: i18n.t('boda'), desc: i18n.t('fast'), price: 'Sh 1,500+', colors: ['#e8f5e9', '#c8e6c9'] },
           ].map((v) => (
             <TouchableOpacity
               key={v.name} activeOpacity={0.8}
@@ -63,9 +69,9 @@ export default function HomeScreen({ navigation }: any) {
         <TouchableOpacity activeOpacity={0.85}>
           <View style={styles.promoCard}>
             <View style={styles.promoLeft}>
-              <Text style={styles.promoTitle}>🎉 Refer & Earn</Text>
-              <Text style={styles.promoAmount}>Sh 5,000 bonus</Text>
-              <Text style={styles.promoDesc}>Share with friends</Text>
+              <Text style={styles.promoTitle}>{i18n.t('refer_earn')}</Text>
+              <Text style={styles.promoAmount}>{i18n.t('bonus_amount')}</Text>
+              <Text style={styles.promoDesc}>{i18n.t('share_with_friends')}</Text>
             </View>
             <Text style={styles.promoArrow}>→</Text>
           </View>
@@ -74,13 +80,13 @@ export default function HomeScreen({ navigation }: any) {
 
       {/* Saved places */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Saved Places</Text>
+        <Text style={styles.sectionTitle}>{i18n.t('saved_places')}</Text>
         <View style={styles.placesRow}>
           {[
-            { emoji: '🏠', name: 'Home', color: '#e3f2fd' },
-            { emoji: '💼', name: 'Work', color: '#f3e5f5' },
-            { emoji: '🏋️', name: 'Gym', color: '#e8f5e9' },
-            { emoji: '➕', name: 'Add', color: '#f5f5f5' },
+            { emoji: '🏠', name: i18n.t('home'), color: '#e3f2fd' },
+            { emoji: '💼', name: i18n.t('work'), color: '#f3e5f5' },
+            { emoji: '🏋️', name: i18n.t('gym'), color: '#e8f5e9' },
+            { emoji: '➕', name: i18n.t('add_new'), color: '#f5f5f5' },
           ].map((p) => (
             <TouchableOpacity key={p.name} style={[styles.placeCard, { backgroundColor: p.color }]}>
               <Text style={styles.placeEmoji}>{p.emoji}</Text>
@@ -132,4 +138,3 @@ const styles = StyleSheet.create({
   placeEmoji: { fontSize: 22, marginBottom: 4 },
   placeText: { fontSize: 11, color: '#555', fontWeight: '500' },
 });
-

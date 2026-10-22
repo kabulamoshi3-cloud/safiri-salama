@@ -13,7 +13,16 @@
     "phoneNumber": "Phone Number",
     "password": "Password",
     "vehicleNumber": "Vehicle Number",
-    "licenseNumber": "License Number"
+    "licenseNumber": "License Number",
+    "fullName": "Full Name",
+    "confirmPassword": "Confirm Password",
+    "alreadyHaveAccount": "Already have an account?",
+    "noAccount": "Don't have an account?",
+    "fillAllFields": "Please fill in all fields",
+    "passwordsMismatch": "Passwords do not match",
+    "registrationSuccess": "Registration successful",
+    "registrationFailed": "Registration failed",
+    "loginFailed": "Login failed"
   },
   "status": {
     "offline": "Offline",
@@ -31,7 +40,9 @@
     "newTripRequest": "New Trip Request",
     "accept": "Accept",
     "decline": "Decline",
-    "navigation": "Navigate"
+    "navigation": "Navigate",
+    "currentStatus": "Current Status",
+    "noTripRequests": "No trip requests"
   },
   "trip": {
     "currentTrip": "Current Trip",
@@ -44,10 +55,43 @@
     "fare": "Fare",
     "distance": "Distance",
     "duration": "Duration",
+    "estimatedTime": "Est. Time",
     "arrivedAtPickup": "Arrived at Pickup",
-    "waitingForPassenger": "Waiting for Passenger"
+    "waitingForPassenger": "Waiting for Passenger",
+    "activeTrip": "Active Trip",
+    "startTripNavigate": "Start Trip / Navigate",
+    "arrivedAtDestination": "Arrived at Destination",
+    "collectPayment": "Complete trip to collect payment",
+    "tripCompleted": "Trip Completed",
+    "tripStarted": "Trip Started",
+    "navigateToDestination": "Navigate to destination",
+    "arrived": "Arrived",
+    "pending": "Pending"
+  },
+  "payment": {
+    "collectPayment": "Collect Payment",
+    "totalFare": "Total Fare",
+    "selectPaymentMethod": "Select Payment Method",
+    "cash": "Cash",
+    "cashPayment": "Traditional cash payment",
+    "mobileMoneyPayment": "Mobile money payment",
+    "transactionId": "Transaction ID",
+    "optional": "Optional",
+    "enterTransactionId": "Enter transaction ID",
+    "confirmPayment": "Confirm Payment",
+    "paymentConfirmed": "Payment Confirmed",
+    "paymentReceived": "Payment received",
+    "method": "Method",
+    "tripCompleted": "Trip Completed",
+    "tripStarted": "Trip Started",
+    "navigateToDestination": "Navigate to destination",
+    "arrived": "Arrived",
+    "activeTrip": "Active Trip",
+    "estimatedTime": "Est. Time",
+    "arrivedAtDestination": "Arrived at Destination"
   },
   "earnings": {
+    "title": "Earnings",
     "todayEarnings": "Today",
     "weekEarnings": "This Week",
     "monthEarnings": "This Month",
@@ -55,7 +99,22 @@
     "cashCollected": "Cash Collected",
     "digitalPayments": "Digital Payments",
     "pendingPayment": "Pending Payment",
-    "transactionHistory": "Transaction History"
+    "transactionHistory": "Transaction History",
+    "last7Days": "Last 7 Days",
+    "breakdown": "Breakdown",
+    "cashFares": "Cash Fares",
+    "total": "Total",
+    "history": "History",
+    "noRecords": "No records yet",
+    "withdraw": "Withdraw",
+    "comingSoon": "Withdraw feature coming soon",
+    "loadError": "Failed to load earnings",
+    "retry": "Try again",
+    "period": {
+      "today": "Today",
+      "week": "This Week",
+      "month": "This Month"
+    }
   },
   "vehicle": {
     "vehicleInfo": "Vehicle Information",
@@ -73,5 +132,48 @@
     "error": "Error",
     "success": "Success",
     "ok": "OK"
+  },
+  "profile": {
+    "language": "Language",
+    "vehicleInfo": "Vehicle Information",
+    "helpSupport": "Help & Support",
+    "editProfile": "Edit Profile",
+    "logout": "Logout",
+    "logoutConfirm": "Are you sure you want to logout?",
+    "logoutFailed": "Failed to logout",
+    "notifications": "Notifications",
+    "enableNotifications": "Enable Notifications",
+    "appearance": "Appearance",
+    "darkMode": "Dark Mode"
+  },
+  "navigation": {
+    "title": "Navigation",
+    "loadingRoute": "Loading route...",
+    "locationDenied": "Location permission denied.",
+    "routeError": "Failed to fetch route. Check internet connection.",
+    "followRoute": "Follow the route",
+    "next": "Next:",
+    "arrived": "Arrived",
+    "myLocation": "My Location",
+    "speed": "Speed",
+    "retry": "Try Again",
+    "tripCompletionError": "Failed to complete trip",
+    "iHaveArrived": "I've Arrived",
+    "back": "← Back",
+    "heading": "Journey Direction",
+    "eta": "min"
+  },
+  "rating": {
+    "tripCompleted": "Trip Completed",
+    "ratePassenger": "Rate Passenger",
+    "excellent": "Excellent!",
+    "good": "Good",
+    "okay": "Okay",
+    "poor": "Poor",
+    "terrible": "Terrible",
+    "comment": "Comment (optional)",
+    "submit": "Submit Rating",
+    "skip": "Skip for now",
+    "error": "Failed to submit rating. Please try again."
   }
 }

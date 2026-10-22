@@ -1,30 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Image,
+  View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import i18n from '../i18n';
 
 export default function ProfileScreen({ navigation }: any) {
   const [user, setUser] = useState<any>(null);
-  const [role, setRole] = useState('passenger');
+  const [, forceUpdate] = useState(0);
 
   useEffect(() => {
     loadUser();
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
   }, []);
 
   const loadUser = async () => {
     const userData = await AsyncStorage.getItem('@dalasmart:user');
-    const userRole = await AsyncStorage.getItem('@dalasmart:role');
     if (userData) setUser(JSON.parse(userData));
-    if (userRole) setRole(userRole);
   };
 
   const logout = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(i18n.t('logout'), i18n.t('logout_confirm'), [
+      { text: i18n.t('cancel'), style: 'cancel' },
       {
-        text: 'Logout', style: 'destructive',
+        text: i18n.t('logout'), style: 'destructive',
         onPress: async () => {
           await AsyncStorage.multiRemove(['@dalasmart:token', '@dalasmart:role', '@dalasmart:user']);
           navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
@@ -34,15 +34,15 @@ export default function ProfileScreen({ navigation }: any) {
   };
 
   const menuItems = [
-    { icon: 'wallet-outline', label: 'Wallet & Payments', desc: 'Cash, M-Pesa, Tigo', color: '#1a73e8' },
-    { icon: 'location-outline', label: 'Saved Places', desc: 'Home, Work, Favorites', color: '#4caf50' },
-    { icon: 'shield-checkmark-outline', label: 'Safety', desc: 'Emergency contacts, SOS', color: '#f44336' },
-    { icon: 'gift-outline', label: 'Promotions', desc: 'Promo codes & discounts', color: '#ff9800' },
-    { icon: 'people-outline', label: 'Refer Friends', desc: 'Earn Sh 5,000 per referral', color: '#9c27b0' },
-    { icon: 'language-outline', label: 'Language', desc: 'English / Swahili', color: '#00bcd4' },
-    { icon: 'notifications-outline', label: 'Notifications', desc: 'Push & SMS alerts', color: '#795548' },
-    { icon: 'document-text-outline', label: 'Legal', desc: 'Terms, Privacy Policy', color: '#607d8b' },
-    { icon: 'information-circle-outline', label: 'About DalaSmart', desc: 'Version 1.0.0', color: '#999' },
+    { icon: 'wallet-outline', label: i18n.t('wallet_payments'), desc: i18n.t('wallet_desc'), color: '#1a73e8' },
+    { icon: 'location-outline', label: i18n.t('saved_places'), desc: i18n.t('saved_places_desc'), color: '#4caf50' },
+    { icon: 'shield-checkmark-outline', label: i18n.t('safety'), desc: i18n.t('sos_contacts'), color: '#f44336' },
+    { icon: 'gift-outline', label: i18n.t('promotions'), desc: i18n.t('promotions_desc'), color: '#ff9800' },
+    { icon: 'people-outline', label: i18n.t('refer_friends'), desc: i18n.t('earn_per_referral'), color: '#9c27b0' },
+    { icon: 'language-outline', label: i18n.t('language'), desc: i18n.t('language_desc'), color: '#00bcd4' },
+    { icon: 'notifications-outline', label: i18n.t('notifications'), desc: i18n.t('notifications_desc'), color: '#795548' },
+    { icon: 'document-text-outline', label: i18n.t('legal'), desc: i18n.t('terms_privacy'), color: '#607d8b' },
+    { icon: 'information-circle-outline', label: i18n.t('about'), desc: `${i18n.t('version')} 1.0.0`, color: '#999' },
   ];
 
   return (
@@ -66,17 +66,17 @@ export default function ProfileScreen({ navigation }: any) {
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>4.9</Text>
-            <Text style={styles.statLabel}>Rating</Text>
+            <Text style={styles.statLabel}>{i18n.t('rating_label')}</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
             <Text style={styles.statValue}>12</Text>
-            <Text style={styles.statLabel}>Trips</Text>
+            <Text style={styles.statLabel}>{i18n.t('trips_label')}</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
             <Text style={styles.statValue}>2yr</Text>
-            <Text style={styles.statLabel}>Member</Text>
+            <Text style={styles.statLabel}>{i18n.t('member_label')}</Text>
           </View>
         </View>
       </View>
@@ -100,10 +100,10 @@ export default function ProfileScreen({ navigation }: any) {
       {/* Logout */}
       <TouchableOpacity style={styles.logoutBtn} onPress={logout} activeOpacity={0.7}>
         <Ionicons name="log-out-outline" size={20} color="#f44336" />
-        <Text style={styles.logoutText}>Logout</Text>
+        <Text style={styles.logoutText}>{i18n.t('logout')}</Text>
       </TouchableOpacity>
 
-      <Text style={styles.version}>DalaSmart v1.0.0 • Made in Tanzania 🇹🇿</Text>
+      <Text style={styles.version}>{i18n.t('app_name')} v1.0.0 • Made in Tanzania 🇹🇿</Text>
 
       <View style={{ height: 30 }} />
     </ScrollView>
@@ -135,4 +135,3 @@ const styles = StyleSheet.create({
   logoutText: { fontSize: 16, color: '#f44336', fontWeight: '600', marginLeft: 8 },
   version: { textAlign: 'center', fontSize: 12, color: '#bbb', marginTop: 8 },
 });
-

@@ -1,232 +1,330 @@
-# DalaSmart Setup Guide
+# DalaSmart — Setup Guide
 
-Step-by-step instructions to get the DalaSmart API and mobile apps running locally.
+Complete step-by-step instructions for setting up the DalaSmart platform on your local machine.
 
 ---
 
 ## Prerequisites
 
-| Tool | Minimum version | Notes |
-|---|---|---|
-| Node.js | 20 | Use [nvm](https://github.com/nvm-sh/nvm) for easy version management |
-| npm | 10 | Bundled with Node.js 20 |
-| PostgreSQL | 15 | Or use a Docker container |
-| Git | any | |
-| Expo CLI | latest | `npm install -g expo-cli` (for mobile apps only) |
+Before you begin, ensure you have the following installed:
 
-No Go, Python, or Docker is required to run the API.
+- **Node.js 20+** — [Download from nodejs.org](https://nodejs.org/)
+- **npm 10+** — Comes with Node.js
+- **PostgreSQL 15+** — [Download from postgresql.org](https://www.postgresql.org/download/)
+- **Git** — [Download from git-scm.com](https://git-scm.com/)
 
----
+**Optional:**
+- **Redis** — For caching (not required for basic operation)
 
-## 1. Clone the Repository
-
-```bash
-git clone <your-repo-url> daladala
-cd daladala
-```
+**Note:** No Go, Python, or Kafka installation is required for local development. The current implementation uses only Node.js.
 
 ---
 
-## 2. Install Dependencies
+## Clone and Install
 
-```bash
-# Install root and workspace dependencies
-npm install
+1. **Clone the repository:**
 
-# Install api-gateway dependencies explicitly (if workspace hoisting skips it)
-cd services/api-gateway
-npm install
-cd ../..
-```
+   ```bash
+   git clone https://github.com/yourusername/daladala.git
+   cd daladala
+   ```
 
----
+2. **Install dependencies:**
 
-## 3. Environment Setup
+   ```bash
+   npm install
+   ```
 
-```bash
-# Copy the example file
-cp .env.example services/api-gateway/.env
-
-# Open and edit the required values
-#   DATABASE_URL  — your PostgreSQL connection string
-#   JWT_SECRET    — run: node -e "require('crypto').randomBytes(64).toString('hex')"
-#   ORS_API_KEY   — optional; see section 7 below
-nano services/api-gateway/.env
-```
-
-At minimum you must set `DATABASE_URL` and `JWT_SECRET`. Everything else is optional for local development.
+   This installs all dependencies for the monorepo, including the API gateway and all client apps.
 
 ---
 
-## 4. Database Setup
+## Environment Setup
 
-### Create the database
+1. **Create the environment file:**
 
-```bash
-# Using psql client (replace postgres with your DB user if different)
-createdb dalasmart
+   ```bash
+   cp services/api-gateway/.env.example services/api-gateway/.env
+   ```
 
-# Or with psql:
-psql -U postgres -c "CREATE DATABASE dalasmart;"
-```
+2. **Edit the environment file:**
 
-### Run migrations
+   Open `services/api-gateway/.env` in your text editor and configure at minimum:
 
-```bash
-cd services/api-gateway
-npm run migrate
-```
+   - **`DATABASE_URL`** — Your PostgreSQL connection string:
+     ```
+     DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/dalasmart
+     ```
 
-This runs the numbered SQL files in `migrations/` in order:
+   - **`JWT_SECRET`** — Generate a secure 64-character random string:
+     ```bash
+     node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+     ```
+     Copy the output and paste it as the value for `JWT_SECRET`.
 
-```
-001_base_schema.sql       — core tables (users, trips, drivers, vehicles)
-008_add_features.sql      — promo codes, referrals, subscriptions, support
-009_add_tracking_features — driver location, route cache
-010_add_extended_features — food delivery, shop, corporate, advertising, etc.
-011_payments.sql          — transactions, wallets, payment_splits
-012_trip_state_machine.sql — trip_state_logs, index updates
-013_admin_settings.sql    — admin tables
-014_push_tokens.sql       — push_tokens, notification_log
-015_ratings_earnings.sql  — ratings, driver_earnings
-```
-
-### Seed sample data (optional)
-
-```bash
-npm run seed
-```
-
-Inserts sample users, drivers, and vehicles so you can test without creating accounts manually.
+   All other variables are optional. The API will work with just these two configured.
 
 ---
 
-## 5. Start the API
+## Database Setup
 
-```bash
-cd services/api-gateway
-npm run dev
-```
+1. **Create the database:**
 
-The server starts on `http://localhost:3000` (or the `PORT` you set in `.env`).
+   ```bash
+   createdb dalasmart
+   ```
 
-Nodemon watches for TypeScript changes and restarts automatically.
+   If the `createdb` command is not found, use `psql`:
+   ```bash
+   psql -U postgres
+   CREATE DATABASE dalasmart;
+   \q
+   ```
+
+2. **Run migrations:**
+
+   ```bash
+   cd services/api-gateway
+   npm run migrate
+   ```
+
+   This creates all required tables and indexes.
+
+3. **(Optional) Seed sample data:**
+
+   ```bash
+   npm run seed
+   ```
+
+   This populates the database with sample users, drivers, and trips for testing.
 
 ---
 
-## 6. Smoke Test
+## Start the API
+
+1. **Start the development server:**
+
+   ```bash
+   cd services/api-gateway
+   npm run dev
+   ```
+
+   The server will start on the port specified in your `.env` file (default: `3000`).
+
+2. **Expected output:**
+
+   ```
+   Server listening on http://localhost:3000
+   Database connected
+   ```
+
+---
+
+## Smoke Test
+
+Verify the API is running correctly:
 
 ```bash
-# Health check
 curl http://localhost:3000/health
-# Expected: {"status":"healthy","timestamp":"...","uptime":...}
-
-# Auth register
-curl -X POST http://localhost:3000/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"phone":"255744111111","password":"test1234","userType":"passenger","name":"Amina"}'
-# Expected: 201 with user + token
 ```
+
+**Expected response:**
+
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "uptime": 5.123
+}
+```
+
+If you see this response, the API is running successfully!
 
 ---
 
-## 7. Getting an ORS API Key (optional)
+## Run Tests
 
-OpenRouteService provides free turn-by-turn routing:
-
-1. Sign up at [openrouteservice.org/dev](https://openrouteservice.org/dev/#/signup)
-2. Go to **Dashboard → Tokens → Request a token** (free tier: 2 000 requests/day)
-3. Copy the token into `ORS_API_KEY` in your `.env`
-
-Without the key the API returns straight-line distance estimates instead of road-based routes.
-
----
-
-## 8. Mobile App Setup
-
-### Passenger app
-
-```bash
-cd apps/passenger-app
-npm install
-npx expo start
-```
-
-### Driver app
-
-```bash
-cd apps/driver-app
-npm install
-npx expo start
-```
-
-Set `EXPO_PUBLIC_API_URL` in each app's `.env` (or `app.config.js` extra) to point at your running API:
-
-```
-EXPO_PUBLIC_API_URL=http://YOUR_LOCAL_IP:3000/api/v1
-```
-
-Use your machine's LAN IP (not `localhost`) when connecting from a physical device or Android emulator.
-
----
-
-## 9. Admin Panel Setup
-
-```bash
-cd apps/admin-panel
-npm install
-npm run dev
-# Opens at http://localhost:5173
-```
-
----
-
-## 10. Mobile Money Sandbox Setup
-
-All four providers offer sandbox environments for testing:
-
-| Provider | Sandbox docs |
-|---|---|
-| M-Pesa (Vodacom TZ) | [developer.vodacom.co.tz](https://developer.vodacom.co.tz) |
-| Airtel Money | [developers.airtel.africa](https://developers.airtel.africa) |
-| Tigo Pesa | Contact Tigo developer relations |
-| Halotel | Contact Halotel merchant services |
-
-Populate the corresponding `MPESA_*`, `AIRTEL_*`, `TIGO_*`, `HALOTEL_*` keys in `.env` with your sandbox credentials. In development without credentials, payment initiation calls still work — they log the STK push to the console instead of calling the real provider API.
-
----
-
-## 11. Running Tests
+All tests use Jest with mocked database and external services (no live connections required).
 
 ```bash
 cd services/api-gateway
 npm test
 ```
 
-Tests mock the database and external services so no live PostgreSQL or internet connection is required.
+**Expected output:**
+
+```
+PASS  src/__tests__/routes/auth.test.ts
+PASS  src/__tests__/routes/tracking.test.ts
+PASS  src/__tests__/routes/payments.test.ts
+PASS  src/middleware/auth.test.ts
+...
+Test Suites: X passed, X total
+Tests:       X passed, X total
+```
+
+To run tests in watch mode during development:
+
+```bash
+npm test -- --watch
+```
 
 ---
 
-## 12. Deployment (Vercel)
+## Deployment (Vercel)
 
-The API is designed for Vercel serverless deployment:
+DalaSmart is designed for **Vercel serverless** deployment. The API exports `default app` without calling `app.listen()` — Vercel handles the HTTP server automatically.
 
-1. Connect the repo to Vercel.
-2. Set the **Root Directory** to `services/api-gateway`.
-3. Add all environment variables from `.env.example` in the Vercel dashboard.
-4. Deploy.
+### Steps:
 
-`app.listen()` is intentionally **not** called in `src/index.ts` — the file exports `default app` for Vercel's serverless runtime. Vercel handles the port binding automatically.
+1. **Link your repository to Vercel:**
+
+   ```bash
+   npm install -g vercel
+   vercel link
+   ```
+
+2. **Configure environment variables in Vercel:**
+
+   - Navigate to your project in the [Vercel Dashboard](https://vercel.com/dashboard)
+   - Go to **Settings** → **Environment Variables**
+   - Add all required variables from your local `.env` file:
+     - `DATABASE_URL` (use a production PostgreSQL service)
+     - `JWT_SECRET` (same secret as local, or generate a new one)
+     - `NODE_ENV=production`
+     - `CORS_ORIGIN` (your frontend URL)
+     - Optional: payment provider credentials, push notification tokens, etc.
+
+3. **Deploy:**
+
+   ```bash
+   vercel --prod
+   ```
+
+### Production Database Options:
+
+- **Vercel Postgres** — Integrated with Vercel
+- **Neon** — Serverless Postgres
+- **Supabase** — Open-source Firebase alternative
+- **Railway** — Simple PostgreSQL hosting
+- **AWS RDS** — Amazon's managed database service
+
+The connection pool automatically enables SSL when `NODE_ENV=production`.
 
 ---
 
-## 13. Troubleshooting
+## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---|---|---|
-| `ECONNREFUSED` on DB queries | PostgreSQL not running | `pg_ctl start` or `docker start <pg-container>` |
-| `JWT_SECRET not configured` 500 | `.env` not loaded | Check `services/api-gateway/.env` exists and has `JWT_SECRET=...` |
-| `Invalid or expired token` 401 | Wrong secret or expired token | Ensure `JWT_SECRET` matches between sign and verify; re-login |
-| Port 3000 in use | Another process on port 3000 | Set `PORT=3001` in `.env` |
-| Route calculation is a straight line | No ORS key | Set `ORS_API_KEY` (see section 7) |
-| `supertest` not found during `npm test` | devDeps not installed | `cd services/api-gateway && npm install` |
+### Database connection refused
+
+**Problem:** API fails to start with `ECONNREFUSED` or `Connection refused`.
+
+**Solutions:**
+1. Verify PostgreSQL is running:
+   ```bash
+   pg_isready
+   ```
+   If not running, start it:
+   ```bash
+   # macOS (Homebrew):
+   brew services start postgresql
+
+   # Linux (systemd):
+   sudo systemctl start postgresql
+
+   # Windows:
+   # Start PostgreSQL service from Services panel
+   ```
+
+2. Check your `DATABASE_URL`:
+   - Ensure the host, port, username, and password are correct
+   - Default PostgreSQL port is `5432`
+   - Try connecting with `psql` to verify credentials:
+     ```bash
+     psql postgresql://postgres:yourpassword@localhost:5432/dalasmart
+     ```
+
+### JWT authentication errors
+
+**Problem:** All authenticated requests return `401 Unauthorized` or `Authentication not configured`.
+
+**Solutions:**
+1. Ensure `JWT_SECRET` is set in your `.env` file
+2. The secret must be at least 32 characters (we recommend 64)
+3. Restart the server after changing `.env` variables
+
+### Port already in use
+
+**Problem:** `Error: listen EADDRINUSE: address already in use :::3000`
+
+**Solutions:**
+1. Change the `PORT` in your `.env` file to a different port (e.g., `3001`)
+2. Or stop the process using port 3000:
+   ```bash
+   # Find the process:
+   lsof -i :3000
+
+   # Kill it:
+   kill -9 <PID>
+   ```
+
+### Route calculation returns straight-line estimates
+
+**Problem:** Route calculations always return `is_estimate: true` and simplified routes.
+
+**Solution:** This is expected behavior when `ORS_API_KEY` is not set. To get turn-by-turn routing:
+1. Sign up for a free OpenRouteService API key at [openrouteservice.org/dev/#/signup](https://openrouteservice.org/dev/#/signup)
+2. Add it to your `.env` file:
+   ```
+   ORS_API_KEY=your-key-here
+   ```
+3. Restart the server
+
+The straight-line fallback is intentional and allows the app to work without external dependencies.
+
+### Migrations fail
+
+**Problem:** `npm run migrate` fails with permission errors or syntax errors.
+
+**Solutions:**
+1. Ensure your PostgreSQL user has `CREATE TABLE` permissions
+2. Try running migrations as a superuser:
+   ```bash
+   psql -U postgres dalasmart < migrations/001_initial.sql
+   ```
+3. Check that the database exists:
+   ```bash
+   psql -U postgres -c "\l" | grep dalasmart
+   ```
+
+### Tests fail with "Cannot find module"
+
+**Problem:** `npm test` fails with module resolution errors.
+
+**Solutions:**
+1. Ensure all dependencies are installed:
+   ```bash
+   cd services/api-gateway
+   npm install
+   ```
+2. Clear Jest cache:
+   ```bash
+   npm test -- --clearCache
+   ```
+
+---
+
+## Next Steps
+
+- Read the [API Reference](./README.md#api-reference) to understand available endpoints
+- Explore the [Features](./FEATURES_README.md) document for detailed feature documentation
+- Check the [Testing Guide](./TESTING_GUIDE.md) for writing new tests
+- Review the [Deployment Guide](./DEPLOYMENT_GUIDE.md) for production deployment
+
+---
+
+## Need Help?
+
+- **Issues:** [GitHub Issues](https://github.com/yourusername/daladala/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/yourusername/daladala/discussions)
+- **Email:** support@dalasmart.co.tz

@@ -1,0 +1,30 @@
+{
+  "project_type": "TypeScript monorepo — Node/Express services + React Native Expo apps + React/Vite web app",
+  "language": "TypeScript everywhere",
+  "build_system": "Each package is standalone — no workspace tooling. Services: ts-node / tsc. RN apps: Expo CLI. Web: Vite.",
+  "test_framework": "No test framework configured in the affected packages (api-gateway has __tests__ dir but no framework detected). Web has 'vitest' in scripts but no test files for this feature. Skip automated test invocation for mobile/web apps.",
+  "build_command": "services/api-gateway: npx tsc --noEmit | services/tracking-service: npx tsc --noEmit | apps/web-platform: npm run build",
+  "test_command": "No test suite for affected files. Verify with TypeScript compilation only.",
+  "verification_instructions": "For each FEAT: (1) Run `npx tsc --noEmit` inside the changed service/app to confirm zero TS errors. (2) For web-platform run `npm run build` inside apps/web-platform. Mobile apps (Expo) cannot be built in CI — TS check is sufficient.",
+  "snapshot_or_generated_files": null,
+  "environment_constraints": "Do NOT modify tracking-service Socket.io handlers, intelligence.ts, or safety.ts. Keep REST polling fallback in all apps. TRACKING_SERVICE_URL env var already exists in api-gateway .env.example (value is empty — must add default 'http://localhost:3001'). The tracking-service already mounts routes at /api/routes and /api/safety — the new internal router must be mounted at /api/internal (matching the path api-gateway already calls: POST /internal/trip-event).",
+  "contribution_requirements": "Commit message must be: 'feat: wire Socket.io tracking-service for real-time updates'. Single commit covering all changes.",
+  "key_patterns": "Token key for AsyncStorage in BOTH mobile apps is '@dalasmart:token'. Web stores token in localStorage key 'token'. Web already uses socket.io-client in src/components/LiveTracking.tsx with io(url, { auth: { token } }) + socket.on('driver:moved') / 'trip:status' / 'eta:changed'. socket.io-client is NOT yet in passenger-app or driver-app package.json. api-gateway already has notifyTrackingService() function calling POST ${TRACKING_SERVICE_URL}/internal/trip-event — the internal endpoint on tracking-service just needs to be CREATED. Event names in tracking-service: driver:location:update (emitted by driver), driver:moved (broadcast to trip room), trip:status, eta:changed, trip:started, trip:completed, route:faster_available. Trip rooms are named trip:{tripId}. Auth via socket.handshake.auth.token -> jwt.verify.",
+  "relevant_files": [
+    "services/tracking-service/src/index.ts",
+    "services/tracking-service/src/routes/intelligence.ts",
+    "services/api-gateway/src/routes/trips.ts",
+    "services/api-gateway/.env.example",
+    "apps/passenger-app/package.json",
+    "apps/passenger-app/screens/TripActiveScreen.tsx",
+    "apps/driver-app/package.json",
+    "apps/driver-app/src/screens/trip/ActiveTripScreen.tsx",
+    "apps/driver-app/src/services/BackgroundLocation.ts",
+    "apps/driver-app/src/contexts/AuthContext.tsx",
+    "apps/web-platform/package.json",
+    "apps/web-platform/src/pages/ActiveTripPage.tsx",
+    "apps/web-platform/src/components/LiveTracking.tsx",
+    "apps/web-platform/src/services/api.ts"
+  ],
+  "directory_structure": "services/tracking-service/src/routes/ — only intelligence.ts and safety.ts exist (no internal.ts yet). apps/passenger-app/screens/ — screen files. apps/passenger-app/ has no services/ folder yet. apps/driver-app/src/services/ — BackgroundLocation.ts exists. apps/web-platform/src/services/ — api.ts exists."
+}

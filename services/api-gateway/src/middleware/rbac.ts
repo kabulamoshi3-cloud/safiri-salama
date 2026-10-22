@@ -11,7 +11,16 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { UserType } from '@dalasmart/shared-types';
+
+// Local UserType enum — mirrors shared-types but avoids the path-alias resolution
+// issue when tsc is run directly without the monorepo build system.
+enum UserType {
+  Passenger = 'passenger',
+  Driver = 'driver',
+  Operator = 'operator',
+  FleetOperator = 'fleet_operator',
+  Admin = 'admin',
+}
 
 // ---------------------------------------------------------------------------
 // Route permission map
@@ -96,10 +105,10 @@ export function requireRole(
       return;
     }
 
-    if (!allowedSet.has(req.user.role)) {
+    if (!allowedSet.has(req.user.type as UserType)) {
       res.status(403).json({
         error: 'FORBIDDEN',
-        message: `Access denied. Required role(s): ${[...allowedSet].join(', ')}. Your role: ${req.user.role}.`,
+        message: `Access denied. Required role(s): ${[...allowedSet].join(', ')}. Your role: ${req.user.type}.`,
       });
       return;
     }

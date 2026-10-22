@@ -1,0 +1,7 @@
+{
+  "verdict": "APPROVED",
+  "findings": [
+    "\"English\" / \"Kiswahili\" hardcoded in SettingsScreen — lines 33 and 38 render language picker labels as bare string literals with no corresponding locale keys. Minor inconsistency; not blocking. Add english_name / kiswahili_name keys if full coverage is required, or leave as proper nouns by design."
+  ],
+  "reviewDoc": "/run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/.agents/tasks/i18n-review.md"
+}

@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import i18n from '../i18n';
 
 export default function PromoScreen() {
   const [code, setCode] = useState('');
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
 
   const applyCode = () => {
-    if (!code.trim()) { Alert.alert('Error', 'Enter a promo code'); return; }
-    Alert.alert('Promo Code', `Code "${code}" applied! (demo)`);
+    if (!code.trim()) { Alert.alert(i18n.t('error'), i18n.t('promo_enter_code')); return; }
+    Alert.alert(i18n.t('promo_codes'), i18n.t('promo_applied').replace('{code}', code));
     setCode('');
   };
 
@@ -18,9 +23,9 @@ export default function PromoScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>{i18n.t('promo_codes')}</Text>
         <View style={styles.inputRow}>
-          <TextInput style={styles.input} placeholder="Enter code" value={code} onChangeText={setCode} autoCapitalize="characters" />
+          <TextInput style={styles.input} placeholder={i18n.t('enter_code')} value={code} onChangeText={setCode} autoCapitalize="characters" />
           <TouchableOpacity style={styles.applyBtn} onPress={applyCode}>
-            <Text style={styles.applyText}>Apply</Text>
+            <Text style={styles.applyText}>{i18n.t('apply')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -36,25 +41,25 @@ export default function PromoScreen() {
         </View>
         <TouchableOpacity style={styles.shareBtn}>
           <Ionicons name="share-social" size={18} color="#fff" />
-          <Text style={styles.shareText}>Share with friends</Text>
+          <Text style={styles.shareText}>{i18n.t('share_with_friends')}</Text>
         </TouchableOpacity>
       </View>
 
       {/* Active promos */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Active Promotions</Text>
+        <Text style={styles.cardTitle}>{i18n.t('active_promotions')}</Text>
         <View style={styles.promoItem}>
           <Text style={styles.promoIcon}>🎉</Text>
           <View style={styles.promoInfo}>
-            <Text style={styles.promoName}>First Ride 50% Off</Text>
-            <Text style={styles.promoExp}>Expires in 7 days</Text>
+            <Text style={styles.promoName}>{i18n.t('promo_first_ride')}</Text>
+            <Text style={styles.promoExp}>{i18n.t('promo_expires_days')}</Text>
           </View>
         </View>
         <View style={styles.promoItem}>
           <Text style={styles.promoIcon}>🌟</Text>
           <View style={styles.promoInfo}>
-            <Text style={styles.promoName}>Weekend Sh 1,000 Off</Text>
-            <Text style={styles.promoExp}>Sat & Sun only</Text>
+            <Text style={styles.promoName}>{i18n.t('promo_weekend')}</Text>
+            <Text style={styles.promoExp}>{i18n.t('promo_weekend_when')}</Text>
           </View>
         </View>
       </View>

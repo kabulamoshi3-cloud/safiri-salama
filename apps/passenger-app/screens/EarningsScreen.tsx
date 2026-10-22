@@ -1,14 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  RefreshControl,
+  View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import i18n from '../i18n';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
 
@@ -27,6 +23,11 @@ export default function EarningsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -38,7 +39,7 @@ export default function EarningsScreen() {
       setData(resp.data);
     } catch (err) {
       console.error('EarningsScreen load error:', err);
-      setError('Imeshindwa kupakia mapato');
+      setError(i18n.t('load_error'));
     }
   }, []);
 
@@ -69,8 +70,8 @@ export default function EarningsScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         <View style={styles.centered}>
-          <Text style={styles.errorText}>{error ?? 'Hitilafu isiyojulikana'}</Text>
-          <Text style={styles.hintText}>Vuta chini kupakia upya</Text>
+          <Text style={styles.errorText}>{error ?? i18n.t('error')}</Text>
+          <Text style={styles.hintText}>{i18n.t('pull_to_refresh')}</Text>
         </View>
       </ScrollView>
     );
@@ -84,18 +85,18 @@ export default function EarningsScreen() {
       }
     >
       <View style={styles.summaryCard}>
-        <Text style={styles.summaryLabel}>Wiki hii</Text>
+        <Text style={styles.summaryLabel}>{i18n.t('this_week')}</Text>
         <Text style={styles.summaryAmount}>{fmt(data.week)}</Text>
-        <Text style={styles.summaryLabel}>Jumla: {fmt(data.total)}</Text>
+        <Text style={styles.summaryLabel}>{i18n.t('total_label')} {fmt(data.total)}</Text>
       </View>
 
       <View style={styles.breakdownCard}>
-        <Text style={styles.breakdownTitle}>Muhtasari</Text>
+        <Text style={styles.breakdownTitle}>{i18n.t('breakdown')}</Text>
         {[
-          { label: 'Leo',                  amount: fmt(data.today) },
-          { label: 'Mwezi hii',            amount: fmt(data.month) },
-          { label: 'Nauli (Pesa Taslimu)', amount: fmt(data.cashCollected) },
-          { label: 'Malipo ya Kidijitali', amount: fmt(data.digitalPayments) },
+          { label: i18n.t('today'), amount: fmt(data.today) },
+          { label: i18n.t('this_month'), amount: fmt(data.month) },
+          { label: i18n.t('cash_fares'), amount: fmt(data.cashCollected) },
+          { label: i18n.t('digital_payments'), amount: fmt(data.digitalPayments) },
         ].map((item) => (
           <View key={item.label} style={styles.row}>
             <Text style={styles.rowLabel}>{item.label}</Text>
@@ -104,7 +105,7 @@ export default function EarningsScreen() {
         ))}
         <View style={styles.divider} />
         <View style={styles.row}>
-          <Text style={styles.totalLabel}>Jumla ya Mapato</Text>
+          <Text style={styles.totalLabel}>{i18n.t('net_earnings')}</Text>
           <Text style={styles.totalAmount}>{fmt(data.total)}</Text>
         </View>
       </View>
@@ -113,22 +114,22 @@ export default function EarningsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container:     { flex: 1, backgroundColor: '#f5f5f5' },
-  centered:      { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
-  errorText:     { fontSize: 15, color: '#c00', textAlign: 'center', marginBottom: 8 },
-  hintText:      { fontSize: 13, color: '#999', textAlign: 'center' },
+  container:      { flex: 1, backgroundColor: '#f5f5f5' },
+  centered:       { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
+  errorText:      { fontSize: 15, color: '#c00', textAlign: 'center', marginBottom: 8 },
+  hintText:       { fontSize: 13, color: '#999', textAlign: 'center' },
   summaryCard: {
     backgroundColor: '#2e7d32', margin: 16, padding: 24,
     borderRadius: 14, alignItems: 'center',
   },
-  summaryLabel:  { fontSize: 14, color: '#c8e6c9' },
-  summaryAmount: { fontSize: 36, fontWeight: 'bold', color: '#fff', marginTop: 4, marginBottom: 6 },
-  breakdownCard: { backgroundColor: '#fff', marginHorizontal: 16, borderRadius: 12, padding: 20 },
-  breakdownTitle:{ fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 14 },
-  row:           { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8 },
-  rowLabel:      { fontSize: 14, color: '#666' },
-  rowAmount:     { fontSize: 14, color: '#333' },
-  divider:       { height: 1, backgroundColor: '#eee', marginVertical: 8 },
-  totalLabel:    { fontSize: 15, fontWeight: '600', color: '#333' },
-  totalAmount:   { fontSize: 15, fontWeight: 'bold', color: '#2e7d32' },
+  summaryLabel:   { fontSize: 14, color: '#c8e6c9' },
+  summaryAmount:  { fontSize: 36, fontWeight: 'bold', color: '#fff', marginTop: 4, marginBottom: 6 },
+  breakdownCard:  { backgroundColor: '#fff', marginHorizontal: 16, borderRadius: 12, padding: 20 },
+  breakdownTitle: { fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 14 },
+  row:            { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8 },
+  rowLabel:       { fontSize: 14, color: '#666' },
+  rowAmount:      { fontSize: 14, color: '#333' },
+  divider:        { height: 1, backgroundColor: '#eee', marginVertical: 8 },
+  totalLabel:     { fontSize: 15, fontWeight: '600', color: '#333' },
+  totalAmount:    { fontSize: 15, fontWeight: 'bold', color: '#2e7d32' },
 });

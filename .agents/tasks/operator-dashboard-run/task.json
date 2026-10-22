@@ -1,0 +1,7 @@
+{
+  "task_id": "task-operator-dashboard",
+  "task_description": "Build the operator-dashboard React+TypeScript SPA from scratch inside apps/operator-dashboard/, matching the driver-dashboard visual style (dark sidebar, blue-600 accents, gray-50 bg). Seven pages: Login, Dashboard, Fleet, Drivers, Earnings, Reports, Settings. Zustand auth store, Axios API client, Recharts charts, Leaflet live map, i18next EN+SW translations. vite build must succeed with 0 TypeScript errors.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

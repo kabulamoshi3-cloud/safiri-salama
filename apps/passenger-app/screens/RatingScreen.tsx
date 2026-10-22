@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import i18n from '../i18n';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
 
@@ -13,15 +14,19 @@ export default function RatingScreen({ route, navigation }: any) {
   const [tip, setTip] = useState(0);
   const [comment, setComment] = useState('');
 
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
+
   // When navigated from a push notification tap, only tripId is available.
-  // Fetch the trip to resolve the driver identity so the rating POST can proceed.
   const [resolvedDriver, setResolvedDriver] = useState<{ id: string; name?: string; plate?: string } | null>(
     driverIdParam ? { id: driverIdParam, ...driverParam } : driverParam ?? null
   );
   const [fetching, setFetching] = useState(false);
 
   useEffect(() => {
-    if (resolvedDriver?.id) return; // already have what we need
+    if (resolvedDriver?.id) return;
     if (!tripId) return;
 
     setFetching(true);
@@ -44,10 +49,17 @@ export default function RatingScreen({ route, navigation }: any) {
     })();
   }, [tripId]);
 
+  const getRatingLabel = (r: number) => {
+    if (r === 5) return i18n.t('excellent');
+    if (r === 4) return i18n.t('good');
+    if (r === 3) return i18n.t('okay');
+    if (r === 2) return i18n.t('poor');
+    return i18n.t('terrible');
+  };
+
   const submitRating = async () => {
     try {
       const token = await AsyncStorage.getItem('@dalasmart:token');
-      // ratee_id is no longer sent — the server derives it from the trip.
       if (tripId) {
         await axios.post(
           `${API_BASE}/ratings`,
@@ -55,11 +67,14 @@ export default function RatingScreen({ route, navigation }: any) {
           { headers: { Authorization: `Bearer ${token}` } }
         );
       }
-      Alert.alert('Asante! 🌟', `Umempa ${resolvedDriver?.name ?? 'dereva'} nyota ${rating}`, [
-        { text: 'Sawa', onPress: () => navigation.popToTop() },
-      ]);
+      const driverName = resolvedDriver?.name ?? i18n.t('driver');
+      Alert.alert(
+        i18n.t('thanks_feedback'),
+        i18n.t('you_gave_stars').replace('{name}', driverName).replace('{rating}', String(rating)),
+        [{ text: i18n.t('ok'), onPress: () => navigation.popToTop() }]
+      );
     } catch {
-      Alert.alert('Hitilafu', 'Imeshindwa kutuma tathmini. Jaribu tena.');
+      Alert.alert(i18n.t('error'), i18n.t('rating_error'));
     }
   };
 
@@ -71,7 +86,7 @@ export default function RatingScreen({ route, navigation }: any) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.checkmark}>✅</Text>
-        <Text style={styles.title}>Safari Imekamilika</Text>
+        <Text style={styles.title}>{i18n.t('trip_completed_title')}</Text>
         {displayPickup && displayDestination
           ? <Text style={styles.route}>{displayPickup} → {displayDestination}</Text>
           : null}
@@ -81,7 +96,7 @@ export default function RatingScreen({ route, navigation }: any) {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Kadirisha dereva wako</Text>
+        <Text style={styles.cardTitle}>{i18n.t('rate_driver')}</Text>
 
         {fetching ? (
           <ActivityIndicator size="small" color="#00d46a" style={{ marginBottom: 16 }} />
@@ -93,7 +108,7 @@ export default function RatingScreen({ route, navigation }: any) {
               </Text>
             </View>
             <View>
-              <Text style={styles.driverName}>{resolvedDriver?.name ?? 'Dereva'}</Text>
+              <Text style={styles.driverName}>{resolvedDriver?.name ?? i18n.t('driver')}</Text>
               {resolvedDriver?.plate
                 ? <Text style={styles.driverPlate}>{resolvedDriver.plate}</Text>
                 : null}
@@ -109,12 +124,10 @@ export default function RatingScreen({ route, navigation }: any) {
             </TouchableOpacity>
           ))}
         </View>
-        <Text style={styles.ratingText}>
-          {rating === 5 ? 'Bora sana!' : rating === 4 ? 'Nzuri' : rating === 3 ? 'Sawa' : rating === 2 ? 'Mbaya' : 'Mbaya sana'}
-        </Text>
+        <Text style={styles.ratingText}>{getRatingLabel(rating)}</Text>
 
         {/* Tip */}
-        <Text style={styles.tipTitle}>Ongeza tip?</Text>
+        <Text style={styles.tipTitle}>{i18n.t('add_tip')}</Text>
         <View style={styles.tipRow}>
           {[0, 500, 1000, 2000].map((amount) => (
             <TouchableOpacity
@@ -123,7 +136,7 @@ export default function RatingScreen({ route, navigation }: any) {
               onPress={() => setTip(amount)}
             >
               <Text style={[styles.tipText, tip === amount && styles.tipTextSelected]}>
-                {amount === 0 ? 'Hapana' : `Sh ${amount}`}
+                {amount === 0 ? i18n.t('no') : `Sh ${amount}`}
               </Text>
             </TouchableOpacity>
           ))}
@@ -132,18 +145,18 @@ export default function RatingScreen({ route, navigation }: any) {
         {/* Comment */}
         <TextInput
           style={styles.commentInput}
-          placeholder="Andika maoni (si lazima)"
+          placeholder={i18n.t('write_comment')}
           value={comment}
           onChangeText={setComment}
           multiline
         />
 
         <TouchableOpacity style={styles.submitBtn} onPress={submitRating} disabled={fetching}>
-          <Text style={styles.submitText}>Wasilisha</Text>
+          <Text style={styles.submitText}>{i18n.t('submit_rating')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.popToTop()}>
-          <Text style={styles.skipText}>Ruka</Text>
+          <Text style={styles.skipText}>{i18n.t('skip_rating')}</Text>
         </TouchableOpacity>
       </View>
     </View>

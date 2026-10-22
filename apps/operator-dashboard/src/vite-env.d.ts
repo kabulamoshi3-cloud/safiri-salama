@@ -7,3 +7,9 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+// Allow importing PNG assets as module strings (required for Leaflet marker icons)
+declare module '*.png' {
+  const src: string;
+  export default src;
+}

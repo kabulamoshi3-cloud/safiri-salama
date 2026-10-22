@@ -1,0 +1,10 @@
+{
+  "verdict": "APPROVED",
+  "findings": [
+    "JWT_SECRET generation command discrepancy — SETUP.md shows `node -e \"require('crypto').randomBytes(64).toString('hex')|head -c64\"` (pipe inside quotes, won't execute), while .env.example shows the correct `node -e \"console.log(require('crypto').randomBytes(64).toString('hex'))\"`.",
+    "Undocumented optional integrations — .env.example includes AT_USERNAME, AT_API_KEY (SMS/OTP), CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET (uploads), GOOGLE_MAPS_API_KEY (geocoding), WEBHOOK_SECRET, and TRACKING_SERVICE_URL. Add these to README.md's optional variables table.",
+    "Payment provider keys need 'optional' marker — .env.example groups payment keys (M-Pesa, Airtel, Tigo, Halotel) before the Redis 'optional' comment. Add comment above them clarifying they're optional.",
+    "Migration troubleshooting references SQL instead of TypeScript — SETUP.md suggests `psql < migrations/001_initial.sql` as fallback. Migration is `scripts/run-migrations.ts`. Clarify that migrations are TypeScript and suggest running the script directly with ts-node if npm fails."
+  ],
+  "reviewDoc": "/run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/.agents/tasks/build6-docs-review.md"
+}

@@ -5,8 +5,8 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-
 import AnimatedButton from '../components/AnimatedButton';
+import i18n from '../i18n';
 
 const API = 'https://simon-daladala-api.vercel.app/api/v1';
 
@@ -17,6 +17,7 @@ export default function LoginScreen({ route, navigation }: any) {
   const [loading, setLoading] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
   const [name, setName] = useState('');
+  const [, forceUpdate] = useState(0);
 
   const formSlide = useRef(new Animated.Value(40)).current;
   const formOpacity = useRef(new Animated.Value(0)).current;
@@ -28,9 +29,13 @@ export default function LoginScreen({ route, navigation }: any) {
     ]).start();
   }, []);
 
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
+
   const handleAuth = async () => {
-    if (!phone || phone.length < 10) { Alert.alert('Error', 'Enter a valid phone number'); return; }
-    if (!password || password.length < 6) { Alert.alert('Error', 'Password must be at least 6 characters'); return; }
+    if (!phone || phone.length < 10) { Alert.alert(i18n.t('error'), i18n.t('invalid_phone')); return; }
+    if (!password || password.length < 6) { Alert.alert(i18n.t('error'), i18n.t('password_too_short')); return; }
     setLoading(true);
     try {
       const endpoint = isRegister ? `${API}/auth/register` : `${API}/auth/login`;
@@ -41,40 +46,49 @@ export default function LoginScreen({ route, navigation }: any) {
       await AsyncStorage.setItem('@dalasmart:user', JSON.stringify(res.data.user));
       navigation.reset({ index: 0, routes: [{ name: role === 'driver' ? 'DriverMain' : 'Main' }] });
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.error || 'Authentication failed');
+      Alert.alert(i18n.t('error'), err.response?.data?.error || i18n.t('auth_failed'));
     } finally { setLoading(false); }
   };
 
   const isDriver = role === 'driver';
-  const colors: [string, string] = isDriver ? ['#2e7d32', '#1b5e20'] : ['#1a73e8', '#0d47a1'];
 
   return (
     <View style={styles.container}>
       <KeyboardAvoidingView style={styles.inner} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.header}>
           <Text style={styles.roleIcon}>{isDriver ? '🏍️' : '🚗'}</Text>
-          <Text style={styles.roleLabel}>{isDriver ? 'Driver' : 'Passenger'} Account</Text>
-          <Text style={styles.title}>{isRegister ? 'Create Account' : 'Welcome Back'}</Text>
+          <Text style={styles.roleLabel}>
+            {isDriver ? i18n.t('driver_account') : i18n.t('passenger_account')}
+          </Text>
+          <Text style={styles.title}>
+            {isRegister ? i18n.t('create_account') : i18n.t('welcome_back')}
+          </Text>
         </View>
 
         <Animated.View style={[styles.form, { transform: [{ translateY: formSlide }], opacity: formOpacity }]}>
           {isRegister && (
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Full Name</Text>
-              <TextInput style={styles.input} placeholder="Enter your name" value={name} onChangeText={setName} autoCapitalize="words" />
+              <Text style={styles.inputLabel}>{i18n.t('full_name')}</Text>
+              <TextInput
+                style={styles.input}
+                placeholder={i18n.t('enter_your_name')}
+                value={name}
+                onChangeText={setName}
+                autoCapitalize="words"
+              />
             </View>
           )}
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Phone Number</Text>
+            <Text style={styles.inputLabel}>{i18n.t('phone_number')}</Text>
             <TextInput style={styles.input} placeholder="+255 7XX XXX XXX" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
           </View>
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Password</Text>
+            <Text style={styles.inputLabel}>{i18n.t('password')}</Text>
             <TextInput style={styles.input} placeholder="••••••••" value={password} onChangeText={setPassword} secureTextEntry />
           </View>
 
           <AnimatedButton
-            title={isRegister ? 'Create Account →' : 'Login →'}
+            title={isRegister ? `${i18n.t('create_account')} →` : `${i18n.t('login')} →`}
             onPress={handleAuth}
             disabled={loading}
             colors={isDriver ? ['#2e7d32', '#1b5e20'] : ['#1a73e8', '#1565c0']}
@@ -82,7 +96,7 @@ export default function LoginScreen({ route, navigation }: any) {
           />
 
           <AnimatedButton
-            title={isRegister ? 'Already have an account? Login' : "Don't have an account? Sign Up"}
+            title={isRegister ? i18n.t('have_account') : i18n.t('no_account')}
             onPress={() => setIsRegister(!isRegister)}
             variant="ghost"
             colors={['#1a73e8', '#1a73e8']}
@@ -90,7 +104,7 @@ export default function LoginScreen({ route, navigation }: any) {
           />
 
           <AnimatedButton
-            title="← Change role"
+            title={i18n.t('change_role')}
             onPress={() => navigation.goBack()}
             variant="ghost"
             colors={['#999', '#999']}
@@ -127,4 +141,3 @@ const styles = StyleSheet.create({
   backBtn: { marginTop: 12, alignItems: 'center' },
   backText: { color: '#aaa', fontSize: 13 },
 });
-

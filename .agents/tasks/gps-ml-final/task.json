@@ -1,0 +1,7 @@
+{
+  "task_id": "task-gps-ml-final",
+  "task_description": "Complete the GPS integrity + ML traffic pipeline: GPS observation validator, migration 016 schema with 12 Dar es Salaam road segments, a traffic predictor (ML/avg when >=10 real observations else baseline), route wiring (remove production mock GPS, stale detection, observation storage + segment ingestion, 3 new traffic endpoints), passenger-app traffic UI (departure-time selector, predicted colors, confidence, best-time card, offline fallback), and a Python ML microservice scaffold (Node never depends on it).",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
+  "blocked_reason": null
+}

@@ -13,7 +13,16 @@
     "phoneNumber": "Namba ya Simu",
     "password": "Nywila",
     "vehicleNumber": "Namba ya Gari",
-    "licenseNumber": "Namba ya Leseni"
+    "licenseNumber": "Namba ya Leseni",
+    "fullName": "Jina Kamili",
+    "confirmPassword": "Thibitisha Nywila",
+    "alreadyHaveAccount": "Una akaunti tayari?",
+    "noAccount": "Huna akaunti?",
+    "fillAllFields": "Tafadhali jaza sehemu zote",
+    "passwordsMismatch": "Nywila hazilingani",
+    "registrationSuccess": "Usajili umefanikiwa",
+    "registrationFailed": "Usajili umeshindwa",
+    "loginFailed": "Kuingia kumeshindwa"
   },
   "status": {
     "offline": "Nje ya Mkondoni",
@@ -31,7 +40,9 @@
     "newTripRequest": "Ombi la Safari Mpya",
     "accept": "Kubali",
     "decline": "Kataa",
-    "navigation": "Ongoza"
+    "navigation": "Ongoza",
+    "currentStatus": "Hali ya Sasa",
+    "noTripRequests": "Hakuna maombi ya safari"
   },
   "trip": {
     "currentTrip": "Safari ya Sasa",
@@ -44,35 +55,18 @@
     "fare": "Nauli",
     "distance": "Umbali",
     "duration": "Muda",
+    "estimatedTime": "Muda Wa Kadiri",
     "arrivedAtPickup": "Umefika Mahali pa Kuchukua",
-    "waitingForPassenger": "Unasubiri Abiria"
-  },
-  "earnings": {
-    "todayEarnings": "Leo",
-    "weekEarnings": "Wiki Hii",
-    "monthEarnings": "Mwezi Huu",
-    "totalEarnings": "Jumla ya Mapato",
-    "cashCollected": "Pesa Taslimu Zilizokusanywa",
-    "digitalPayments": "Malipo ya Kidijitali",
-    "pendingPayment": "Malipo Yanayosubiri",
-    "transactionHistory": "Historia ya Shughuli"
-  },
-  "vehicle": {
-    "vehicleInfo": "Taarifa za Gari",
-    "plateNumber": "Namba ya Bamba",
-    "capacity": "Uwezo",
-    "status": "Hali",
-    "lastMaintenance": "Matengenezo ya Mwisho",
-    "nextMaintenance": "Matengenezo Yanayofuata"
-  },
-  "common": {
-    "cancel": "Ghairi",
-    "save": "Hifadhi",
-    "confirm": "Thibitisha",
-    "loading": "Inapakia...",
-    "error": "Hitilafu",
-    "success": "Mafanikio",
-    "ok": "Sawa"
+    "waitingForPassenger": "Unasubiri Abiria",
+    "activeTrip": "Safari Inayoendelea",
+    "startTripNavigate": "Anza Safari / Ongoza",
+    "arrivedAtDestination": "Umefika Marudio",
+    "collectPayment": "Maliza safari ili kukusanya malipo",
+    "tripCompleted": "Safari Imekamilika",
+    "tripStarted": "Safari Imeanza",
+    "navigateToDestination": "Ongoza kwenda marudio",
+    "arrived": "Umefika",
+    "pending": "Inasubiri"
   },
   "payment": {
     "collectPayment": "Kusanya Malipo",
@@ -92,9 +86,94 @@
     "tripStarted": "Safari Imeanza",
     "navigateToDestination": "Ongoza kwenda marudio",
     "arrived": "Umefika",
-    "completeTrip": "Maliza safari ili kukusanya malipo",
     "activeTrip": "Safari Inayoendelea",
     "estimatedTime": "Muda Wa Kadiri",
     "arrivedAtDestination": "Umefika Marudio"
+  },
+  "earnings": {
+    "title": "Mapato",
+    "todayEarnings": "Leo",
+    "weekEarnings": "Wiki Hii",
+    "monthEarnings": "Mwezi Huu",
+    "totalEarnings": "Jumla ya Mapato",
+    "cashCollected": "Pesa Taslimu Zilizokusanywa",
+    "digitalPayments": "Malipo ya Kidijitali",
+    "pendingPayment": "Malipo Yanayosubiri",
+    "transactionHistory": "Historia ya Shughuli",
+    "last7Days": "Siku 7 Zilizopita",
+    "breakdown": "Muhtasari",
+    "cashFares": "Nauli (Pesa Taslimu)",
+    "total": "Jumla",
+    "history": "Historia",
+    "noRecords": "Hakuna rekodi bado",
+    "withdraw": "Toa Pesa",
+    "comingSoon": "Huduma ya kutoa pesa itapatikana hivi karibuni",
+    "loadError": "Imeshindwa kupakia mapato",
+    "retry": "Jaribu tena",
+    "period": {
+      "today": "Leo",
+      "week": "Wiki hii",
+      "month": "Mwezi hii"
+    }
+  },
+  "vehicle": {
+    "vehicleInfo": "Taarifa za Gari",
+    "plateNumber": "Namba ya Bamba",
+    "capacity": "Uwezo",
+    "status": "Hali",
+    "lastMaintenance": "Matengenezo ya Mwisho",
+    "nextMaintenance": "Matengenezo Yanayofuata"
+  },
+  "common": {
+    "cancel": "Ghairi",
+    "save": "Hifadhi",
+    "confirm": "Thibitisha",
+    "loading": "Inapakia...",
+    "error": "Hitilafu",
+    "success": "Mafanikio",
+    "ok": "Sawa"
+  },
+  "profile": {
+    "language": "Lugha",
+    "vehicleInfo": "Taarifa za Gari",
+    "helpSupport": "Msaada",
+    "editProfile": "Hariri Wasifu",
+    "logout": "Ondoka",
+    "logoutConfirm": "Una uhakika unataka kuondoka?",
+    "logoutFailed": "Imeshindwa kuondoka",
+    "notifications": "Arifa",
+    "enableNotifications": "Washa Arifa",
+    "appearance": "Mwonekano",
+    "darkMode": "Hali ya Giza"
+  },
+  "navigation": {
+    "title": "Mwelekeo",
+    "loadingRoute": "Inapakia njia...",
+    "locationDenied": "Ruhusa ya mahali haikupewa.",
+    "routeError": "Imeshindwa kupata njia. Angalia muunganiko wa mtandao.",
+    "followRoute": "Fuata njia",
+    "next": "Ijayo:",
+    "arrived": "Umefika",
+    "myLocation": "Mahali Pangu",
+    "speed": "Kasi",
+    "retry": "Jaribu Tena",
+    "tripCompletionError": "Hitilafu ya kukamilisha safari",
+    "iHaveArrived": "✅ Nimefika",
+    "back": "← Rudi",
+    "heading": "Mwelekeo wa Safari",
+    "eta": "Dakika"
+  },
+  "rating": {
+    "tripCompleted": "Safari Imekamilika",
+    "ratePassenger": "Kadirisha Abiria",
+    "excellent": "Bora sana!",
+    "good": "Nzuri",
+    "okay": "Sawa",
+    "poor": "Mbaya",
+    "terrible": "Mbaya sana",
+    "comment": "Maoni (si lazima)",
+    "submit": "Tuma Tathmini",
+    "skip": "Ruka kwa sasa",
+    "error": "Imeshindwa kutuma tathmini. Jaribu tena."
   }
 }

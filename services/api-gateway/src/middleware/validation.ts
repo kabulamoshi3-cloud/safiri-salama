@@ -17,7 +17,7 @@ export interface ValidationError {
   }>;
 }
 
-export const validate = (schema: JSONSchemaType<any>, property: 'body' | 'query' | 'params' = 'body') => {
+export const validate = (schema: JSONSchemaType<unknown>, property: 'body' | 'query' | 'params' = 'body') => {
   const validator = ajv.compile(schema);
   
   return (req: Request, res: Response, next: NextFunction) => {
@@ -54,7 +54,7 @@ export const schemas = {
     },
     required: ['lat', 'lng'],
     additionalProperties: false
-  } as JSONSchemaType<{ lat: number; lng: number }>,
+  } as unknown as JSONSchemaType<{ lat: number; lng: number }>,
   
   // Phone number validation (E.164 format)
   phone: {
@@ -76,9 +76,8 @@ export const schemas = {
       limit: { type: 'number', minimum: 1, maximum: 100, default: 20 }
     },
     additionalProperties: true
-  } as JSONSchemaType<{ page?: number; limit?: number }>,
-  
-  // Date range
+  } as unknown as JSONSchemaType<{ page?: number; limit?: number }>,
+
   dateRange: {
     type: 'object',
     properties: {
@@ -87,7 +86,7 @@ export const schemas = {
     },
     required: ['startDate', 'endDate'],
     additionalProperties: false
-  } as JSONSchemaType<{ startDate: string; endDate: string }>
+  } as unknown as JSONSchemaType<{ startDate: string; endDate: string }>
 };
 
 // Route-specific schemas
@@ -112,15 +111,14 @@ export const routeSchemas = {
     },
     required: ['originLat', 'originLng', 'destLat', 'destLng'],
     additionalProperties: false
-  } as JSONSchemaType<{
+  } as unknown as JSONSchemaType<{
     originLat: number;
     originLng: number;
     destLat: number;
     destLng: number;
     modes?: Array<'daladala' | 'brt' | 'boda-boda' | 'walk'>;
   }>,
-  
-  // User registration
+
   userRegister: {
     type: 'object',
     properties: {
@@ -138,14 +136,13 @@ export const routeSchemas = {
     },
     required: ['phone', 'name', 'type'],
     additionalProperties: false
-  } as JSONSchemaType<{
+  } as unknown as JSONSchemaType<{
     phone: string;
     name: string;
     type: 'passenger' | 'driver' | 'operator';
     language?: 'sw' | 'en';
   }>,
-  
-  // Login
+
   login: {
     type: 'object',
     properties: {
@@ -154,7 +151,7 @@ export const routeSchemas = {
     },
     required: ['phone', 'otp'],
     additionalProperties: false
-  } as JSONSchemaType<{
+  } as unknown as JSONSchemaType<{
     phone: string;
     otp: string;
   }>
