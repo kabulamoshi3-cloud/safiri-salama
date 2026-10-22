@@ -1,0 +1,7 @@
+{
+  "task_id": "task-socketio-wireup",
+  "task_description": "Wire Socket.io tracking-service to all DalaSmart clients (api-gateway, passenger-app, driver-app, web-platform) for real-time trip updates, replacing polling. Tracking-service is already fully built; work is purely integration on the consumer side.",
+  "status": "completed",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}
