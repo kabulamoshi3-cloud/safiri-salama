@@ -56,11 +56,11 @@ const SettingsScreen: React.FC = () => {
 
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-          Notifications
+          {t('profile.notifications')}
         </Text>
         <View style={[styles.settingItem, { backgroundColor: theme.colors.surface }]}>
           <Text style={[styles.settingText, { color: theme.colors.text }]}>
-            Enable Notifications
+            {t('profile.enableNotifications')}
           </Text>
           <Switch
             value={notificationsEnabled}
@@ -72,11 +72,11 @@ const SettingsScreen: React.FC = () => {
 
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-          Appearance
+          {t('profile.appearance')}
         </Text>
         <View style={[styles.settingItem, { backgroundColor: theme.colors.surface }]}>
           <Text style={[styles.settingText, { color: theme.colors.text }]}>
-            Dark Mode
+            {t('profile.darkMode')}
           </Text>
           <Switch
             value={isDark}

@@ -10,6 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useTranslation } from 'react-i18next';
 import { DriverAPI } from '../../services/api/DriverAPI';
 import type { EarningsSummary } from '../../services/api/DriverAPI';
 
@@ -51,6 +52,7 @@ function buildDayBars(history: any[]): DayBar[] {
 
 const EarningsScreen: React.FC = () => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [earnings, setEarnings] = useState<EarningsSummary | null>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -111,10 +113,10 @@ const EarningsScreen: React.FC = () => {
     return (
       <View style={[styles.container, styles.centered, { backgroundColor: theme.colors.background }]}>
         <Text style={[styles.errorText, { color: theme.colors.error }]}>
-          Imeshindwa kupakia mapato
+          {t('earnings.loadError')}
         </Text>
         <TouchableOpacity onPress={() => { setIsLoading(true); load().finally(() => setIsLoading(false)); }}>
-          <Text style={[styles.retryText, { color: theme.colors.primary }]}>Jaribu tena</Text>
+          <Text style={[styles.retryText, { color: theme.colors.primary }]}>{t('earnings.retry')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -131,9 +133,9 @@ const EarningsScreen: React.FC = () => {
   const maxBar = Math.max(...dayBars.map((d) => d.amount), 1);
 
   const PERIOD_LABELS: Record<'today' | 'week' | 'month', string> = {
-    today: 'Leo',
-    week:  'Wiki hii',
-    month: 'Mwezi hii',
+    today: t('earnings.period.today'),
+    week:  t('earnings.period.week'),
+    month: t('earnings.period.month'),
   };
 
   return (
@@ -151,7 +153,7 @@ const EarningsScreen: React.FC = () => {
       {/* ── Header card ── */}
       <View style={[styles.earningsCard, { backgroundColor: theme.colors.primary }]}>
         <Text style={[styles.earningsLabel, { color: theme.colors.white }]}>
-          Mapato
+          {t('earnings.title')}
         </Text>
         <Text style={[styles.earningsAmount, { color: theme.colors.white }]}>
           {formatCurrency(selectedAmount)}
@@ -193,7 +195,7 @@ const EarningsScreen: React.FC = () => {
       {/* ── 7-day bar chart ── */}
       <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
         <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-          Siku 7 Zilizopita
+          {t('earnings.last7Days')}
         </Text>
 
         <View style={styles.barChart}>
@@ -230,12 +232,12 @@ const EarningsScreen: React.FC = () => {
 
       {/* ── Breakdown ── */}
       <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Muhtasari</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>{t('earnings.breakdown')}</Text>
 
         {[
-          { label: 'Nauli (Pesa Taslimu)',  value: earnings.cashCollected },
-          { label: 'Malipo ya Kidijitali',  value: earnings.digitalPayments },
-          { label: 'Jumla',                 value: earnings.total },
+          { label: t('earnings.cashFares'),        value: earnings.cashCollected },
+          { label: t('earnings.digitalPayments'),  value: earnings.digitalPayments },
+          { label: t('earnings.total'),             value: earnings.total },
         ].map(({ label, value }) => (
           <View key={label} style={styles.breakdownRow}>
             <Text style={[styles.breakdownLabel, { color: theme.colors.textSecondary }]}>
@@ -250,11 +252,11 @@ const EarningsScreen: React.FC = () => {
 
       {/* ── History list ── */}
       <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Historia</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>{t('earnings.history')}</Text>
 
         {history.length === 0 ? (
           <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-            Hakuna rekodi bado
+            {t('earnings.noRecords')}
           </Text>
         ) : (
           history.slice(0, 20).map((row: any, idx: number) => (
@@ -284,9 +286,9 @@ const EarningsScreen: React.FC = () => {
       {/* ── Withdraw button ── */}
       <TouchableOpacity
         style={[styles.withdrawBtn, { backgroundColor: theme.colors.primary }]}
-        onPress={() => Alert.alert('Inaendelea', 'Huduma ya kutoa pesa itapatikana hivi karibuni 🚀')}
+        onPress={() => Alert.alert(t('earnings.withdraw'), t('earnings.comingSoon'))}
       >
-        <Text style={styles.withdrawText}>Toa Pesa</Text>
+        <Text style={styles.withdrawText}>{t('earnings.withdraw')}</Text>
       </TouchableOpacity>
 
       <View style={styles.bottomPadding} />

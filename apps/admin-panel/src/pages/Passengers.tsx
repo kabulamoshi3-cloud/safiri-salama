@@ -150,14 +150,14 @@ function PassengerDetail({
   t: (k: string) => string;
 }) {
   const rows = [
-    ['Name', passenger.name],
-    ['Phone', passenger.phone],
-    ['Email', passenger.email ?? '—'],
-    ['Status', passenger.user_status],
-    ['Total Trips', passenger.total_trips],
-    ['Active Trips', passenger.active_trips],
-    ['Rating', passenger.rating ? `★ ${Number(passenger.rating).toFixed(1)}` : '—'],
-    ['Joined', passenger.created_at ? new Date(passenger.created_at).toLocaleDateString() : '—'],
+    [t('detail_name'), passenger.name],
+    [t('detail_phone'), passenger.phone],
+    [t('detail_email'), passenger.email ?? '—'],
+    [t('detail_status'), passenger.user_status],
+    [t('detail_total_trips'), passenger.total_trips],
+    [t('detail_active_trips'), passenger.active_trips],
+    [t('detail_rating'), passenger.rating ? `★ ${Number(passenger.rating).toFixed(1)}` : '—'],
+    [t('detail_joined'), passenger.created_at ? new Date(passenger.created_at).toLocaleDateString() : '—'],
   ];
 
   return (

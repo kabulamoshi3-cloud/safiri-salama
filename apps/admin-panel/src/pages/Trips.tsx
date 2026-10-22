@@ -118,11 +118,11 @@ export default function Trips() {
             style={selectStyle}
           >
             <option value="">{t('filter_all')}</option>
-            <option value="pending">Pending</option>
-            <option value="accepted">Accepted</option>
-            <option value="in_progress">In Progress</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
+            <option value="pending">{t('status_pending_option')}</option>
+            <option value="accepted">{t('status_accepted_option')}</option>
+            <option value="in_progress">{t('status_in_progress_option')}</option>
+            <option value="completed">{t('status_completed_option')}</option>
+            <option value="cancelled">{t('status_cancelled_option')}</option>
           </select>
         </div>
         <div>
@@ -220,21 +220,21 @@ function TripDetail({
   const fare = Number(trip.fare) > 0 ? trip.fare : trip.estimated_fare;
 
   const rows = [
-    ['Trip ID', trip.id],
-    ['Status', trip.status],
-    ['Passenger', trip.passenger_name],
-    ['Passenger Phone', trip.passenger_phone],
-    ['Driver', trip.driver_name ?? '—'],
-    ['Driver Phone', trip.driver_phone ?? '—'],
-    ['Pickup', trip.pickup_address],
-    ['Destination', trip.dropoff_address],
-    ['Vehicle Type', trip.vehicle_type],
-    ['Fare', fare ? `TZS ${Number(fare).toLocaleString()}` : '—'],
-    ['Distance', trip.estimated_distance ? `${trip.estimated_distance} km` : '—'],
-    ['Payment', trip.payment_method],
-    ['Created', new Date(trip.created_at).toLocaleString()],
-    ['Completed', trip.completed_at ? new Date(trip.completed_at).toLocaleString() : '—'],
-    ['Cancelled', trip.cancelled_at ? new Date(trip.cancelled_at).toLocaleString() : '—'],
+    [t('detail_trip_id'), trip.id],
+    [t('detail_status'), trip.status],
+    [t('detail_passenger'), trip.passenger_name],
+    [t('detail_passenger_phone'), trip.passenger_phone],
+    [t('detail_driver'), trip.driver_name ?? '—'],
+    [t('detail_driver_phone'), trip.driver_phone ?? '—'],
+    [t('detail_pickup'), trip.pickup_address],
+    [t('detail_destination'), trip.dropoff_address],
+    [t('detail_vehicle_type'), trip.vehicle_type],
+    [t('detail_fare'), fare ? `TZS ${Number(fare).toLocaleString()}` : '—'],
+    [t('detail_distance'), trip.estimated_distance ? `${trip.estimated_distance} km` : '—'],
+    [t('detail_payment'), trip.payment_method],
+    [t('detail_created'), new Date(trip.created_at).toLocaleString()],
+    [t('detail_completed'), trip.completed_at ? new Date(trip.completed_at).toLocaleString() : '—'],
+    [t('detail_cancelled_at'), trip.cancelled_at ? new Date(trip.cancelled_at).toLocaleString() : '—'],
   ];
 
   return (
@@ -252,7 +252,7 @@ function TripDetail({
 
       <table style={{ width: '100%', fontSize: '13px', marginBottom: '20px' }}>
         <tbody>
-          {rows.map(([label, value]) => (
+          {rows.map(([label, value], rowIndex) => (
             <tr key={label} style={{ borderBottom: '1px solid var(--color-border)' }}>
               <td style={{ padding: '8px 0', color: 'var(--color-text-secondary)', width: '40%' }}>
                 {label}
@@ -262,8 +262,8 @@ function TripDetail({
                   padding: '8px 0',
                   fontWeight: 500,
                   wordBreak: 'break-all',
-                  fontFamily: label === 'Trip ID' ? 'monospace' : undefined,
-                  fontSize: label === 'Trip ID' ? '11px' : undefined,
+                  fontFamily: rowIndex === 0 ? 'monospace' : undefined,
+                  fontSize: rowIndex === 0 ? '11px' : undefined,
                 }}
               >
                 {value}

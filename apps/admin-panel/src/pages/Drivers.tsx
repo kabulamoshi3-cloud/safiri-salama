@@ -199,20 +199,20 @@ function DriverDetail({
   t: (k: string) => string;
 }) {
   const rows = [
-    ['Name', driver.name],
-    ['Phone', driver.phone],
-    ['Email', driver.email ?? '—'],
-    ['License #', driver.license_number],
-    ['License Expiry', driver.license_expiry ? new Date(driver.license_expiry).toLocaleDateString() : '—'],
-    ['Verification', driver.verification_status],
-    ['Account Status', driver.user_status],
-    ['Driver Status', driver.status],
-    ['Vehicle Plate', driver.plate_number ?? '—'],
-    ['Vehicle', `${driver.make ?? ''} ${driver.model ?? ''}`.trim() || '—'],
-    ['Vehicle Type', driver.vehicle_type ?? '—'],
-    ['Total Trips', driver.total_trips],
-    ['Rating', driver.rating ? `★ ${Number(driver.rating).toFixed(1)}` : '—'],
-    ['Joined', driver.created_at ? new Date(driver.created_at).toLocaleDateString() : '—'],
+    [t('detail_name'), driver.name],
+    [t('detail_phone'), driver.phone],
+    [t('detail_email'), driver.email ?? '—'],
+    [t('detail_license_num'), driver.license_number],
+    [t('detail_license_expiry'), driver.license_expiry ? new Date(driver.license_expiry).toLocaleDateString() : '—'],
+    [t('detail_verification'), driver.verification_status],
+    [t('detail_account_status'), driver.user_status],
+    [t('detail_driver_status'), driver.status],
+    [t('detail_vehicle_plate'), driver.plate_number ?? '—'],
+    [t('detail_vehicle'), `${driver.make ?? ''} ${driver.model ?? ''}`.trim() || '—'],
+    [t('detail_vehicle_type'), driver.vehicle_type ?? '—'],
+    [t('detail_total_trips'), driver.total_trips],
+    [t('detail_rating'), driver.rating ? `★ ${Number(driver.rating).toFixed(1)}` : '—'],
+    [t('detail_joined'), driver.created_at ? new Date(driver.created_at).toLocaleDateString() : '—'],
   ];
 
   return (

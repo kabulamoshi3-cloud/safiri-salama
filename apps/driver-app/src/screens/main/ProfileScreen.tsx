@@ -25,18 +25,18 @@ const ProfileScreen: React.FC = () => {
 
   const handleLogout = () => {
     Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
+      t('profile.logout'),
+      t('profile.logoutConfirm'),
       [
         { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Logout',
+          text: t('profile.logout'),
           style: 'destructive',
           onPress: async () => {
             try {
               await logout();
             } catch (error) {
-              Alert.alert(t('common.error'), 'Failed to logout');
+              Alert.alert(t('common.error'), t('profile.logoutFailed'));
             }
           },
         },
@@ -47,7 +47,7 @@ const ProfileScreen: React.FC = () => {
   const menuItems = [
     {
       icon: 'truck',
-      label: 'Vehicle Information',
+      label: t('profile.vehicleInfo'),
       onPress: () => navigation.navigate('VehicleInfo'),
     },
     {
@@ -57,7 +57,7 @@ const ProfileScreen: React.FC = () => {
     },
     {
       icon: 'help-circle',
-      label: 'Help & Support',
+      label: t('profile.helpSupport'),
       onPress: () => {},
     },
   ];
@@ -85,7 +85,7 @@ const ProfileScreen: React.FC = () => {
         <TouchableOpacity style={styles.editButton}>
           <Icon name="pencil" size={16} color={theme.colors.primary} />
           <Text style={[styles.editButtonText, { color: theme.colors.primary }]}>
-            Edit Profile
+            {t('profile.editProfile')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -112,7 +112,7 @@ const ProfileScreen: React.FC = () => {
       >
         <Icon name="logout" size={20} color={theme.colors.error} />
         <Text style={[styles.logoutText, { color: theme.colors.error }]}>
-          Logout
+          {t('profile.logout')}
         </Text>
       </TouchableOpacity>
     </ScrollView>

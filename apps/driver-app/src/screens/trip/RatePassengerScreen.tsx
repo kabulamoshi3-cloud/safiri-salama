@@ -6,6 +6,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import { HomeStackParamList } from '../../navigation/MainNavigator';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -21,6 +22,7 @@ const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v
 
 const RatePassengerScreen: React.FC<Props> = ({ navigation, route }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const { tripId, passengerId, passengerName, fare } = route.params;
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
@@ -28,7 +30,6 @@ const RatePassengerScreen: React.FC<Props> = ({ navigation, route }) => {
   const submitRating = async () => {
     try {
       const token = await AsyncStorage.getItem('@dalasmart:token');
-      // ratee_id is omitted — the server derives it from the trip via JWT role.
       await axios.post(
         `${API_BASE}/ratings`,
         { trip_id: tripId, rating, review: comment || null },
@@ -36,20 +37,28 @@ const RatePassengerScreen: React.FC<Props> = ({ navigation, route }) => {
       );
       navigation.reset({ index: 0, routes: [{ name: 'HomeMain' }] });
     } catch {
-      Alert.alert('Hitilafu', 'Imeshindwa kutuma tathmini. Jaribu tena.');
+      Alert.alert(t('common.error'), t('rating.error'));
     }
+  };
+
+  const getRatingLabel = (r: number) => {
+    if (r === 5) return t('rating.excellent');
+    if (r === 4) return t('rating.good');
+    if (r === 3) return t('rating.okay');
+    if (r === 2) return t('rating.poor');
+    return t('rating.terrible');
   };
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
         <Text style={styles.checkmark}>✅</Text>
-        <Text style={styles.title}>Safari Imekamilika</Text>
+        <Text style={styles.title}>{t('rating.tripCompleted')}</Text>
         <Text style={styles.fare}>TSh {fare?.toLocaleString()}</Text>
       </View>
 
       <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
-        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>Kadirisha Abiria</Text>
+        <Text style={[styles.cardTitle, { color: theme.colors.text }]}>{t('rating.ratePassenger')}</Text>
 
         <View style={styles.avatarRow}>
           <View style={[styles.avatar, { backgroundColor: theme.colors.primary }]}>
@@ -58,7 +67,7 @@ const RatePassengerScreen: React.FC<Props> = ({ navigation, route }) => {
             </Text>
           </View>
           <Text style={[styles.passengerName, { color: theme.colors.text }]}>
-            {passengerName ?? 'Abiria'}
+            {passengerName ?? t('trip.passenger')}
           </Text>
         </View>
 
@@ -70,12 +79,12 @@ const RatePassengerScreen: React.FC<Props> = ({ navigation, route }) => {
           ))}
         </View>
         <Text style={[styles.ratingLabel, { color: theme.colors.textSecondary }]}>
-          {rating === 5 ? 'Bora sana!' : rating === 4 ? 'Nzuri' : rating === 3 ? 'Sawa' : rating === 2 ? 'Mbaya' : 'Mbaya sana'}
+          {getRatingLabel(rating)}
         </Text>
 
         <TextInput
           style={[styles.commentInput, { borderColor: theme.colors.border, color: theme.colors.text }]}
-          placeholder="Maoni (si lazima)"
+          placeholder={t('rating.comment')}
           placeholderTextColor={theme.colors.textSecondary}
           value={comment}
           onChangeText={setComment}
@@ -86,12 +95,12 @@ const RatePassengerScreen: React.FC<Props> = ({ navigation, route }) => {
           style={[styles.submitBtn, { backgroundColor: theme.colors.primary }]}
           onPress={submitRating}
         >
-          <Text style={styles.submitText}>Tuma Tathmini</Text>
+          <Text style={styles.submitText}>{t('rating.submit')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.reset({ index: 0, routes: [{ name: 'HomeMain' }] })}>
           <Text style={[styles.skipText, { color: theme.colors.textSecondary }]}>
-            Ruka kwa sasa
+            {t('rating.skip')}
           </Text>
         </TouchableOpacity>
       </View>

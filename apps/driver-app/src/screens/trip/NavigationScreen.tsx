@@ -8,6 +8,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { HomeStackParamList } from '../../navigation/MainNavigator';
 import { startBackgroundTracking, stopBackgroundTracking } from '../../services/BackgroundLocation';
 
@@ -60,6 +61,7 @@ interface Props {
 
 const NavigationScreen: React.FC<Props> = ({ navigation, route }) => {
   const params = route.params;
+  const { t } = useTranslation();
 
   const [steps, setSteps] = useState<RouteStep[]>([]);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -86,7 +88,7 @@ const NavigationScreen: React.FC<Props> = ({ navigation, route }) => {
     // Request location permission
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      setRouteError('Ruhusa ya mahali haikupewa.');
+      setRouteError(t('navigation.locationDenied'));
       setIsLoading(false);
       return;
     }
@@ -114,7 +116,7 @@ const NavigationScreen: React.FC<Props> = ({ navigation, route }) => {
       );
       routeData = response.data;
     } catch {
-      setRouteError('Imeshindwa kupata njia. Angalia muunganiko wa mtandao.');
+      setRouteError(t('navigation.routeError'));
       setIsLoading(false);
       return;
     }
@@ -218,7 +220,7 @@ const NavigationScreen: React.FC<Props> = ({ navigation, route }) => {
       );
       navigation.reset({ index: 0, routes: [{ name: 'HomeMain' }] });
     } catch {
-      Alert.alert('Hitilafu', 'Hitilafu ya kukamilisha safari');
+      Alert.alert(t('common.error'), t('navigation.tripCompletionError'));
     }
   };
 
@@ -226,7 +228,7 @@ const NavigationScreen: React.FC<Props> = ({ navigation, route }) => {
     return (
       <View style={[styles.container, styles.centered]}>
         <ActivityIndicator size="large" color="#ffffff" />
-        <Text style={styles.loadingText}>Inapakia njia...</Text>
+        <Text style={styles.loadingText}>{t('navigation.loadingRoute')}</Text>
       </View>
     );
   }
@@ -237,7 +239,7 @@ const NavigationScreen: React.FC<Props> = ({ navigation, route }) => {
         <View style={styles.errorCard}>
           <Text style={styles.errorText}>{routeError}</Text>
           <TouchableOpacity style={styles.retryBtn} onPress={fetchRoute}>
-            <Text style={styles.retryText}>Jaribu Tena</Text>
+            <Text style={styles.retryText}>{t('navigation.retry')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -256,26 +258,26 @@ const NavigationScreen: React.FC<Props> = ({ navigation, route }) => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Rudi</Text>
+          <Text style={styles.backText}>{t('navigation.back')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Mwelekeo wa Safari</Text>
+        <Text style={styles.headerTitle}>{t('navigation.heading')}</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Instruction card */}
         <View style={styles.instructionCard}>
           <Text style={styles.instructionText}>
-            {currentStep?.swahili ?? 'Fuata njia'}
+            {currentStep?.swahili ?? t('navigation.followRoute')}
           </Text>
           <Text style={styles.nextStepText}>
-            Ijayo: {nextStep?.swahili ?? 'Umefika'}
+            {t('navigation.next')} {nextStep?.swahili ?? t('navigation.arrived')}
           </Text>
         </View>
 
         {/* Stats row */}
         <View style={styles.statsRow}>
           <Text style={styles.statText}>📍 {distanceDisplay}</Text>
-          <Text style={styles.statText}>⏱ Dakika {etaMinutes}</Text>
+          <Text style={styles.statText}>⏱ {t('navigation.eta')} {etaMinutes}</Text>
         </View>
 
         {/* Progress bar */}
@@ -286,12 +288,12 @@ const NavigationScreen: React.FC<Props> = ({ navigation, route }) => {
         {/* Coordinate display card */}
         {driverLocation !== null && (
           <View style={styles.coordCard}>
-            <Text style={styles.coordTitle}>Mahali Pangu</Text>
+            <Text style={styles.coordTitle}>{t('navigation.myLocation')}</Text>
             <Text style={styles.coordText}>
               Lat: {driverLocation.lat.toFixed(4)}  Lng: {driverLocation.lng.toFixed(4)}
             </Text>
             <Text style={styles.coordText}>
-              Kasi: {(driverLocation.speed * 3.6).toFixed(1)} km/h
+              {t('navigation.speed')}: {(driverLocation.speed * 3.6).toFixed(1)} km/h
             </Text>
           </View>
         )}
@@ -319,7 +321,7 @@ const NavigationScreen: React.FC<Props> = ({ navigation, route }) => {
         onPress={handleArrived}
         disabled={!canArrive}
       >
-        <Text style={styles.arriveBtnText}>✅ Nimefika</Text>
+        <Text style={styles.arriveBtnText}>{t('navigation.iHaveArrived')}</Text>
       </TouchableOpacity>
     </View>
   );

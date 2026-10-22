@@ -6,6 +6,7 @@ import MapView, { Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import i18n from '../i18n';
 
 const API = 'https://simon-daladala-api.vercel.app/api/v1';
 
@@ -20,22 +21,34 @@ interface TrafficSegment {
   speed_kmh: number;
 }
 
+interface Prediction {
+  segment_id: string;
+  road_name: string;
+  predicted_speed_kmh: number;
+  status: 'clear' | 'slow' | 'jam';
+  color: string;
+  confidence: number;
+  model_type: string;
+  observations_used: number;
+}
+
 const STATUS_COLORS: Record<string, string> = {
   clear: '#00d46a',
   slow: '#ff9500',
   jam: '#ff3b30',
 };
 
-const OVERALL_LABELS: Record<string, string> = {
-  clear: 'Nzuri',
-  slow: 'Wastani',
-  jam: 'Mbaya',
-};
+// Labels are resolved at render time via i18n.t() — see departureLabel() below
+const DEPARTURE_OFFSETS: (0 | 30 | 60)[] = [0, 30, 60];
 
 export default function TrafficScreen({ navigation }: any) {
+  const [, forceUpdate] = useState(0);
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
+
   const [segments, setSegments] = useState<TrafficSegment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [overallStatus, setOverallStatus] = useState<string>('clear');
   const [region, setRegion] = useState({
     latitude: -6.7924,
@@ -46,19 +59,34 @@ export default function TrafficScreen({ navigation }: any) {
   const regionRef = useRef(region);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Departure-time selector + ML prediction state
+  const [departureOffset, setDepartureOffset] = useState<0 | 30 | 60>(0);
+  const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [confidenceLabel, setConfidenceLabel] = useState<string>('');
+  const [bestTime, setBestTime] = useState<{ best_time: string; savings_minutes: number } | null>(null);
+  const [usingCache, setUsingCache] = useState(false);
+
+  const getOverallLabel = (s: string) => {
+    if (s === 'clear') return i18n.t('traffic_good');
+    if (s === 'slow') return i18n.t('traffic_fair');
+    return i18n.t('traffic_bad');
+  };
+
+  const departureLabel = (offset: 0 | 30 | 60) => {
+    if (offset === 0) return i18n.t('depart_now');
+    if (offset === 30) return i18n.t('depart_30min');
+    return i18n.t('depart_1hr');
+  };
+
   const fetchTraffic = async () => {
     try {
       const token = await AsyncStorage.getItem('@dalasmart:token');
-      const { latitude, longitude } = regionRef.current;
-      const res = await axios.get(
-        `${API}/tracking/traffic?lat=${latitude}&lng=${longitude}&radius=5`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const data: TrafficSegment[] = res.data;
+      const res = await axios.get(`${API}/tracking/traffic/segments`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data: TrafficSegment[] = res.data.segments || res.data;
       if (data && data.length > 0) {
         setSegments(data);
-        setLastUpdated(new Date());
-        // Compute overall status
         if (data.some((s) => s.status === 'jam')) {
           setOverallStatus('jam');
         } else if (data.some((s) => s.status === 'slow')) {
@@ -73,6 +101,56 @@ export default function TrafficScreen({ navigation }: any) {
       setLoading(false);
     }
   };
+
+  const fetchPredict = async (segmentIds: string[]) => {
+    if (!segmentIds.length) return;
+    const departure_time = new Date(Date.now() + departureOffset * 60000).toISOString();
+    try {
+      const token = await AsyncStorage.getItem('@dalasmart:token');
+      const res = await axios.post(
+        `${API}/tracking/traffic/predict`,
+        { segment_ids: segmentIds, departure_time },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const preds: Prediction[] = res.data.predictions || res.data;
+      if (preds && preds.length > 0) {
+        setPredictions(preds);
+        const avgConf = preds.reduce((sum, p) => sum + (p.confidence || 0), 0) / preds.length;
+        if (avgConf > 0.7) setConfidenceLabel(i18n.t('high_confidence'));
+        else if (avgConf >= 0.4) setConfidenceLabel(i18n.t('medium_confidence'));
+        else setConfidenceLabel(i18n.t('baseline_prediction'));
+      }
+      setUsingCache(false);
+
+      // Best-time recommendation (only meaningful after a successful predict)
+      try {
+        const fromTime = new Date().toISOString();
+        const btRes = await axios.get(
+          `${API}/tracking/traffic/best-time?segment_ids=${segmentIds.join(',')}&from_time=${encodeURIComponent(fromTime)}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const bt = btRes.data;
+        if (bt && bt.savings_minutes && bt.savings_minutes > 5) {
+          setBestTime({ best_time: bt.best_time, savings_minutes: bt.savings_minutes });
+        } else {
+          setBestTime(null);
+        }
+      } catch {
+        setBestTime(null);
+      }
+    } catch {
+      // Predict failed: keep last successful predictions, show cached-data banner
+      setUsingCache(true);
+    }
+  };
+
+  // Re-predict whenever the segment list loads or the departure offset changes
+  useEffect(() => {
+    if (segments.length > 0) {
+      fetchPredict(segments.map((s) => s.segment_id));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [segments, departureOffset]);
 
   useEffect(() => {
     (async () => {
@@ -101,16 +179,49 @@ export default function TrafficScreen({ navigation }: any) {
     };
   }, []);
 
+  const predictionFor = (id: string) => predictions.find((p) => p.segment_id === id);
+
+  const formatBestTime = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return iso;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
 
       {/* Top card */}
       <View style={styles.topCard}>
-        <Text style={styles.topTitle}>🗺️ Hali ya Barabara</Text>
-        <View style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[overallStatus] }]}>
-          <Text style={styles.statusBadgeText}>{OVERALL_LABELS[overallStatus]}</Text>
+        <Text style={styles.topTitle}>🗺️ {i18n.t('road_conditions')}</Text>
+        <View style={styles.statusBadgeRow}>
+          <View style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[overallStatus] }]}>
+            <Text style={styles.statusBadgeText}>{getOverallLabel(overallStatus)}</Text>
+          </View>
+          {confidenceLabel ? (
+            <Text style={styles.confidenceText}>{confidenceLabel}</Text>
+          ) : null}
         </View>
+      </View>
+
+      {/* Departure-time selector */}
+      <View style={styles.departureRow}>
+        {DEPARTURE_OFFSETS.map((offset) => {
+          const active = departureOffset === offset;
+          return (
+            <TouchableOpacity
+              key={offset}
+              style={[styles.departureBtn, active && styles.departureBtnActive]}
+              onPress={() => setDepartureOffset(offset)}
+            >
+              <Text style={[styles.departureBtnText, active && styles.departureBtnTextActive]}>
+                {departureLabel(offset)}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       {/* Map */}
@@ -126,38 +237,58 @@ export default function TrafficScreen({ navigation }: any) {
             region={region}
             showsUserLocation
           >
-            {segments.map((seg) => (
-              <Polyline
-                key={seg.segment_id}
-                coordinates={[
-                  { latitude: seg.lat_start, longitude: seg.lng_start },
-                  { latitude: seg.lat_end, longitude: seg.lng_end },
-                ]}
-                strokeColor={STATUS_COLORS[seg.status]}
-                strokeWidth={5}
-              />
-            ))}
+            {segments.map((seg) => {
+              const pred = predictionFor(seg.segment_id);
+              const color = (pred && pred.color) || STATUS_COLORS[seg.status];
+              return (
+                <Polyline
+                  key={seg.segment_id}
+                  coordinates={[
+                    { latitude: seg.lat_start, longitude: seg.lng_start },
+                    { latitude: seg.lat_end, longitude: seg.lng_end },
+                  ]}
+                  strokeColor={color}
+                  strokeWidth={5}
+                />
+              );
+            })}
           </MapView>
         )}
 
         {/* No data banner */}
         {!loading && segments.length === 0 && (
           <View style={styles.noDataBanner}>
-            <Text style={styles.noDataText}>Habari za msongamano hazipatikani sasa</Text>
+            <Text style={styles.noDataText}>{i18n.t('traffic_unavailable')}</Text>
+          </View>
+        )}
+
+        {/* Cached-data / offline banner */}
+        {usingCache && (
+          <View style={styles.cacheBanner}>
+            <Text style={styles.cacheText}>{i18n.t('updated_ago').replace('{n}', '?')}</Text>
+          </View>
+        )}
+
+        {/* Best-time recommendation card */}
+        {bestTime && (
+          <View style={styles.bestTimeCard}>
+            <Text style={styles.bestTimeText}>
+              {i18n.t('best_time')} {formatBestTime(bestTime.best_time)} — {i18n.t('save_minutes').replace('{n}', String(Math.round(bestTime.savings_minutes)))} 🕒
+            </Text>
           </View>
         )}
       </View>
 
       {/* Legend */}
       <View style={styles.legend}>
-        <Text style={styles.legendItem}>🟢 Wazi</Text>
-        <Text style={styles.legendItem}>🟠 Polepole</Text>
-        <Text style={styles.legendItem}>🔴 Msongamano</Text>
+        <Text style={styles.legendItem}>{i18n.t('legend_clear')}</Text>
+        <Text style={styles.legendItem}>{i18n.t('legend_slow')}</Text>
+        <Text style={styles.legendItem}>{i18n.t('legend_congested')}</Text>
       </View>
 
       {/* CTA */}
       <TouchableOpacity style={styles.ctaBtn} onPress={() => navigation.goBack()}>
-        <Text style={styles.ctaBtnText}>Anza Safari 🚀</Text>
+        <Text style={styles.ctaBtnText}>{i18n.t('start_journey')} 🚀</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -170,8 +301,21 @@ const styles = StyleSheet.create({
     margin: 16, padding: 16, backgroundColor: '#0d0d1a', borderRadius: 12,
   },
   topTitle: { fontSize: 16, fontWeight: '700', color: '#fff' },
+  statusBadgeRow: { flexDirection: 'row', alignItems: 'center' },
   statusBadge: { borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 },
   statusBadgeText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  confidenceText: { color: '#aaa', fontSize: 12, marginLeft: 10, fontWeight: '600' },
+  departureRow: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    marginHorizontal: 16, marginBottom: 12,
+  },
+  departureBtn: {
+    flex: 1, marginHorizontal: 4, paddingVertical: 10, borderRadius: 10,
+    backgroundColor: '#0d0d1a', alignItems: 'center', borderWidth: 1, borderColor: '#2a2a44',
+  },
+  departureBtnActive: { backgroundColor: '#00d46a', borderColor: '#00d46a' },
+  departureBtnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+  departureBtnTextActive: { color: '#1a1a2e' },
   mapContainer: { flex: 1 },
   map: { flex: 1 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
@@ -180,6 +324,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#0d0d1a', borderRadius: 10, padding: 14, alignItems: 'center',
   },
   noDataText: { color: '#aaa', fontSize: 14 },
+  cacheBanner: {
+    position: 'absolute', top: 16, left: 16, right: 16,
+    backgroundColor: '#3a2a00', borderRadius: 10, padding: 10, alignItems: 'center',
+  },
+  cacheText: { color: '#ff9500', fontSize: 13, fontWeight: '600' },
+  bestTimeCard: {
+    position: 'absolute', bottom: 16, left: 16, right: 16,
+    backgroundColor: '#00d46a', borderRadius: 12, padding: 14, alignItems: 'center',
+  },
+  bestTimeText: { color: '#1a1a2e', fontSize: 15, fontWeight: '700' },
   legend: {
     flexDirection: 'row', justifyContent: 'space-around',
     backgroundColor: '#0d0d1a', paddingVertical: 12, paddingHorizontal: 16,
