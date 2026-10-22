@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Alert,
 } from 'react-native';
+import i18n from '../i18n';
 
 type DriverTripStatus = 'going_pickup' | 'arrived' | 'trip_started' | 'completed';
 
@@ -9,6 +10,11 @@ export default function DriverActiveTripScreen({ route, navigation }: any) {
   const { trip } = route.params;
   const [status, setStatus] = useState<DriverTripStatus>('going_pickup');
   const [elapsed, setElapsed] = useState(0);
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
 
   useEffect(() => {
     if (status === 'trip_started') {
@@ -27,8 +33,8 @@ export default function DriverActiveTripScreen({ route, navigation }: any) {
         break;
       case 'trip_started':
         setStatus('completed');
-        Alert.alert('Trip Completed!', `You earned ${trip.fare}`, [
-          { text: 'Done', onPress: () => navigation.popToTop() },
+        Alert.alert(i18n.t('trip_done_alert'), `${i18n.t('you_earned_alert')} ${trip.fare}`, [
+          { text: i18n.t('done_btn'), onPress: () => navigation.popToTop() },
         ]);
         break;
     }
@@ -36,19 +42,19 @@ export default function DriverActiveTripScreen({ route, navigation }: any) {
 
   const getButtonText = () => {
     switch (status) {
-      case 'going_pickup': return "I've Arrived at Pickup";
-      case 'arrived': return 'Start Trip';
-      case 'trip_started': return 'Complete Trip';
-      case 'completed': return 'Done';
+      case 'going_pickup': return i18n.t('arrived_at_pickup_btn');
+      case 'arrived': return i18n.t('start_trip_btn');
+      case 'trip_started': return i18n.t('complete_trip_btn');
+      case 'completed': return i18n.t('done_btn');
     }
   };
 
   const getStatusText = () => {
     switch (status) {
-      case 'going_pickup': return '🚗 Driving to pickup...';
-      case 'arrived': return '📍 Waiting for passenger...';
-      case 'trip_started': return `🛣️ Trip in progress • ${Math.floor(elapsed / 60)}:${(elapsed % 60).toString().padStart(2, '0')}`;
-      case 'completed': return '✅ Trip completed!';
+      case 'going_pickup': return `🚗 ${i18n.t('going_pickup_status')}`;
+      case 'arrived': return `📍 ${i18n.t('waiting_passenger_status')}`;
+      case 'trip_started': return `🛣️ ${i18n.t('trip_in_progress')} • ${Math.floor(elapsed / 60)}:${(elapsed % 60).toString().padStart(2, '0')}`;
+      case 'completed': return `✅ ${i18n.t('trip_completed')}`;
     }
   };
 
@@ -98,8 +104,8 @@ export default function DriverActiveTripScreen({ route, navigation }: any) {
       </TouchableOpacity>
 
       {/* SOS button */}
-      <TouchableOpacity style={styles.sosBtn} onPress={() => Alert.alert('SOS', 'Emergency alert sent!')}>
-        <Text style={styles.sosText}>🆘 Emergency SOS</Text>
+      <TouchableOpacity style={styles.sosBtn} onPress={() => Alert.alert(i18n.t('emergency_sos'), i18n.t('sos_sent'))}>
+        <Text style={styles.sosText}>🆘 {i18n.t('emergency_sos_btn')}</Text>
       </TouchableOpacity>
     </View>
   );

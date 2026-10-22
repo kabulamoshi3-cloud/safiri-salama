@@ -17,6 +17,11 @@ export default function DriverMainScreen({ navigation }: any) {
   const drawerAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate(n => n + 1));
+  }, []);
 
   useEffect(() => {
     loadUser();
@@ -143,7 +148,7 @@ export default function DriverMainScreen({ navigation }: any) {
           {[
             { icon: 'wallet-outline', label: i18n.t('earnings'), screen: 'Earnings' },
             { icon: 'document-text-outline', label: i18n.t('activity'), screen: 'Orders' },
-            { icon: 'car-outline', label: 'Vehicle', screen: 'Settings' },
+            { icon: 'car-outline', label: i18n.t('vehicle'), screen: 'Settings' },
             { icon: 'settings-outline', label: i18n.t('language'), screen: 'Settings' },
             { icon: 'help-circle-outline', label: i18n.t('help_support'), screen: 'Support' },
           ].map((item, idx) => (

@@ -56,7 +56,7 @@ export default function TrafficScreen({ navigation }: any) {
   // Departure-time selector + ML prediction state
   const [departureOffset, setDepartureOffset] = useState<0 | 30 | 60>(0);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
-  const [confidenceLabel, setConfidenceLabel] = useState<string>('');
+  const [confidenceKey, setConfidenceKey] = useState<string>('');
   const [bestTime, setBestTime] = useState<{ best_time: string; savings_minutes: number } | null>(null);
   const [usingCache, setUsingCache] = useState(false);
 
@@ -103,9 +103,9 @@ export default function TrafficScreen({ navigation }: any) {
       if (preds && preds.length > 0) {
         setPredictions(preds);
         const avgConf = preds.reduce((sum, p) => sum + (p.confidence || 0), 0) / preds.length;
-        if (avgConf >= 0.7) setConfidenceLabel(i18n.t('high_confidence'));
-        else if (avgConf >= 0.4) setConfidenceLabel(i18n.t('medium_confidence'));
-        else setConfidenceLabel(i18n.t('baseline_prediction'));
+        if (avgConf >= 0.7) setConfidenceKey('high_confidence');
+        else if (avgConf >= 0.4) setConfidenceKey('medium_confidence');
+        else setConfidenceKey('baseline_prediction');
       }
       setUsingCache(false);
 
@@ -189,8 +189,8 @@ export default function TrafficScreen({ navigation }: any) {
               {overallStatus === 'clear' ? i18n.t('traffic_good') : overallStatus === 'slow' ? i18n.t('traffic_fair') : i18n.t('traffic_jam')}
             </Text>
           </View>
-          {confidenceLabel ? (
-            <Text style={styles.confidenceText}>{confidenceLabel}</Text>
+          {confidenceKey ? (
+            <Text style={styles.confidenceText}>{i18n.t(confidenceKey)}</Text>
           ) : null}
         </View>
       </View>
