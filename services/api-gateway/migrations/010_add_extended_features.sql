@@ -265,7 +265,7 @@ SELECT
   'UDSM Campus Store', 'Your one-stop shop on campus', 'stationary',
   'University of Dar es Salaam, Mlimani', -6.7726, 39.2343, 300, 500,
   true, 'University of Dar es Salaam', id
-FROM users WHERE type = 'admin' LIMIT 1
+FROM users WHERE user_type = 'admin' LIMIT 1
 ON CONFLICT DO NOTHING;
 
 -- Enable per-trip insurance opt-in (all active policies with trip_cover are auto-checked at booking)
