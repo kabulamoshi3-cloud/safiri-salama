@@ -186,7 +186,21 @@ router.post('/firebase-verify', async (req: Request, res: Response) => {
 // ─── GET /auth/me ─────────────────────────────────────────────────────────────
 router.get('/me', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.userId;
+    // Verify JWT directly since this route is outside authMiddleware
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+    const token = authHeader.substring(7);
+    const secret = process.env.JWT_SECRET || 'safiri-secret';
+    let decoded: any;
+    try {
+      decoded = jwt.verify(token, secret);
+    } catch {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    const userId = decoded.userId;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const result = await pool.query(
