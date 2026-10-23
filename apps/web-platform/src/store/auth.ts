@@ -20,7 +20,7 @@ interface AuthState {
   isAuthenticated:    boolean;
   loading:            boolean;
   confirmationResult: ConfirmationResult | null;
-  sendOtp:    (phone: string, buttonId: string) => Promise<void>;
+  sendOtp:    (phone: string) => Promise<void>;
   verifyOtp:  (otp: string, name?: string) => Promise<void>;
   logout:     () => void;
   fetchProfile: () => Promise<void>;
@@ -32,11 +32,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loading:            false,
   confirmationResult: null,
 
-  sendOtp: async (phone: string, buttonId: string) => {
+  sendOtp: async (phone: string) => {
     set({ loading: true });
     try {
       const fullPhone = phone.startsWith('+') ? phone : `+255${phone}`;
-      const confirmation = await sendOTP(fullPhone, buttonId);
+      const confirmation = await sendOTP(fullPhone);
       set({ confirmationResult: confirmation, loading: false });
     } catch (err) {
       set({ loading: false });

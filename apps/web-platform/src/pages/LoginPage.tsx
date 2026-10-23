@@ -125,17 +125,17 @@ const LoginPage: React.FC = () => {
     setError('');
     if (!phone || phone.length < 9) { setError('Enter a valid phone number (9 digits)'); return; }
     try {
-      await sendOtp(phone, 'send-otp-btn');
+      await sendOtp(phone);
       setMode('otp');
     } catch (err: any) {
-      const msg = err?.message || '';
-      if (msg.includes('too-many-requests')) {
-        setError('Too many attempts. Please wait a few minutes and try again.');
-      } else if (msg.includes('invalid-phone-number')) {
-        setError('Invalid phone number. Use format: 7XX XXX XXX');
-      } else {
-        setError('Failed to send OTP. Please try again.');
-      }
+      const code = err?.code || '';
+      const msg  = err?.message || String(err);
+      console.error('sendOtp error:', code, msg);
+      if (code === 'auth/too-many-requests')       setError('Too many attempts. Wait a few minutes and try again.');
+      else if (code === 'auth/invalid-phone-number') setError('Invalid phone number. Example: 712345678');
+      else if (code === 'auth/captcha-check-failed') setError('reCAPTCHA failed. Please refresh and try again.');
+      else if (code === 'auth/unauthorized-domain')  setError('Domain not authorized. Contact support.');
+      else setError(`Error: ${code || msg}`);
     }
   };
 
@@ -147,14 +147,12 @@ const LoginPage: React.FC = () => {
       await verifyOtp(code, name || undefined);
       navigate('/');
     } catch (err: any) {
-      const msg = err?.message || '';
-      if (msg.includes('invalid-verification-code')) {
-        setError('Wrong code. Please check your SMS and try again.');
-      } else if (msg.includes('code-expired')) {
-        setError('Code expired. Please request a new one.');
-      } else {
-        setError('Verification failed. Please try again.');
-      }
+      const errCode = err?.code || '';
+      const msg = err?.message || String(err);
+      console.error('verifyOtp error:', errCode, msg);
+      if (errCode === 'auth/invalid-verification-code') setError('Wrong code. Check your SMS and try again.');
+      else if (errCode === 'auth/code-expired')         setError('Code expired. Request a new one.');
+      else setError(`Error: ${errCode || msg}`);
     }
   };
 
