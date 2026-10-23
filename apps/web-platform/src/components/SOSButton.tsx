@@ -96,7 +96,7 @@ const SOSButton: React.FC<SOSButtonProps> = ({
 
         <ul className="text-sm text-gray-700 mb-4 space-y-1">
           <li>• Your emergency contacts</li>
-          <li>• DalaSmart support team</li>
+          <li>• SafiriSalama support team</li>
           <li>• Share your live location</li>
         </ul>
 

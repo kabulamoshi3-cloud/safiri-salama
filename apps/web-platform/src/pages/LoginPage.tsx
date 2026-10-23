@@ -51,7 +51,7 @@ const LoginPage: React.FC = () => {
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-black text-blue-600">DalaSmart</h1>
+          <h1 className="text-4xl font-black text-blue-600">SafiriSalama</h1>
           <p className="text-gray-500 mt-2">Your ride, your way</p>
         </div>
 
@@ -60,7 +60,7 @@ const LoginPage: React.FC = () => {
             <h2 className="text-xl font-bold text-gray-900 mb-6">Enter your phone number</h2>
 
             <div className="flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-3 focus-within:border-blue-500 mb-4">
-              <span className="text-gray-500 font-semibold">+254</span>
+              <span className="text-gray-500 font-semibold">+255</span>
               <div className="w-px h-5 bg-gray-300" />
               <Phone size={16} className="text-gray-400" />
               <input
@@ -104,7 +104,7 @@ const LoginPage: React.FC = () => {
             <div className="bg-blue-50 rounded-lg p-4 flex items-start gap-3 mb-6">
               <Shield size={20} className="text-blue-600 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-blue-800">
-                We sent a 6-digit code to <strong>+254{phone}</strong>
+                We sent a 6-digit code to <strong>+255{phone}</strong>
               </p>
             </div>
 

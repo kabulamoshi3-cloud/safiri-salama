@@ -58,7 +58,7 @@ const ProfilePage: React.FC = () => {
         <div className="flex-1 min-w-0">
           <p className="text-xl font-bold text-gray-900">{user?.name ?? 'User'}</p>
           <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
-            <Phone size={13} /> +254{user?.phone_number}
+            <Phone size={13} /> +255{user?.phone_number}
           </p>
           {user?.email && (
             <p className="text-sm text-gray-500 flex items-center gap-1">
@@ -91,7 +91,7 @@ const ProfilePage: React.FC = () => {
           <div className="flex items-center gap-3">
             <Crown size={24} className="text-yellow-500" />
             <div className="text-left">
-              <p className="font-bold text-gray-900">Upgrade to DalaSmart Plus</p>
+              <p className="font-bold text-gray-900">Upgrade to SafiriSalama Plus</p>
               <p className="text-sm text-gray-500">Get 10% off every ride</p>
             </div>
           </div>

@@ -78,7 +78,7 @@ const TripSharing: React.FC<TripSharingProps> = ({
     if (!shareLink) return;
 
     const message = encodeURIComponent(
-      `🚗 I'm on a DalaSmart trip. Track my journey live:\n${shareLink}\n\nDriver: ${driverName}\nVehicle: ${vehicleInfo}`
+      `🚗 I'm on a SafiriSalama trip. Track my journey live:\n${shareLink}\n\nDriver: ${driverName}\nVehicle: ${vehicleInfo}`
     );
 
     window.open(`https://wa.me/?text=${message}`, '_blank');
@@ -88,7 +88,7 @@ const TripSharing: React.FC<TripSharingProps> = ({
     if (!shareLink) return;
 
     const message = encodeURIComponent(
-      `I'm on a DalaSmart trip. Track me: ${shareLink}`
+      `I'm on a SafiriSalama trip. Track me: ${shareLink}`
     );
 
     window.location.href = `sms:?body=${message}`;

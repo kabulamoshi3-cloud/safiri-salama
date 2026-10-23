@@ -35,7 +35,7 @@ const Navbar: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="text-2xl font-black text-blue-600">
-          DalaSmart
+          SafiriSalama
         </Link>
 
         {/* Desktop links */}

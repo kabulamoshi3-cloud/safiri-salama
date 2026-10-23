@@ -44,7 +44,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (phone) => {
     set({ loading: true });
     try {
-      await api.post('/auth/send-otp', { phone_number: `+254${phone}` });
+      await api.post('/auth/send-otp', { phone_number: `+255${phone}` });
     } finally {
       set({ loading: false });
     }
@@ -54,7 +54,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ loading: true });
     try {
       const res = await api.post('/auth/verify-otp', {
-        phone_number: `+254${phone}`,
+        phone_number: `+255${phone}`,
         otp,
       });
       localStorage.setItem('token', res.data.token);
