@@ -1,152 +1,113 @@
 /**
- * Authentication Routes
- * User registration, login, and token management
+ * Auth Routes — Firebase Phone OTP
+ *
+ * Flow:
+ *  Client → Firebase (sends real SMS) → Client verifies OTP with Firebase
+ *  → Client sends Firebase ID token here → We verify + issue our JWT
  */
 
 import { Router, Request, Response } from 'express';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { pool } from '../database/connection';
+import { verifyFirebaseToken } from '../services/firebaseAdmin';
 
 const router = Router();
+const JWT_SECRET  = process.env.JWT_SECRET || 'safiri-secret-change-in-prod';
+const JWT_EXPIRES = '30d';
 
-// Register new user
-router.post('/register', async (req: Request, res: Response) => {
+// ─── Helper: issue JWT ────────────────────────────────────────────────────────
+function issueJwt(userId: string, userType: string): string {
+  return jwt.sign({ userId, userType }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
+}
+
+// ─── POST /auth/firebase-verify ───────────────────────────────────────────────
+// Called after client verifies OTP with Firebase.
+// Accepts Firebase ID token, finds or creates user, returns our JWT.
+router.post('/firebase-verify', async (req: Request, res: Response) => {
   try {
-    const { phone, password, name, userType, email } = req.body;
+    const { id_token, name, user_type } = req.body;
 
-    // Validate required fields
-    if (!phone || !password || !userType) {
-      return res.status(400).json({ error: 'Phone, password, and userType are required' });
+    if (!id_token) {
+      return res.status(400).json({ error: 'id_token is required' });
     }
 
-    // Check if user already exists
-    const existingUser = await pool.query(
-      'SELECT id FROM users WHERE phone = $1',
-      [phone]
-    );
-
-    if (existingUser.rows.length > 0) {
-      return res.status(400).json({ error: 'User already exists with this phone number' });
+    // 1. Verify Firebase ID token
+    let decoded;
+    try {
+      decoded = await verifyFirebaseToken(id_token);
+    } catch {
+      return res.status(401).json({ error: 'Invalid or expired Firebase token' });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const phone_number = decoded.phone_number;
+    if (!phone_number) {
+      return res.status(400).json({ error: 'Token does not contain phone number' });
+    }
 
-    // Create user
-    const result = await pool.query(
-      `INSERT INTO users (phone, password_hash, name, email, user_type, status, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW())
-       RETURNING id, phone, name, email, user_type, status`,
-      [phone, hashedPassword, name || null, email || null, userType, 'active']
+    // 2. Find existing user
+    const existing = await pool.query(
+      'SELECT id, phone_number, name, email, user_type, status FROM users WHERE phone_number = $1',
+      [phone_number]
     );
 
-    const user = result.rows[0];
+    let user;
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, userType: user.user_type },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '30d' }
-    );
+    if (existing.rows.length > 0) {
+      // User exists — log them in
+      user = existing.rows[0];
 
-    res.status(201).json({
-      message: 'User registered successfully',
+      if (user.status !== 'active') {
+        return res.status(403).json({ error: 'Account suspended. Contact support.' });
+      }
+
+      // Update last login
+      await pool.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
+
+    } else {
+      // New user — register automatically
+      const result = await pool.query(
+        `INSERT INTO users (phone_number, name, user_type, status, created_at)
+         VALUES ($1, $2, $3, 'active', NOW())
+         RETURNING id, phone_number, name, email, user_type, status`,
+        [
+          phone_number,
+          name || phone_number,           // use name if provided else phone
+          user_type || 'passenger',        // default to passenger
+        ]
+      );
+      user = result.rows[0];
+    }
+
+    // 3. Issue our JWT
+    const token = issueJwt(user.id, user.user_type);
+
+    return res.status(200).json({
+      message: existing.rows.length > 0 ? 'Login successful' : 'Registration successful',
+      token,
       user: {
-        id: user.id,
-        phone: user.phone,
-        name: user.name,
-        email: user.email,
-        userType: user.user_type,
-        status: user.status
+        id:           user.id,
+        name:         user.name,
+        phone_number: user.phone_number,
+        email:        user.email,
+        user_type:    user.user_type,
+        status:       user.status,
       },
-      token
     });
+
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ error: 'Failed to register user' });
+    console.error('firebase-verify error:', error);
+    return res.status(500).json({ error: 'Authentication failed. Please try again.' });
   }
 });
 
-// Login
-router.post('/login', async (req: Request, res: Response) => {
-  try {
-    const { phone, password } = req.body;
-
-    // Validate required fields
-    if (!phone || !password) {
-      return res.status(400).json({ error: 'Phone and password are required' });
-    }
-
-    // Find user
-    const result = await pool.query(
-      `SELECT id, phone, password_hash, name, email, user_type, status
-       FROM users
-       WHERE phone = $1`,
-      [phone]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    const user = result.rows[0];
-
-    // Check if account is active
-    if (user.status !== 'active') {
-      return res.status(403).json({ error: 'Account is not active' });
-    }
-
-    // Verify password
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
-    if (!isValidPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, userType: user.user_type },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '30d' }
-    );
-
-    // Update last login
-    await pool.query(
-      'UPDATE users SET last_login = NOW() WHERE id = $1',
-      [user.id]
-    );
-
-    res.json({
-      message: 'Login successful',
-      user: {
-        id: user.id,
-        phone: user.phone,
-        name: user.name,
-        email: user.email,
-        userType: user.user_type,
-        status: user.status
-      },
-      token
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Failed to login' });
-  }
-});
-
-// Get current user profile
+// ─── GET /auth/me ─────────────────────────────────────────────────────────────
 router.get('/me', async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.userId;
-
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const result = await pool.query(
-      `SELECT id, phone, name, email, user_type, status, created_at, last_login
-       FROM users
-       WHERE id = $1`,
+      'SELECT id, phone_number, name, email, user_type, status, created_at FROM users WHERE id = $1',
       [userId]
     );
 
@@ -154,124 +115,23 @@ router.get('/me', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ user: result.rows[0] });
+    return res.json({ user: result.rows[0] });
   } catch (error) {
-    console.error('Get profile error:', error);
-    res.status(500).json({ error: 'Failed to get profile' });
+    console.error('me error:', error);
+    return res.status(500).json({ error: 'Failed to get profile' });
   }
 });
 
-// Update user profile
-router.patch('/me', async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).user?.userId;
-    const { name, email } = req.body;
-
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const updates: string[] = [];
-    const values: any[] = [];
-    let paramCount = 1;
-
-    if (name !== undefined) {
-      updates.push(`name = $${paramCount++}`);
-      values.push(name);
-    }
-
-    if (email !== undefined) {
-      updates.push(`email = $${paramCount++}`);
-      values.push(email);
-    }
-
-    if (updates.length === 0) {
-      return res.status(400).json({ error: 'No fields to update' });
-    }
-
-    values.push(userId);
-
-    const result = await pool.query(
-      `UPDATE users
-       SET ${updates.join(', ')}, updated_at = NOW()
-       WHERE id = $${paramCount}
-       RETURNING id, phone, name, email, user_type, status`,
-      values
-    );
-
-    res.json({
-      message: 'Profile updated successfully',
-      user: result.rows[0]
-    });
-  } catch (error) {
-    console.error('Update profile error:', error);
-    res.status(500).json({ error: 'Failed to update profile' });
-  }
-});
-
-// Change password
-router.post('/change-password', async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).user?.userId;
-    const { currentPassword, newPassword } = req.body;
-
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: 'Current and new passwords are required' });
-    }
-
-    // Get current password hash
-    const result = await pool.query(
-      'SELECT password_hash FROM users WHERE id = $1',
-      [userId]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Verify current password
-    const isValidPassword = await bcrypt.compare(currentPassword, result.rows[0].password_hash);
-    if (!isValidPassword) {
-      return res.status(401).json({ error: 'Current password is incorrect' });
-    }
-
-    // Hash new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    // Update password
-    await pool.query(
-      'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2',
-      [hashedPassword, userId]
-    );
-
-    res.json({ message: 'Password changed successfully' });
-  } catch (error) {
-    console.error('Change password error:', error);
-    res.status(500).json({ error: 'Failed to change password' });
-  }
-});
-
-// Logout (client-side token removal, but log the event)
+// ─── POST /auth/logout ────────────────────────────────────────────────────────
 router.post('/logout', async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.userId;
-
     if (userId) {
-      // Log logout event (optional)
-      await pool.query(
-        'UPDATE users SET last_logout = NOW() WHERE id = $1',
-        [userId]
-      );
+      await pool.query('UPDATE users SET last_login = NOW() WHERE id = $1', [userId]);
     }
-
-    res.json({ message: 'Logged out successfully' });
-  } catch (error) {
-    console.error('Logout error:', error);
-    res.status(500).json({ error: 'Failed to logout' });
+    return res.json({ message: 'Logged out successfully' });
+  } catch {
+    return res.status(500).json({ error: 'Logout failed' });
   }
 });
 

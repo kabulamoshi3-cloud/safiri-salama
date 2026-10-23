@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../store/auth';
 
+type AuthMode = 'slides' | 'login' | 'register' | 'otp';
+
 /* ─── Brand colours ───────────────────────────────────────────── */
 // primary  = deep blue   (#1d4ed8 … #1e3a8a)
 // secondary= amber/gold  (#f59e0b … #d97706)
@@ -80,7 +82,7 @@ type AuthMode = 'slides' | 'login' | 'register' | 'otp';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login, verifyOtp, loading } = useAuthStore();
+  const { sendOtp, verifyOtp, loading } = useAuthStore();
 
   const [mode,      setMode]      = useState<AuthMode>('slides');
   const [slide,     setSlide]     = useState(0);
@@ -122,16 +124,38 @@ const LoginPage: React.FC = () => {
   const handleSendOtp = async () => {
     setError('');
     if (!phone || phone.length < 9) { setError('Enter a valid phone number (9 digits)'); return; }
-    try { await login(phone); setMode('otp'); }
-    catch { setError('Failed to send OTP. Please try again.'); }
+    try {
+      await sendOtp(phone, 'send-otp-btn');
+      setMode('otp');
+    } catch (err: any) {
+      const msg = err?.message || '';
+      if (msg.includes('too-many-requests')) {
+        setError('Too many attempts. Please wait a few minutes and try again.');
+      } else if (msg.includes('invalid-phone-number')) {
+        setError('Invalid phone number. Use format: 7XX XXX XXX');
+      } else {
+        setError('Failed to send OTP. Please try again.');
+      }
+    }
   };
 
   const handleVerify = async () => {
     setError('');
     const code = otp.join('');
     if (code.length !== 6) { setError('Enter all 6 digits'); return; }
-    try { await verifyOtp(phone, code); navigate('/'); }
-    catch { setError('Invalid code. Please try again.'); }
+    try {
+      await verifyOtp(code, name || undefined);
+      navigate('/');
+    } catch (err: any) {
+      const msg = err?.message || '';
+      if (msg.includes('invalid-verification-code')) {
+        setError('Wrong code. Please check your SMS and try again.');
+      } else if (msg.includes('code-expired')) {
+        setError('Code expired. Please request a new one.');
+      } else {
+        setError('Verification failed. Please try again.');
+      }
+    }
   };
 
   const cur = SLIDES[slide];
@@ -328,6 +352,7 @@ const LoginPage: React.FC = () => {
 
         {/* Primary CTA */}
         <button
+          id="send-otp-btn"
           onClick={handleSendOtp}
           disabled={loading}
           className="w-full bg-primary-600 hover:bg-primary-700 disabled:opacity-60 text-white font-black py-4 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-primary-200 active:scale-95 text-base mb-3"

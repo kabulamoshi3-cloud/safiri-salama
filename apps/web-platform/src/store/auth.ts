@@ -1,64 +1,66 @@
 /**
- * Auth store for Web Platform (Zustand)
- * Handles phone + OTP login flow
+ * Auth store — Firebase Phone OTP + backend JWT
  */
-
 import { create } from 'zustand';
+import { ConfirmationResult } from 'firebase/auth';
+import { sendOTP, verifyOTP } from '../services/firebase';
 import api from '../services/api';
 
-interface User {
+export interface User {
   id: string;
   name: string;
   phone_number: string;
   email?: string;
   rating?: number;
-}
-
-interface Subscription {
-  has_subscription: boolean;
-  plan_name?: string;
-  discount_percentage?: number;
-  renews_at?: string;
+  user_type?: string;
 }
 
 interface AuthState {
-  user: User | null;
-  subscription: Subscription | null;
-  isAuthenticated: boolean;
-  loading: boolean;
-  /** Step 1: send OTP */
-  login: (phone: string) => Promise<void>;
-  /** Step 2: verify OTP and store token */
-  verifyOtp: (phone: string, otp: string) => Promise<void>;
-  logout: () => void;
+  user:               User | null;
+  isAuthenticated:    boolean;
+  loading:            boolean;
+  confirmationResult: ConfirmationResult | null;
+  sendOtp:    (phone: string, buttonId: string) => Promise<void>;
+  verifyOtp:  (otp: string, name?: string) => Promise<void>;
+  logout:     () => void;
   fetchProfile: () => Promise<void>;
-  fetchSubscription: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user:           null,
-  subscription:   null,
-  isAuthenticated: !!localStorage.getItem('token'),
-  loading:        false,
+export const useAuthStore = create<AuthState>((set, get) => ({
+  user:               null,
+  isAuthenticated:    !!localStorage.getItem('safiri_token'),
+  loading:            false,
+  confirmationResult: null,
 
-  login: async (phone) => {
+  sendOtp: async (phone: string, buttonId: string) => {
     set({ loading: true });
     try {
-      await api.post('/auth/send-otp', { phone_number: `+255${phone}` });
-    } finally {
+      const fullPhone = phone.startsWith('+') ? phone : `+255${phone}`;
+      const confirmation = await sendOTP(fullPhone, buttonId);
+      set({ confirmationResult: confirmation, loading: false });
+    } catch (err) {
       set({ loading: false });
+      throw err;
     }
   },
 
-  verifyOtp: async (phone, otp) => {
+  verifyOtp: async (otp: string, name?: string) => {
     set({ loading: true });
+    const { confirmationResult } = get();
+    if (!confirmationResult) throw new Error('No OTP session. Please request a new code.');
     try {
-      const res = await api.post('/auth/verify-otp', {
-        phone_number: `+255${phone}`,
-        otp,
+      const idToken = await verifyOTP(confirmationResult, otp);
+      const res = await api.post('/auth/firebase-verify', {
+        id_token: idToken,
+        name: name || undefined,
       });
-      localStorage.setItem('token', res.data.token);
-      set({ user: res.data.user, isAuthenticated: true, loading: false });
+      localStorage.setItem('safiri_token', res.data.token);
+      set({
+        user:               res.data.user,
+        isAuthenticated:    true,
+        loading:            false,
+        confirmationResult: null,
+      });
     } catch (err) {
       set({ loading: false });
       throw err;
@@ -66,21 +68,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
-    localStorage.removeItem('token');
-    set({ user: null, subscription: null, isAuthenticated: false });
+    localStorage.removeItem('safiri_token');
+    set({ user: null, isAuthenticated: false, confirmationResult: null });
   },
 
   fetchProfile: async () => {
     try {
-      const res = await api.get('/users/me');
-      set({ user: res.data });
-    } catch {/* silent */}
-  },
-
-  fetchSubscription: async () => {
-    try {
-      const res = await api.get('/subscription/status');
-      set({ subscription: res.data });
-    } catch {/* silent */}
+      const res = await api.get('/auth/me');
+      set({ user: res.data.user });
+    } catch {
+      // silent
+    }
   },
 }));
