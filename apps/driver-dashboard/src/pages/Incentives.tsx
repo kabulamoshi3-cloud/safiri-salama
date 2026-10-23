@@ -199,7 +199,7 @@ const Incentives: React.FC = () => {
               </div>
               <div>
                 <p className="font-semibold">Distance Bonus</p>
-                <p className="text-gray-600">Sh10 per km (trips >5km)</p>
+                <p className="text-gray-600">Sh10 per km (trips over 5km)</p>
               </div>
             </div>
           </div>
