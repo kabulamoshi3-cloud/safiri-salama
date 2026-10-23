@@ -6,6 +6,8 @@ import {
   getAuth,
   RecaptchaVerifier,
   signInWithPhoneNumber,
+  signInWithPopup,
+  GoogleAuthProvider,
   ConfirmationResult,
 } from 'firebase/auth';
 
@@ -69,5 +71,15 @@ export async function verifyOTP(
   otp: string,
 ): Promise<string> {
   const result = await confirmation.confirm(otp);
+  return result.user.getIdToken();
+}
+
+// ── Google Sign-In ────────────────────────────────────────────────────────────
+const googleProvider = new GoogleAuthProvider();
+googleProvider.addScope('email');
+googleProvider.addScope('profile');
+
+export async function signInWithGoogle(): Promise<string> {
+  const result = await signInWithPopup(auth, googleProvider);
   return result.user.getIdToken();
 }

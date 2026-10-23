@@ -25,7 +25,7 @@ function issueJwt(userId: string, userType: string): string {
 // Accepts Firebase ID token, finds or creates user, returns our JWT.
 router.post('/firebase-verify', async (req: Request, res: Response) => {
   try {
-    const { id_token, name, user_type } = req.body;
+    const { id_token, name, email, user_type } = req.body;
 
     if (!id_token) {
       return res.status(400).json({ error: 'id_token is required' });
