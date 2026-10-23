@@ -46,39 +46,36 @@ router.post('/firebase-verify', async (req: Request, res: Response) => {
 
     // 2. Find existing user
     const existing = await pool.query(
-      'SELECT id, phone_number, name, email, user_type, status FROM users WHERE phone_number = $1',
+      'SELECT id, phone, name, email, user_type, status FROM users WHERE phone = $1',
       [phone_number]
     );
 
     let user;
 
     if (existing.rows.length > 0) {
-      // User exists — log them in
       user = existing.rows[0];
 
       if (user.status !== 'active') {
         return res.status(403).json({ error: 'Account suspended. Contact support.' });
       }
 
-      // Update last login
-      await pool.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
+      await pool.query('UPDATE users SET updated_at = NOW() WHERE id = $1', [user.id]);
 
     } else {
       // New user — register automatically
       const result = await pool.query(
-        `INSERT INTO users (phone_number, name, user_type, status, created_at)
-         VALUES ($1, $2, $3, 'active', NOW())
-         RETURNING id, phone_number, name, email, user_type, status`,
+        `INSERT INTO users (phone, name, user_type, status, created_at, updated_at)
+         VALUES ($1, $2, $3, 'active', NOW(), NOW())
+         RETURNING id, phone, name, email, user_type, status`,
         [
           phone_number,
-          name || phone_number,           // use name if provided else phone
-          user_type || 'passenger',        // default to passenger
+          name || phone_number,
+          user_type || 'passenger',
         ]
       );
       user = result.rows[0];
     }
 
-    // 3. Issue our JWT
     const token = issueJwt(user.id, user.user_type);
 
     return res.status(200).json({
@@ -87,7 +84,7 @@ router.post('/firebase-verify', async (req: Request, res: Response) => {
       user: {
         id:           user.id,
         name:         user.name,
-        phone_number: user.phone_number,
+        phone_number: user.phone,
         email:        user.email,
         user_type:    user.user_type,
         status:       user.status,
@@ -107,7 +104,7 @@ router.get('/me', async (req: Request, res: Response) => {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const result = await pool.query(
-      'SELECT id, phone_number, name, email, user_type, status, created_at FROM users WHERE id = $1',
+      'SELECT id, phone, name, email, user_type, status, created_at FROM users WHERE id = $1',
       [userId]
     );
 
@@ -115,7 +112,7 @@ router.get('/me', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    return res.json({ user: result.rows[0] });
+    return res.json({ user: { ...result.rows[0], phone_number: result.rows[0].phone } });
   } catch (error) {
     console.error('me error:', error);
     return res.status(500).json({ error: 'Failed to get profile' });
