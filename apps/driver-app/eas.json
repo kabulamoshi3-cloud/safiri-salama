@@ -3,33 +3,24 @@
     "version": ">= 5.0.0"
   },
   "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
     "preview": {
       "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://safiri-salama.vercel.app/api/v1",
+        "EXPO_PUBLIC_APP_NAME": "SafiriSalama Driver"
+      },
       "android": {
         "buildType": "apk"
-      },
-      "ios": {
-        "simulator": true
       }
     },
     "production": {
-      "environment": "production",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://safiri-salama.vercel.app/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://safiri-salama.vercel.app/api/v1",
+        "EXPO_PUBLIC_APP_NAME": "SafiriSalama Driver"
       },
       "android": {
-        "buildType": "app-bundle"
-      },
-      "ios": {
-        "distribution": "store"
+        "buildType": "apk"
       }
     }
-  },
-  "submit": {
-    "production": {}
   }
 }

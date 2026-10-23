@@ -5,20 +5,21 @@
   "build": {
     "preview": {
       "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://safiri-salama.vercel.app/api/v1",
+        "EXPO_PUBLIC_APP_NAME": "SafiriSalama"
+      },
       "android": {
         "buildType": "apk"
-      },
-      "ios": {
-        "simulator": true
       }
     },
     "production": {
-      "environment": "production",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://safiri-salama.vercel.app/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://safiri-salama.vercel.app/api/v1",
+        "EXPO_PUBLIC_APP_NAME": "SafiriSalama"
       },
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "apk"
       }
     }
   }
