@@ -45,12 +45,11 @@ export const authMiddleware = async (
     }
 
     const decoded = jwt.verify(token, secret) as {
-      id: string;
-      type: 'passenger' | 'driver' | 'operator' | 'admin';
-      phone: string;
+      userId: string;
+      userType: string;
     };
 
-    req.user = decoded;
+    (req as any).user = { userId: decoded.userId, userType: decoded.userType };
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
