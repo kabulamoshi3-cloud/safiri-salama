@@ -1,0 +1,24 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "DB migration + backend endpoints: create driver_documents table (missing from schema), add admin endpoints for audit-logs/finance/analytics/driver-documents, and add payment methods CRUD routes. These endpoints unblock all frontend FEATs.",
+  "status": "completed",
+  "steps": [
+    "Create infrastructure/database/postgres/migrations/002_driver_documents.sql with CREATE TABLE driver_documents (id UUID PK, user_id UUID FK users, document_type VARCHAR(50) CHECK IN ('drivers_license','vehicle_insurance','vehicle_registration','national_id','selfie'), image_url TEXT, document_number VARCHAR(100), expiry_date DATE, status VARCHAR(20) DEFAULT 'pending' CHECK IN ('pending','approved','rejected'), rejection_reason TEXT, reviewed_by UUID FK users, reviewed_at TIMESTAMPTZ, uploaded_at TIMESTAMPTZ DEFAULT NOW()). Add indexes on user_id and status.",
+    "Add to services/api-gateway/src/routes/admin.ts: GET /admin/drivers/:id/documents (query driver_documents by user_id from drivers table), GET /admin/audit-logs (paginated query on audit_log with optional admin_id/from/to filters), GET /admin/finance (paginated transactions with passenger name join), GET /admin/analytics?period=7d|30d|90d (revenue_by_day, trips_by_day, vehicle_type_breakdown, top_drivers aggregates from trips+transactions tables).",
+    "Add to services/api-gateway/src/routes/payments.ts (paymentsRouter): GET /methods (derive from user's phone provider + query distinct providers from transactions WHERE user_id=$userId), POST /methods (store preferred provider in users table new preferred_payment column or wallets), DELETE /methods/:provider (remove from preference — soft delete). These are simple CRUD on user payment preferences, not actual STK pushes."
+  ],
+  "acceptance_criteria": [
+    "cd services/api-gateway && npx tsc --noEmit exits 0 with no errors",
+    "002_driver_documents.sql is valid SQL (CREATE TABLE with all columns, 2 indexes)",
+    "admin.ts has GET /drivers/:id/documents, GET /audit-logs, GET /finance, GET /analytics routes",
+    "payments.ts has GET /methods, POST /methods, DELETE /methods/:provider routes on paymentsRouter"
+  ],
+  "verification": [
+    "cd /home/masalago/projects/daladala/services/api-gateway && npx tsc --noEmit",
+    "grep -n 'audit-logs\\|/analytics\\|/finance\\|/documents' /home/masalago/projects/daladala/services/api-gateway/src/routes/admin.ts",
+    "grep -n 'methods' /home/masalago/projects/daladala/services/api-gateway/src/routes/payments.ts"
+  ],
+  "blocked_reason": null,
+  "findings": "All endpoints implemented as planned. Admin endpoints follow exact paths: GET /drivers/:id/documents, GET /audit-logs, GET /finance, GET /analytics. Payment methods endpoints: GET /methods, POST /methods, DELETE /methods/:provider on paymentsRouter. Schema change: users table gains a preferred_payment VARCHAR(50) column added via ALTER TABLE ADD COLUMN IF NOT EXISTS (executed at first POST /methods call — idempotent). The migration file 002_driver_documents.sql creates the driver_documents table with all required columns and indexes on user_id and status. TypeScript compilation exits 0 with no errors."
+}

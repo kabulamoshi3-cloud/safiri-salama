@@ -268,6 +268,272 @@ router.put('/trips/:id/cancel', async (req: Request, res: Response) => {
   }
 });
 
+// ── GET /admin/drivers/:id/documents ────────────────────
+router.get('/drivers/:id/documents', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // Resolve driver user_id: accept either drivers.id or users.id
+    const driverResult = await pool.query(
+      `SELECT user_id FROM drivers WHERE id = $1`,
+      [id]
+    );
+
+    let userId: string;
+    if (driverResult.rows.length > 0) {
+      userId = driverResult.rows[0].user_id;
+    } else {
+      // id might already be the users.id
+      userId = id;
+    }
+
+    const result = await pool.query(
+      `SELECT
+         dd.id,
+         dd.user_id,
+         dd.document_type,
+         dd.image_url,
+         dd.document_number,
+         dd.expiry_date,
+         dd.status,
+         dd.rejection_reason,
+         dd.reviewed_by,
+         dd.reviewed_at,
+         dd.uploaded_at,
+         u.name AS reviewer_name
+       FROM driver_documents dd
+       LEFT JOIN users u ON u.id = dd.reviewed_by
+       WHERE dd.user_id = $1
+       ORDER BY dd.uploaded_at DESC`,
+      [userId]
+    );
+
+    res.json({ documents: result.rows });
+  } catch (error) {
+    console.error('Admin get driver documents error:', error);
+    res.status(500).json({ error: 'Failed to fetch driver documents' });
+  }
+});
+
+// ── GET /admin/audit-logs ────────────────────────────────
+router.get('/audit-logs', async (req: Request, res: Response) => {
+  try {
+    const { admin_id, from, to, limit = '50', offset = '0' } = req.query;
+
+    let query = `
+      SELECT
+        al.id,
+        al.admin_id,
+        al.action,
+        al.affected_account_id,
+        al.reason,
+        al.timestamp,
+        au.name AS admin_name,
+        au.phone AS admin_phone,
+        aff.name AS affected_name,
+        aff.phone AS affected_phone
+      FROM audit_log al
+      JOIN users au  ON au.id  = al.admin_id
+      JOIN users aff ON aff.id = al.affected_account_id
+      WHERE 1=1
+    `;
+
+    const params: any[] = [];
+    let paramCount = 1;
+
+    if (admin_id) {
+      query += ` AND al.admin_id = $${paramCount++}`;
+      params.push(admin_id);
+    }
+    if (from) {
+      query += ` AND al.timestamp >= $${paramCount++}`;
+      params.push(from);
+    }
+    if (to) {
+      query += ` AND al.timestamp <= $${paramCount++}`;
+      params.push(to);
+    }
+
+    query += ` ORDER BY al.timestamp DESC LIMIT $${paramCount++} OFFSET $${paramCount++}`;
+    params.push(parseInt(limit as string, 10));
+    params.push(parseInt(offset as string, 10));
+
+    const result = await pool.query(query, params);
+
+    const countQuery = `SELECT COUNT(*) AS total FROM audit_log WHERE 1=1` +
+      (admin_id ? ` AND admin_id = '${(admin_id as string).replace(/'/g, "''")}'` : '') +
+      (from     ? ` AND timestamp >= '${(from as string).replace(/'/g, "''")}'`   : '') +
+      (to       ? ` AND timestamp <= '${(to   as string).replace(/'/g, "''")}'`   : '');
+
+    const countResult = await pool.query(countQuery);
+
+    res.json({
+      audit_logs: result.rows,
+      total: Number(countResult.rows[0].total),
+      limit: parseInt(limit as string, 10),
+      offset: parseInt(offset as string, 10),
+    });
+  } catch (error) {
+    console.error('Admin get audit logs error:', error);
+    res.status(500).json({ error: 'Failed to fetch audit logs' });
+  }
+});
+
+// ── GET /admin/finance ───────────────────────────────────
+router.get('/finance', async (req: Request, res: Response) => {
+  try {
+    const { limit = '50', offset = '0', from, to, status } = req.query;
+
+    let query = `
+      SELECT
+        t.id,
+        t.reference,
+        t.user_id,
+        t.context,
+        t.context_id,
+        t.amount,
+        t.type,
+        t.method,
+        t.provider,
+        t.status,
+        t.description,
+        t.created_at,
+        t.completed_at,
+        u.name AS passenger_name,
+        u.phone AS passenger_phone
+      FROM transactions t
+      JOIN users u ON u.id = t.user_id
+      WHERE 1=1
+    `;
+
+    const params: any[] = [];
+    let paramCount = 1;
+
+    if (status) {
+      query += ` AND t.status = $${paramCount++}`;
+      params.push(status);
+    }
+    if (from) {
+      query += ` AND t.created_at >= $${paramCount++}`;
+      params.push(from);
+    }
+    if (to) {
+      query += ` AND t.created_at <= $${paramCount++}`;
+      params.push(to);
+    }
+
+    query += ` ORDER BY t.created_at DESC LIMIT $${paramCount++} OFFSET $${paramCount++}`;
+    params.push(parseInt(limit as string, 10));
+    params.push(parseInt(offset as string, 10));
+
+    const result = await pool.query(query, params);
+
+    // Summary totals
+    const summaryResult = await pool.query(`
+      SELECT
+        COALESCE(SUM(amount) FILTER (WHERE type = 'debit'  AND status = 'completed'), 0) AS total_revenue,
+        COALESCE(SUM(amount) FILTER (WHERE type = 'credit' AND status = 'completed'), 0) AS total_payouts,
+        COUNT(*)            FILTER (WHERE status = 'pending')                             AS pending_count,
+        COUNT(*)            FILTER (WHERE status = 'completed')                           AS completed_count,
+        COUNT(*)            FILTER (WHERE status = 'failed')                              AS failed_count
+      FROM transactions
+    `);
+
+    res.json({
+      transactions: result.rows,
+      summary: summaryResult.rows[0],
+      limit: parseInt(limit as string, 10),
+      offset: parseInt(offset as string, 10),
+      total: result.rows.length,
+    });
+  } catch (error) {
+    console.error('Admin get finance error:', error);
+    res.status(500).json({ error: 'Failed to fetch finance data' });
+  }
+});
+
+// ── GET /admin/analytics ─────────────────────────────────
+router.get('/analytics', async (req: Request, res: Response) => {
+  try {
+    const { period = '30d' } = req.query;
+
+    // Map period param to number of days
+    const periodDays: Record<string, number> = { '7d': 7, '30d': 30, '90d': 90 };
+    const days = periodDays[period as string] ?? 30;
+
+    const [revenueResult, tripsResult, vehicleBreakdownResult, topDriversResult] =
+      await Promise.all([
+        // Revenue by day
+        pool.query(
+          `SELECT
+             DATE(created_at)                 AS date,
+             COALESCE(SUM(amount), 0)         AS amount
+           FROM transactions
+           WHERE type = 'debit'
+             AND status = 'completed'
+             AND created_at >= NOW() - ($1 || ' days')::INTERVAL
+           GROUP BY DATE(created_at)
+           ORDER BY date ASC`,
+          [days]
+        ),
+
+        // Trips by day
+        pool.query(
+          `SELECT
+             DATE(created_at)    AS date,
+             COUNT(*)            AS count
+           FROM trips
+           WHERE created_at >= NOW() - ($1 || ' days')::INTERVAL
+           GROUP BY DATE(created_at)
+           ORDER BY date ASC`,
+          [days]
+        ),
+
+        // Vehicle type breakdown
+        pool.query(
+          `SELECT
+             vehicle_type   AS type,
+             COUNT(*)       AS count
+           FROM trips
+           WHERE created_at >= NOW() - ($1 || ' days')::INTERVAL
+             AND vehicle_type IS NOT NULL
+           GROUP BY vehicle_type
+           ORDER BY count DESC`,
+          [days]
+        ),
+
+        // Top drivers by trips + earnings
+        pool.query(
+          `SELECT
+             u.name,
+             COUNT(tr.id)                                                          AS trips,
+             COALESCE(SUM(ps.amount) FILTER (WHERE ps.payee_type = 'driver'), 0)  AS earnings
+           FROM trips tr
+           JOIN users u ON u.id = tr.driver_id
+           LEFT JOIN payment_splits ps ON ps.payee_id = tr.driver_id
+           WHERE tr.created_at >= NOW() - ($1 || ' days')::INTERVAL
+             AND tr.status = 'completed'
+           GROUP BY u.id, u.name
+           ORDER BY trips DESC
+           LIMIT 10`,
+          [days]
+        ),
+      ]);
+
+    res.json({
+      period,
+      days,
+      revenue_by_day:        revenueResult.rows,
+      trips_by_day:          tripsResult.rows,
+      vehicle_type_breakdown: vehicleBreakdownResult.rows,
+      top_drivers:           topDriversResult.rows,
+    });
+  } catch (error) {
+    console.error('Admin get analytics error:', error);
+    res.status(500).json({ error: 'Failed to fetch analytics' });
+  }
+});
+
 // ── GET /admin/settings ──────────────────────────────────
 router.get('/settings', async (_req: Request, res: Response) => {
   try {

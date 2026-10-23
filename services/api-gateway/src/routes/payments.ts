@@ -1809,4 +1809,152 @@ paymentsRouter.get('/admin/report', async (req: Request, res: Response) => {
   }
 });
 
+// ══════════════════════════════════════════════════════════════════════════════
+//  PAYMENT METHODS — user preference CRUD
+//  The platform derives the provider from the user's phone number. These
+//  endpoints let a user read, set, and clear their preferred_payment column.
+// ══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * GET /payments/methods
+ * Returns the user's phone-derived payment methods plus their stored preference.
+ */
+paymentsRouter.get('/methods', async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+  try {
+    const db = await database.getClient();
+    const result = await db.query(
+      `SELECT phone, preferred_payment FROM users WHERE id = $1`,
+      [user.id]
+    );
+    db.release();
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const { phone, preferred_payment } = result.rows[0];
+    const normalised = normalisePhone(phone);
+    const detectedProvider = detectProvider(normalised);
+
+    // Build a method entry for the phone-detected provider
+    const methods: Array<{ provider: string; label: string; phone: string; is_preferred: boolean }> = [];
+
+    if (detectedProvider) {
+      methods.push({
+        provider:     detectedProvider,
+        label:        PROVIDER_NAMES[detectedProvider] ?? detectedProvider,
+        phone:        maskPhone(normalised),
+        is_preferred: preferred_payment === detectedProvider,
+      });
+    }
+
+    // Always include wallet as an available method
+    methods.push({
+      provider:     'wallet',
+      label:        PROVIDER_NAMES['wallet'],
+      phone:        '',
+      is_preferred: preferred_payment === 'wallet',
+    });
+
+    res.json({
+      methods,
+      preferred_payment: preferred_payment ?? detectedProvider ?? null,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to load payment methods', details: err.message });
+  }
+});
+
+/**
+ * POST /payments/methods
+ * Body: { provider: string }
+ * Stores the user's preferred payment method in users.preferred_payment.
+ * Adds the column with ALTER TABLE IF NOT EXISTS (idempotent).
+ */
+paymentsRouter.post('/methods', async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+  const { provider } = req.body;
+  const validProviders = ['mpesa', 'airtel_money', 'tigo_pesa', 'halotel', 'wallet', 'cash'];
+  if (!provider || !validProviders.includes(provider)) {
+    return res.status(400).json({
+      error: `Invalid provider. Choose: ${validProviders.join(', ')}`,
+    });
+  }
+
+  try {
+    const db = await database.getClient();
+
+    // Ensure the column exists (idempotent — safe to run multiple times)
+    await db.query(
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS preferred_payment VARCHAR(50)`
+    );
+
+    await db.query(
+      `UPDATE users SET preferred_payment = $1 WHERE id = $2`,
+      [provider, user.id]
+    );
+    db.release();
+
+    res.json({
+      message: 'Preferred payment method saved',
+      preferred_payment: provider,
+      label: PROVIDER_NAMES[provider] ?? provider,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to save payment method', details: err.message });
+  }
+});
+
+/**
+ * DELETE /payments/methods/:provider
+ * Clears preferred_payment if it currently matches the given provider.
+ */
+paymentsRouter.delete('/methods/:provider', async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+  const { provider } = req.params;
+
+  try {
+    const db = await database.getClient();
+
+    // Ensure the column exists before we try to read/write it
+    await db.query(
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS preferred_payment VARCHAR(50)`
+    );
+
+    const result = await db.query(
+      `SELECT preferred_payment FROM users WHERE id = $1`,
+      [user.id]
+    );
+
+    if (result.rowCount === 0) {
+      db.release();
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const current = result.rows[0].preferred_payment;
+
+    if (current === provider) {
+      await db.query(
+        `UPDATE users SET preferred_payment = NULL WHERE id = $1`,
+        [user.id]
+      );
+      db.release();
+      return res.json({ message: 'Preferred payment method cleared' });
+    }
+
+    db.release();
+    res.json({ message: 'No change — provider was not the active preference', current });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to delete payment method', details: err.message });
+  }
+});
+
 export default paymentsRouter;
+
