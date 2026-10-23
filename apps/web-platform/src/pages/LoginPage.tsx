@@ -124,8 +124,8 @@ const LoginPage: React.FC = () => {
       await loginGoogle();
       navigate('/');
     } catch (err: any) {
-      if (err?.code === 'auth/popup-closed-by-user') return;
-      setError('Google sign-in failed. Please try again.');
+      if (err?.message === '__CANCELLED__') return; // user closed popup - silent
+      setError(err?.message || 'Google sign-in failed. Please try again.');
     }
   };
 

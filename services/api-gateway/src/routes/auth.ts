@@ -125,15 +125,17 @@ router.post('/firebase-verify', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'id_token is required' });
     }
 
+    // Verify Firebase ID token using Admin SDK
     let decoded: any;
     try {
       decoded = await verifyFirebaseToken(id_token);
-    } catch {
-      return res.status(401).json({ error: 'Invalid or expired token' });
+    } catch (verifyErr: any) {
+      console.error('Firebase token verify failed:', verifyErr?.message);
+      return res.status(401).json({ error: 'Invalid or expired Google token. Please try again.' });
     }
 
-    const googleEmail = decoded.email || email;
-    const googleName  = decoded.name  || name || googleEmail;
+    const googleEmail = decoded.email || email || null;
+    const googleName  = decoded.name  || name || googleEmail || 'SafiriSalama User';
     const phone       = decoded.phone_number || null;
 
     // Find by email or phone

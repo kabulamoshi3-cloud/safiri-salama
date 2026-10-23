@@ -62,17 +62,38 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ loading: true });
     try {
       const idToken = await signInWithGoogle();
-      const payload = JSON.parse(atob(idToken.split('.')[1]));
+
+      // Safely decode name/email from token
+      let name = '';
+      let email = '';
+      try {
+        const payload = JSON.parse(atob(idToken.split('.')[1]));
+        name  = payload.name  || payload.email || '';
+        email = payload.email || '';
+      } catch { /* ignore decode errors */ }
+
       const res = await api.post('/auth/firebase-verify', {
         id_token: idToken,
-        name:  payload.name,
-        email: payload.email,
+        name,
+        email,
       });
       localStorage.setItem('safiri_token', res.data.token);
       set({ user: res.data.user, isAuthenticated: true, loading: false });
     } catch (err: any) {
       set({ loading: false });
-      throw err;
+      // Rethrow with clean message
+      const code = err?.code || '';
+      const msg  = err?.response?.data?.error || err?.message || 'Google sign-in failed';
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        throw new Error('__CANCELLED__'); // signal to UI to stay silent
+      }
+      if (code === 'auth/unauthorized-domain') {
+        throw new Error('This domain is not authorized. Please contact support.');
+      }
+      if (code === 'auth/popup-blocked') {
+        throw new Error('Popup was blocked by your browser. Please allow popups for this site.');
+      }
+      throw new Error(msg);
     }
   },
 
