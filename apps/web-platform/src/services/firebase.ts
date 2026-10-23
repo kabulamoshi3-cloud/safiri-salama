@@ -1,7 +1,5 @@
 /**
  * Firebase Phone Auth — SafiriSalama
- * Uses invisible reCAPTCHA anchored to a persistent body-level div
- * so React re-renders never remove the element.
  */
 import { initializeApp, getApps } from 'firebase/app';
 import {
@@ -23,54 +21,45 @@ const firebaseConfig = {
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
-// ── Persistent reCAPTCHA container ───────────────────────────────────────────
-// Appended to <body> once, never removed, so React re-renders can't destroy it.
 const CONTAINER_ID = 'firebase-recaptcha-root';
+let verifier: RecaptchaVerifier | null = null;
 
-function ensureContainer(): void {
-  if (!document.getElementById(CONTAINER_ID)) {
-    const div = document.createElement('div');
-    div.id = CONTAINER_ID;
-    div.style.cssText = 'position:fixed;bottom:0;right:0;z-index:9999;';
-    document.body.appendChild(div);
+function getContainer(): HTMLElement {
+  let el = document.getElementById(CONTAINER_ID);
+  if (!el) {
+    el = document.createElement('div');
+    el.id = CONTAINER_ID;
+    document.body.appendChild(el);
   }
+  return el;
 }
 
-let verifier: RecaptchaVerifier | null = null;
-let verifierReady = false;
-
-function resetVerifier(): void {
+function clearVerifier(): void {
   if (verifier) {
     try { verifier.clear(); } catch { /* ignore */ }
     verifier = null;
-    verifierReady = false;
   }
+  // Also clear the container innerHTML so reCAPTCHA can re-render
+  const el = document.getElementById(CONTAINER_ID);
+  if (el) el.innerHTML = '';
 }
-
-async function getVerifier(): Promise<RecaptchaVerifier> {
-  ensureContainer();
-
-  if (!verifier || !verifierReady) {
-    resetVerifier();
-    verifier = new RecaptchaVerifier(auth, CONTAINER_ID, {
-      size: 'invisible',
-      callback: () => { verifierReady = true; },
-      'expired-callback': resetVerifier,
-    });
-    await verifier.render();
-    verifierReady = true;
-  }
-  return verifier;
-}
-
-// ── Public API ────────────────────────────────────────────────────────────────
 
 export async function sendOTP(phoneNumber: string): Promise<ConfirmationResult> {
-  const v = await getVerifier();
+  // Always start fresh
+  clearVerifier();
+  getContainer();
+
+  verifier = new RecaptchaVerifier(auth, CONTAINER_ID, {
+    size: 'invisible',
+    callback: () => {},
+    'expired-callback': clearVerifier,
+  });
+
   try {
-    return await signInWithPhoneNumber(auth, phoneNumber, v);
+    const result = await signInWithPhoneNumber(auth, phoneNumber, verifier);
+    return result;
   } catch (err) {
-    resetVerifier(); // force fresh verifier on next attempt
+    clearVerifier();
     throw err;
   }
 }
