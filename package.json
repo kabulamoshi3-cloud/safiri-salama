@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "install": "cd services/api-gateway && npm install --legacy-peer-deps"
+    "install": "cd services/api-gateway && npm install --legacy-peer-deps",
+    "build": "cd services/api-gateway && npm run build",
+    "start": "cd services/api-gateway && node dist/index.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
   }
 }
