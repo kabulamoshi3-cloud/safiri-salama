@@ -51,9 +51,15 @@ const RegisterPage: React.FC = () => {
     setLoading(true);
 
     try {
+      // Ensure phone has +255 prefix
+      let phone = formData.phone.trim();
+      if (!phone.startsWith('+')) {
+        phone = phone.startsWith('0') ? '+255' + phone.substring(1) : '+255' + phone;
+      }
+
       const payload: any = {
         name: formData.name,
-        phone: formData.phone,
+        phone: phone,
         email: formData.email,
         password: formData.password,
         role,

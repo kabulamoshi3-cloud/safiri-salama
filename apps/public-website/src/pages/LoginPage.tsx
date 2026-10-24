@@ -22,7 +22,18 @@ const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const data = await login({ email, password, role });
+      // If input looks like a phone number, ensure it has +255 prefix
+      let loginEmail = email.trim();
+      if (/^\d/.test(loginEmail)) {
+        // Starts with a digit, likely a phone number
+        if (!loginEmail.startsWith('+')) {
+          loginEmail = loginEmail.startsWith('0') 
+            ? '+255' + loginEmail.substring(1) 
+            : '+255' + loginEmail;
+        }
+      }
+
+      const data = await login({ email: loginEmail, password, role });
       localStorage.setItem('token', data.token);
 
       if (role === 'driver') {
