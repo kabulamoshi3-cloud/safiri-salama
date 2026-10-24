@@ -6,7 +6,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import trackingSocket from '../services/trackingSocket';
 import LiveTracking from '../components/LiveTracking';
 import SOSButton from '../components/SOSButton';
 import TripSharing from '../components/TripSharing';
@@ -47,98 +46,46 @@ const ActiveTripPage: React.FC = () => {
   const [trip, setTrip] = useState<TripDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState('');
-  const [socketConnected, setSocketConnected] = useState(false);
 
   useEffect(() => {
     // Get auth token from localStorage
-    const authToken = localStorage.getItem('token') || '';
+    const authToken = localStorage.getItem('safiri_token') || '';
     setToken(authToken);
 
-    let unsubStatus: (() => void) | undefined;
-    let unsubConnect: (() => void) | undefined;
-    let unsubConnectError: (() => void) | undefined;
-
     const load = async () => {
-      try {
-        const response = await api.get(`/trips/${tripId}`);
-        const fetchedTrip: TripDetails = response.data;
-        setTrip(fetchedTrip);
-
-        const isActive =
-          fetchedTrip.status !== 'completed' && fetchedTrip.status !== 'cancelled';
-
-        if (isActive && authToken) {
-          trackingSocket.connect(authToken);
-
-          // Drive socketConnected from actual socket events — not optimistically —
-          // so the polling fallback is only suppressed once the WS is truly up.
-          unsubConnect = trackingSocket.onConnect(() => {
-            setSocketConnected(true);
-            trackingSocket.joinTrip(tripId!);
-          });
-          unsubConnectError = trackingSocket.onConnectError(() => {
-            setSocketConnected(false);
-          });
-
-          // If socket is already connected (e.g. singleton reuse) join immediately.
-          if (trackingSocket.isConnected()) {
-            setSocketConnected(true);
-            trackingSocket.joinTrip(tripId!);
-          }
-
-          unsubStatus = trackingSocket.onTripStatus((updatedTrip) => {
-            setTrip((prev) =>
-              prev ? { ...prev, status: updatedTrip.status } : prev
-            );
-          });
-        }
-      } catch (error) {
-        console.error('Failed to fetch trip details:', error);
-        alert('Failed to load trip details');
-        navigate('/trip-history');
-      } finally {
-        setLoading(false);
-      }
+      await fetchTripDetails();
     };
 
     load();
-
-    return () => {
-      trackingSocket.leaveTrip();
-      trackingSocket.disconnect();
-      setSocketConnected(false);
-      if (unsubStatus) unsubStatus();
-      if (unsubConnect) unsubConnect();
-      if (unsubConnectError) unsubConnectError();
-    };
   }, [tripId]);
 
-  // Polling fallback — only active when socket is not connected and trip is still active
+  // Polling for trip updates - check every 5 seconds
   useEffect(() => {
     const tripIsActive =
       trip !== null &&
       trip.status !== 'completed' &&
       trip.status !== 'cancelled';
 
-    if (socketConnected || !tripIsActive) return;
+    if (!tripIsActive) return;
 
     const intervalId = setInterval(() => {
       fetchTripDetails();
-    }, 10_000);
+    }, 5000); // Poll every 5 seconds
 
     return () => clearInterval(intervalId);
-  }, [socketConnected, trip?.status, tripId]);
+  }, [trip?.status, tripId]);
 
   const fetchTripDetails = async () => {
     try {
       const response = await api.get(`/trips/${tripId}`);
       setTrip(response.data);
+      setLoading(false);
     } catch (error) {
       console.error('Failed to fetch trip details:', error);
-      alert('Failed to load trip details');
-      navigate('/trip-history');
-    } finally {
-      setLoading(false);
+      if (loading) {
+        alert('Failed to load trip details');
+        navigate('/trips');
+      }
     }
   };
 

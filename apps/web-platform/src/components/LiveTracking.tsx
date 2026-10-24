@@ -1,10 +1,11 @@
 /**
  * Live Tracking Component
  * Real-time driver tracking with map, ETA, and distance updates
+ * Uses polling instead of WebSocket for simplicity
  */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
+import api from '../services/api';
 
 interface Location {
   latitude: number;
@@ -37,21 +38,7 @@ const LiveTracking: React.FC<LiveTrackingProps> = ({
 }) => {
   const [driverLocation, setDriverLocation] = useState<DriverLocation | null>(null);
   const [tripStatus, setTripStatus] = useState<'awaiting_pickup' | 'in_progress' | 'completed'>('awaiting_pickup');
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [currentRoute, setCurrentRoute] = useState<any>(null);
-  const [etaAlert, setEtaAlert] = useState<{
-    show: boolean;
-    oldETA: number;
-    newETA: number;
-    reason: string;
-    type: 'delay' | 'improvement';
-  } | null>(null);
-  const [routeSuggestion, setRouteSuggestion] = useState<{
-    show: boolean;
-    currentDuration: number;
-    alternativeDuration: number;
-    timeSaved: number;
-  } | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const driverMarkerRef = useRef<google.maps.Marker | null>(null);
@@ -146,21 +133,14 @@ const LiveTracking: React.FC<LiveTrackingProps> = ({
   // Function to fetch route from Google Directions API via our backend
   const fetchAndDrawRoute = async (origin: Location, destination: Location) => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_TRACKING_URL || 'http://localhost:3001'}/api/routes/calculate`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            origin: { latitude: origin.latitude, longitude: origin.longitude },
-            destination: { latitude: destination.latitude, longitude: destination.longitude },
-            vehicleType: 'car',
-            alternatives: false
-          })
-        }
-      );
+      const response = await api.post('/routes/calculate', {
+        origin: { latitude: origin.latitude, longitude: origin.longitude },
+        destination: { latitude: destination.latitude, longitude: destination.longitude },
+        vehicleType: 'car',
+        alternatives: false
+      });
 
-      const data = await response.json();
+      const data = response.data;
       if (data.routes && data.routes.length > 0) {
         const route = data.routes[0];
         setCurrentRoute(route);
@@ -168,7 +148,34 @@ const LiveTracking: React.FC<LiveTrackingProps> = ({
       }
     } catch (error) {
       console.error('Failed to fetch route:', error);
+      // Fallback: draw straight line
+      drawStraightLine(origin, destination);
     }
+  };
+
+  // Fallback: draw straight line if route calculation fails
+  const drawStraightLine = (origin: Location, destination: Location) => {
+    if (!mapInstanceRef.current) return;
+
+    if (routePolylineRef.current) {
+      routePolylineRef.current.setMap(null);
+    }
+
+    const path = [
+      { lat: origin.latitude, lng: origin.longitude },
+      { lat: destination.latitude, lng: destination.longitude }
+    ];
+
+    const polyline = new google.maps.Polyline({
+      path: path,
+      strokeColor: tripStatus === 'in_progress' ? '#22c55e' : '#3b82f6',
+      strokeWeight: 3,
+      strokeOpacity: 0.6,
+      map: mapInstanceRef.current,
+      geodesic: true
+    });
+
+    routePolylineRef.current = polyline;
   };
 
   // Function to draw route polyline on map
@@ -198,72 +205,43 @@ const LiveTracking: React.FC<LiveTrackingProps> = ({
     mapInstanceRef.current.fitBounds(bounds);
   };
 
-  // Connect to WebSocket
+  // Polling for driver location - every 5 seconds
   useEffect(() => {
-    const socketConnection = io(import.meta.env.VITE_TRACKING_URL || 'http://localhost:3001', {
-      auth: { token }
-    });
-
-    socketConnection.on('connect', () => {
-      console.log('✓ Connected to tracking service');
-      socketConnection.emit('trip:join', { tripId });
-    });
-
-    socketConnection.on('trip:status', (trip) => {
-      setTripStatus(trip.status);
-      if (trip.currentLocation) {
-        updateDriverLocation(trip.currentLocation);
+    const fetchDriverLocation = async () => {
+      try {
+        const response = await api.get(`/trips/${tripId}/location`);
+        if (response.data && response.data.driver_location) {
+          const location: DriverLocation = {
+            latitude: response.data.driver_location.latitude,
+            longitude: response.data.driver_location.longitude,
+            heading: response.data.driver_location.heading,
+            speed: response.data.driver_location.speed,
+            eta: response.data.eta || 0,
+            distance: response.data.distance || 0
+          };
+          updateDriverLocation(location);
+          
+          // Update trip status if changed
+          if (response.data.status) {
+            setTripStatus(response.data.status);
+            if (response.data.status === 'completed') {
+              onArrival?.();
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch driver location:', error);
       }
-    });
-
-    socketConnection.on('driver:moved', (data: DriverLocation) => {
-      updateDriverLocation(data);
-    });
-
-    socketConnection.on('trip:started', (trip) => {
-      setTripStatus('in_progress');
-      
-      // Update route to show from current location to destination
-      if (driverLocation) {
-        fetchAndDrawRoute(driverLocation, dropoffLocation);
-      }
-    });
-
-    socketConnection.on('trip:completed', () => {
-      setTripStatus('completed');
-      onArrival?.();
-    });
-
-    // Listen for ETA changes
-    socketConnection.on('eta:changed', (data: any) => {
-      setEtaAlert({
-        show: true,
-        oldETA: data.previousETA,
-        newETA: data.newETA,
-        reason: data.reason,
-        type: data.newETA > data.previousETA ? 'delay' : 'improvement'
-      });
-
-      // Auto-hide after 10 seconds
-      setTimeout(() => setEtaAlert(null), 10000);
-    });
-
-    // Listen for faster route suggestions
-    socketConnection.on('route:faster_available', (data: any) => {
-      setRouteSuggestion({
-        show: true,
-        currentDuration: data.currentDuration,
-        alternativeDuration: data.alternativeDuration,
-        timeSaved: data.timeSaved
-      });
-    });
-
-    setSocket(socketConnection);
-
-    return () => {
-      socketConnection.disconnect();
     };
-  }, [tripId, token]);
+
+    // Initial fetch
+    fetchDriverLocation();
+
+    // Poll every 5 seconds
+    const intervalId = setInterval(fetchDriverLocation, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [tripId]);
 
   const updateDriverLocation = (location: DriverLocation) => {
     setDriverLocation(location);
@@ -323,96 +301,25 @@ const LiveTracking: React.FC<LiveTrackingProps> = ({
     return `${minutes} mins`;
   };
 
-  const acceptFasterRoute = () => {
-    if (!socket) return;
-    
-    // Notify driver to take alternative route
-    socket.emit('driver:reroute:accept', { tripId });
-    
-    setRouteSuggestion(null);
-    
-    // Optionally refetch the new route
-    const target = tripStatus === 'awaiting_pickup' ? pickupLocation : destinationLocation;
-    if (driverLocation) {
-      fetchAndDrawRoute(driverLocation, target);
+  const acceptFasterRoute = async () => {
+    try {
+      // Notify driver to take alternative route via API
+      await api.post(`/trips/${tripId}/reroute`, { accept: true });
+      
+      setRouteSuggestion(null);
+      
+      // Optionally refetch the new route
+      const target = tripStatus === 'awaiting_pickup' ? pickupLocation : destinationLocation;
+      if (driverLocation) {
+        fetchAndDrawRoute(driverLocation, target);
+      }
+    } catch (error) {
+      console.error('Failed to accept reroute:', error);
     }
   };
 
   return (
     <div className="flex flex-col h-full">
-      {/* ETA Change Notification */}
-      {etaAlert?.show && (
-        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 
-          ${etaAlert.type === 'delay' ? 'bg-orange-500' : 'bg-green-500'} 
-          text-white px-6 py-4 rounded-lg shadow-2xl max-w-md animate-slide-down`}>
-          <div className="flex items-start space-x-3">
-            <span className="text-2xl">
-              {etaAlert.type === 'delay' ? '⚠️' : '✅'}
-            </span>
-            <div className="flex-1">
-              <p className="font-bold text-lg">ETA Updated</p>
-              <p className="text-sm mt-1">
-                Previous arrival: {formatETA(etaAlert.oldETA)}
-              </p>
-              <p className="text-sm">
-                New arrival: <span className="font-bold">{formatETA(etaAlert.newETA)}</span>
-              </p>
-              <p className="text-xs mt-2 opacity-90">{etaAlert.reason}</p>
-            </div>
-            <button
-              onClick={() => setEtaAlert(null)}
-              className="text-white hover:text-gray-200 font-bold"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Faster Route Suggestion */}
-      {routeSuggestion?.show && (
-        <div className="fixed bottom-24 left-4 right-4 md:left-auto md:right-4 md:w-96 
-          bg-white rounded-lg shadow-2xl border-2 border-blue-500 p-4 z-50">
-          <div className="flex items-start space-x-3">
-            <span className="text-3xl">🚦</span>
-            <div className="flex-1">
-              <h3 className="font-bold text-lg text-gray-900">Faster Route Available!</h3>
-              <div className="mt-3 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Current route:</span>
-                  <span className="font-semibold">{routeSuggestion.currentDuration} min</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Alternative:</span>
-                  <span className="font-semibold text-green-600">
-                    {routeSuggestion.alternativeDuration} min
-                  </span>
-                </div>
-                <div className="bg-green-50 border border-green-200 rounded p-2">
-                  <p className="text-green-700 font-bold text-center">
-                    ⚡ Save approximately {routeSuggestion.timeSaved} minutes
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 flex space-x-2">
-                <button
-                  onClick={acceptFasterRoute}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium"
-                >
-                  Take Faster Route
-                </button>
-                <button
-                  onClick={() => setRouteSuggestion(null)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Keep Current
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Map */}
       <div ref={mapRef} className="flex-1 w-full min-h-[400px] rounded-lg" />
 
