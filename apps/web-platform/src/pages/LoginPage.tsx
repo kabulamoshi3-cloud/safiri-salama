@@ -1,5 +1,5 @@
 /**
- * LoginPage — Animated slides + Phone/Password + Google Sign-In
+ * LoginPage — Animated slides + Phone/Password
  */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -8,42 +8,61 @@ import {
   ChevronRight, User, Lock, Eye, EyeOff, Zap, CheckCircle, Globe,
 } from 'lucide-react';
 import { useAuthStore } from '../store/auth';
-import { useTranslation } from 'react-i18next';
 
-/* ─── Slides ──────────────────────────────────────────────────── */
-const SLIDES = [
-  {
-    icon: <Zap size={64} strokeWidth={1.5} className="text-white drop-shadow-lg" />,
-    badge: '🚀 Lightning Fast',
-    title: 'Your Ride in\n60 Seconds',
-    subtitle: 'Tap, book, ride. The fastest way to get anywhere in Morogoro. No waiting, no hassle.',
-    bg: 'from-blue-600 via-purple-600 to-pink-500',
-    dot: 'bg-yellow-400',
+/* ─── Translations ──────────────────────────────────────────────── */
+const T = {
+  en: {
+    skip: 'Skip →',
+    getStarted: 'Get Started Free',
+    signIn: 'Sign In to My Account',
+    slides: [
+      { badge: '🚀 Lightning Fast', title: 'Your Ride in\n60 Seconds', subtitle: 'Tap, book, ride. The fastest way to get anywhere in Morogoro. No waiting, no hassle.' },
+      { badge: '📍 Live Tracking', title: 'Watch Your Driver\nCome to You', subtitle: 'See exactly where your driver is every second. Share your trip with loved ones for peace of mind.' },
+      { badge: '⭐ 5-Star Service', title: 'Safe, Trusted\nProfessional Drivers', subtitle: 'Every driver is verified, rated, and background-checked. Your safety is our priority.' },
+      { badge: '💰 Best Prices', title: 'Affordable Rides\nEvery Day', subtitle: 'Fair, transparent pricing. No surge fees, no surprises. Get where you need to go without breaking the bank.' },
+    ],
+    namePlaceholder: 'Full Name',
+    phonePlaceholder: 'Phone number (e.g. 0712 345 678)',
+    passwordPlaceholder: 'Password',
+    confirmPlaceholder: 'Confirm Password',
+    registerBtn: 'Create Account',
+    loginBtn: 'Sign In',
+    noAccount: "Don't have an account?",
+    hasAccount: 'Already have an account?',
+    register: 'Register',
+    login: 'Login',
   },
-  {
-    icon: <MapPin size={64} strokeWidth={1.5} className="text-white drop-shadow-lg" />,
-    badge: '📍 Live Tracking',
-    title: 'Watch Your Driver\nCome to You',
-    subtitle: 'See exactly where your driver is every second. Share your trip with loved ones for peace of mind.',
-    bg: 'from-green-600 via-teal-600 to-cyan-500',
-    dot: 'bg-lime-400',
+  sw: {
+    skip: 'Ruka →',
+    getStarted: 'Anza Bure',
+    signIn: 'Ingia Akaunti Yangu',
+    slides: [
+      { badge: '🚀 Haraka Sana', title: 'Safari Yako\nNdani ya Sekunde 60', subtitle: 'Bonyeza, weka agizo, safiri. Njia ya haraka zaidi kufika popote Morogoro.' },
+      { badge: '📍 Ufuatiliaji wa Moja kwa Moja', title: 'Angalia Dereva\nAnakuja Kwako', subtitle: 'Ona dereva wako kila sekunde. Shiriki safari yako na wapendwa kwa usalama zaidi.' },
+      { badge: '⭐ Huduma ya Daraja la 5', title: 'Madereva Salama\nWaliothibitishwa', subtitle: 'Kila dereva amechunguzwa, amepewa alama, na amepita ukaguzi. Usalama wako ni kipaumbele.' },
+      { badge: '💰 Bei Nafuu', title: 'Safari za Gharama\nNafuu Kila Siku', subtitle: 'Bei ya haki na wazi. Hakuna ada za ziada, hakuna mshangao. Fika unakotaka bila wasiwasi.' },
+    ],
+    namePlaceholder: 'Jina Kamili',
+    phonePlaceholder: 'Nambari ya simu (mfano 0712 345 678)',
+    passwordPlaceholder: 'Nenosiri',
+    confirmPlaceholder: 'Thibitisha Nenosiri',
+    registerBtn: 'Fungua Akaunti',
+    loginBtn: 'Ingia',
+    noAccount: 'Huna akaunti?',
+    hasAccount: 'Una akaunti tayari?',
+    register: 'Jisajili',
+    login: 'Ingia',
   },
-  {
-    icon: <CheckCircle size={64} strokeWidth={1.5} className="text-white drop-shadow-lg" />,
-    badge: '⭐ 5-Star Service',
-    title: 'Safe, Trusted\nProfessional Drivers',
-    subtitle: 'Every driver is verified, rated, and background-checked. Your safety is our priority.',
-    bg: 'from-orange-600 via-red-600 to-pink-600',
-    dot: 'bg-yellow-300',
-  },
-  {
-    icon: <Car size={64} strokeWidth={1.5} className="text-white drop-shadow-lg" />,
-    badge: '💰 Best Prices',
-    title: 'Affordable Rides\nEvery Day',
-    subtitle: 'Fair, transparent pricing. No surge fees, no surprises. Get where you need to go without breaking the bank.',
-    bg: 'from-indigo-600 via-blue-700 to-purple-700',
-    dot: 'bg-green-400',
-  },
+} as const;
+
+type Lang = 'en' | 'sw';
+
+/* ─── Slide visuals (icons + colors only, text comes from T) ──── */
+const SLIDE_VISUALS = [
+  { icon: <Zap size={64} strokeWidth={1.5} className="text-white drop-shadow-lg" />, bg: 'from-blue-600 via-purple-600 to-pink-500', dot: 'bg-yellow-400' },
+  { icon: <MapPin size={64} strokeWidth={1.5} className="text-white drop-shadow-lg" />, bg: 'from-green-600 via-teal-600 to-cyan-500', dot: 'bg-lime-400' },
+  { icon: <CheckCircle size={64} strokeWidth={1.5} className="text-white drop-shadow-lg" />, bg: 'from-orange-600 via-red-600 to-pink-600', dot: 'bg-yellow-300' },
+  { icon: <Car size={64} strokeWidth={1.5} className="text-white drop-shadow-lg" />, bg: 'from-indigo-600 via-blue-700 to-purple-700', dot: 'bg-green-400' },
 ];
 
 type Mode = 'slides' | 'login' | 'register';
@@ -51,8 +70,8 @@ type Mode = 'slides' | 'login' | 'register';
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { register, login, loginGoogle, loading } = useAuthStore();
-  const { i18n } = useTranslation();
 
+  const [lang,        setLang]        = useState<Lang>('en');
   const [mode,        setMode]        = useState<Mode>('slides');
   const [slide,       setSlide]       = useState(0);
   const [exiting,     setExiting]     = useState(false);
@@ -65,6 +84,8 @@ const LoginPage: React.FC = () => {
   const [error,       setError]       = useState('');
   const [success,     setSuccess]     = useState('');
   const [showLangMenu, setShowLangMenu] = useState(false);
+
+  const t = T[lang];
 
   /* auto-advance slides */
   useEffect(() => {
@@ -132,7 +153,8 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  const cur = SLIDES[slide];
+  const cur = SLIDE_VISUALS[slide];
+  const curText = t.slides[slide];
 
   /* ═══════════════════════════ SLIDES ═══════════════════════════ */
   if (mode === 'slides') return (
@@ -161,15 +183,15 @@ const LoginPage: React.FC = () => {
             {showLangMenu && (
               <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50">
                 <button
-                  onClick={() => { i18n.changeLanguage('en'); setShowLangMenu(false); }}
-                  className={`w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors flex items-center gap-2 ${i18n.language === 'en' ? 'bg-gray-50 font-semibold' : ''}`}
+                  onClick={() => { setLang('en'); setShowLangMenu(false); }}
+                  className={`w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors flex items-center gap-2 ${lang === 'en' ? 'bg-gray-50 font-semibold' : ''}`}
                 >
                   <span className="text-lg">🇬🇧</span>
                   <span className="text-sm text-gray-700">English</span>
                 </button>
                 <button
-                  onClick={() => { i18n.changeLanguage('sw'); setShowLangMenu(false); }}
-                  className={`w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors flex items-center gap-2 ${i18n.language === 'sw' ? 'bg-gray-50 font-semibold' : ''}`}
+                  onClick={() => { setLang('sw'); setShowLangMenu(false); }}
+                  className={`w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors flex items-center gap-2 ${lang === 'sw' ? 'bg-gray-50 font-semibold' : ''}`}
                 >
                   <span className="text-lg">🇹🇿</span>
                   <span className="text-sm text-gray-700">Kiswahili</span>
@@ -179,7 +201,7 @@ const LoginPage: React.FC = () => {
           </div>
           <button onClick={() => switchMode('login')}
             className="text-white/70 hover:text-white text-sm font-semibold px-4 py-2 rounded-full border border-white/20 transition-all">
-            Skip →
+            {t.skip}
           </button>
         </div>
       </div>
@@ -193,11 +215,11 @@ const LoginPage: React.FC = () => {
             </div>
           </div>
           <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-secondary-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap">
-            {cur.badge}
+            {curText.badge}
           </div>
         </div>
-        <h1 className="text-3xl font-black text-white leading-snug mb-4 max-w-xs whitespace-pre-line">{cur.title}</h1>
-        <p className="text-white/75 text-sm leading-relaxed max-w-sm">{cur.subtitle}</p>
+        <h1 className="text-3xl font-black text-white leading-snug mb-4 max-w-xs whitespace-pre-line">{curText.title}</h1>
+        <p className="text-white/75 text-sm leading-relaxed max-w-sm">{curText.subtitle}</p>
       </div>
 
       {/* Dots */}
@@ -212,11 +234,11 @@ const LoginPage: React.FC = () => {
       <div className="relative z-10 px-6 pb-12 space-y-3">
         <button onClick={() => switchMode('register')}
           className="w-full bg-secondary-500 hover:bg-secondary-400 active:scale-95 text-white font-black py-4 rounded-2xl text-base shadow-xl flex items-center justify-center gap-2 transition-all">
-          Get Started Free <ChevronRight size={20} />
+          {t.getStarted} <ChevronRight size={20} />
         </button>
         <button onClick={() => switchMode('login')}
           className="w-full bg-white/15 hover:bg-white/25 active:scale-95 text-white font-semibold py-4 rounded-2xl border border-white/25 transition-all">
-          Sign In to My Account
+          {t.signIn}
         </button>
       </div>
     </div>
