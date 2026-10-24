@@ -415,67 +415,103 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Download CTA Section */}
-      <section className="py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+      <section className="py-20 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-3 text-white">
             Get the Safiri Haraka App
           </h2>
+          <p className="text-blue-200 mb-12 text-lg">Install in seconds — no app store needed. Works on any phone.</p>
 
-          {/* Web App - Install PWA */}
-          <div className="mb-10 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 border-2 border-blue-200">
-            <div className="inline-block bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-bold mb-4">
-              ⚡ INSTANT ACCESS
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            {/* Passenger App */}
+            <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-8 shadow-2xl border border-blue-500/30 text-left relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-5 text-4xl">
+                  🧍
+                </div>
+                <div className="inline-block bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-3">
+                  FOR PASSENGERS
+                </div>
+                <h3 className="text-2xl font-black text-white mb-2">Passenger App</h3>
+                <p className="text-blue-100 text-sm mb-6 leading-relaxed">
+                  Book rides, track your driver live, pay easily with M-Pesa or cash. Safe and affordable rides across Tanzania.
+                </p>
+                <ul className="text-blue-100 text-sm space-y-2 mb-8">
+                  <li className="flex items-center gap-2">✅ Book a ride in 60 seconds</li>
+                  <li className="flex items-center gap-2">✅ Live GPS driver tracking</li>
+                  <li className="flex items-center gap-2">✅ M-Pesa & cash payments</li>
+                  <li className="flex items-center gap-2">✅ Rate your driver after each trip</li>
+                </ul>
+                <a
+                  href="https://safiriharaka-apps.vercel.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-3 bg-white text-blue-700 px-6 py-4 rounded-2xl hover:bg-blue-50 transition-all shadow-lg font-black text-base w-full"
+                >
+                  <FaDownload size={20} />
+                  Install Passenger App
+                </a>
+                <p className="text-blue-200/70 text-xs mt-3 text-center">
+                  Open link → tap browser menu → "Add to Home Screen"
+                </p>
+              </div>
             </div>
-            <h3 className="text-2xl font-bold mb-2 text-gray-800">Web App (Recommended)</h3>
-            <p className="text-gray-600 mb-6">Install directly from your browser - works on all devices!</p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <a
-                href="https://safiriharaka-apps.vercel.app"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-3 bg-green-600 text-white px-8 py-4 rounded-xl hover:bg-green-700 transition-colors shadow-lg text-lg font-bold"
-              >
-                <FaDownload size={24} />
-                Install App Now
-              </a>
+
+            {/* Driver App */}
+            <div className="bg-gradient-to-br from-green-600 to-emerald-800 rounded-3xl p-8 shadow-2xl border border-green-500/30 text-left relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-5 text-4xl">
+                  🚗
+                </div>
+                <div className="inline-block bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-3">
+                  FOR DRIVERS
+                </div>
+                <h3 className="text-2xl font-black text-white mb-2">Driver App</h3>
+                <p className="text-green-100 text-sm mb-6 leading-relaxed">
+                  Accept ride requests, navigate to passengers, track your earnings daily. Be your own boss and earn more.
+                </p>
+                <ul className="text-green-100 text-sm space-y-2 mb-8">
+                  <li className="flex items-center gap-2">✅ Receive ride requests instantly</li>
+                  <li className="flex items-center gap-2">✅ Built-in GPS navigation</li>
+                  <li className="flex items-center gap-2">✅ Daily earnings dashboard</li>
+                  <li className="flex items-center gap-2">✅ Flexible working hours</li>
+                </ul>
+                <a
+                  href="https://safiriharaka-apps.vercel.app/driver"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-3 bg-white text-green-700 px-6 py-4 rounded-2xl hover:bg-green-50 transition-all shadow-lg font-black text-base w-full"
+                >
+                  <FaDownload size={20} />
+                  Install Driver App
+                </a>
+                <p className="text-green-200/70 text-xs mt-3 text-center">
+                  Open link → tap browser menu → "Add to Home Screen"
+                </p>
+              </div>
             </div>
-            <p className="text-sm text-gray-600 mt-4">
-              <strong>How to install:</strong> Click the button above → When the app opens → Tap your browser menu → Select "Add to Home Screen" or "Install App"
-            </p>
+
           </div>
 
-          <div className="text-center text-gray-500 text-sm mb-6">
-            ───── or ─────
-          </div>
-
-          {/* Native Apps - Coming Soon */}
-          <div className="bg-gray-50 rounded-2xl p-6">
-            <div className="inline-block bg-amber-100 text-amber-800 px-4 py-1 rounded-full text-xs font-bold mb-3">
+          {/* Native Apps Coming Soon */}
+          <div className="mt-10 bg-white/5 border border-white/10 rounded-2xl p-6">
+            <div className="inline-block bg-amber-500/20 text-amber-300 px-4 py-1 rounded-full text-xs font-bold mb-3">
               COMING SOON
             </div>
-            <h3 className="text-xl font-semibold mb-2 text-gray-600">Native Mobile Apps</h3>
-            <p className="text-gray-500 mb-4 text-sm">We're working on native apps for Google Play and App Store</p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4 opacity-50 pointer-events-none">
-              <div className="flex items-center justify-center gap-3 bg-gray-300 text-gray-600 px-6 py-3 rounded-xl cursor-not-allowed">
-                <FaGooglePlay size={24} />
-                <div className="text-left">
-                  <div className="text-xs">GET IT ON</div>
-                  <div className="text-sm font-bold">Google Play</div>
-                </div>
+            <p className="text-white/60 text-sm">Native apps for Google Play & App Store are in development.</p>
+            <div className="flex justify-center gap-4 mt-4 opacity-40 pointer-events-none">
+              <div className="flex items-center gap-2 bg-white/10 text-white px-5 py-2 rounded-xl text-sm">
+                <FaGooglePlay /> Google Play
               </div>
-              <div className="flex items-center justify-center gap-3 bg-gray-300 text-gray-600 px-6 py-3 rounded-xl cursor-not-allowed">
-                <FaApple size={24} />
-                <div className="text-left">
-                  <div className="text-xs">Download on the</div>
-                  <div className="text-sm font-bold">App Store</div>
-                </div>
+              <div className="flex items-center gap-2 bg-white/10 text-white px-5 py-2 rounded-xl text-sm">
+                <FaApple /> App Store
               </div>
             </div>
           </div>
 
-          <p className="text-sm text-blue-600 mt-6 font-semibold">
-            💡 The web app works just like a native app - install it now!
-          </p>
         </div>
       </section>
     </div>
