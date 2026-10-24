@@ -224,7 +224,7 @@ const LoginPage: React.FC = () => {
 
       {/* Dots */}
       <div className="relative z-10 flex justify-center gap-2 mb-8">
-        {SLIDES.map((_, i) => (
+        {SLIDE_VISUALS.map((_, i) => (
           <button key={i} onClick={() => goSlide(i)}
             className={`rounded-full transition-all duration-300 ${i === slide ? `w-8 h-3 ${cur.dot}` : 'w-3 h-3 bg-white/30'}`} />
         ))}
@@ -254,7 +254,7 @@ const LoginPage: React.FC = () => {
           <div className="w-10 h-10 bg-secondary-500 rounded-xl flex items-center justify-center shadow-lg">
             <Zap size={20} className="text-white" />
           </div>
-          <span className="text-white font-black text-xl">SafiriSalama</span>
+          <span className="text-white font-black text-xl">Safiri Haraka</span>
         </div>
         <h1 className="text-3xl font-black text-white leading-tight">
           {mode === 'login' ? 'Welcome\nback 👋' : 'Create\naccount 🚗'}
