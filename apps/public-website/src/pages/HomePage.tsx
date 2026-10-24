@@ -417,76 +417,62 @@ const HomePage: React.FC = () => {
       <section className="py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Download the Safiri Haraka App
+            Get the Safiri Haraka App
           </h2>
 
-          {/* Passenger App */}
-          <div className="mb-10">
-            <h3 className="text-xl font-semibold mb-2 text-gray-800">Download Safiri Haraka for Passengers</h3>
-            <p className="text-gray-600 mb-4 text-sm">Book rides, track your driver, pay seamlessly</p>
+          {/* Web App - Install PWA */}
+          <div className="mb-10 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 border-2 border-blue-200">
+            <div className="inline-block bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-bold mb-4">
+              ⚡ INSTANT ACCESS
+            </div>
+            <h3 className="text-2xl font-bold mb-2 text-gray-800">Web App (Recommended)</h3>
+            <p className="text-gray-600 mb-6">Install directly from your browser - works on all devices!</p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <a
-                href="https://play.google.com/store/apps/details?id=com.safiriharaka.passenger"
+                href="https://safiriharaka-apps.vercel.app"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-3 bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-colors"
+                className="flex items-center justify-center gap-3 bg-blue-600 text-white px-8 py-4 rounded-xl hover:bg-blue-700 transition-colors shadow-lg text-lg font-bold"
               >
-                <FaGooglePlay size={24} />
-                <div className="text-left">
-                  <div className="text-xs opacity-80">GET IT ON</div>
-                  <div className="text-sm font-bold">Google Play</div>
-                </div>
-              </a>
-              <a
-                href="https://apps.apple.com/app/safiriharaka-passenger/id000000001"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-3 bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-colors"
-              >
-                <FaApple size={24} />
-                <div className="text-left">
-                  <div className="text-xs opacity-80">Download on the</div>
-                  <div className="text-sm font-bold">App Store</div>
-                </div>
+                📱 Open Web App
               </a>
             </div>
+            <p className="text-sm text-gray-600 mt-4">
+              <strong>How to install:</strong> Open the link → Tap browser menu → Select "Add to Home Screen" or "Install App"
+            </p>
           </div>
 
-          {/* Driver App */}
+          <div className="text-center text-gray-500 text-sm mb-6">
+            ───── or ─────
+          </div>
+
+          {/* Native Apps - Coming Soon */}
           <div className="bg-gray-50 rounded-2xl p-6">
-            <p className="text-primary font-semibold mb-1">Are you a driver?</p>
-            <h3 className="text-xl font-semibold mb-2 text-gray-800">Download Safiri Haraka for Drivers</h3>
-            <p className="text-gray-600 mb-4 text-sm">Accept rides, track earnings, manage your profile</p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <a
-                href="https://play.google.com/store/apps/details?id=com.safiriharaka.driver"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-3 bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-colors"
-              >
+            <div className="inline-block bg-amber-100 text-amber-800 px-4 py-1 rounded-full text-xs font-bold mb-3">
+              COMING SOON
+            </div>
+            <h3 className="text-xl font-semibold mb-2 text-gray-600">Native Mobile Apps</h3>
+            <p className="text-gray-500 mb-4 text-sm">We're working on native apps for Google Play and App Store</p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4 opacity-50 pointer-events-none">
+              <div className="flex items-center justify-center gap-3 bg-gray-300 text-gray-600 px-6 py-3 rounded-xl cursor-not-allowed">
                 <FaGooglePlay size={24} />
                 <div className="text-left">
-                  <div className="text-xs opacity-80">GET IT ON</div>
+                  <div className="text-xs">GET IT ON</div>
                   <div className="text-sm font-bold">Google Play</div>
                 </div>
-              </a>
-              <a
-                href="https://apps.apple.com/app/safiriharaka-driver/id000000002"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-3 bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-colors"
-              >
+              </div>
+              <div className="flex items-center justify-center gap-3 bg-gray-300 text-gray-600 px-6 py-3 rounded-xl cursor-not-allowed">
                 <FaApple size={24} />
                 <div className="text-left">
-                  <div className="text-xs opacity-80">Download on the</div>
+                  <div className="text-xs">Download on the</div>
                   <div className="text-sm font-bold">App Store</div>
                 </div>
-              </a>
+              </div>
             </div>
           </div>
 
-          <p className="text-xs text-gray-400 mt-6">
-            Links will be updated when apps are published on the stores.
+          <p className="text-sm text-blue-600 mt-6 font-semibold">
+            💡 The web app works just like a native app - install it now!
           </p>
         </div>
       </section>
