@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "Build unified App.tsx with role-based routing, merge i18n translations from both apps, create role-based navigation sidebar, and verify full build succeeds.",
-  "status": "pending",
+  "status": "completed",
   "steps": [
     "Merge i18n: Copy operator-dashboard i18n structure. Create src/i18n/ directory, copy en.json and sw.json from /home/masalago/projects/daladala/apps/operator-dashboard/src/i18n/. Merge translations from src/i18n.ts (admin-panel embedded translations) into the JSON files. Create src/i18n/index.ts following operator pattern.",
     "Delete src/i18n.ts (old admin single-file i18n)",
@@ -30,5 +30,5 @@
     "ls /home/masalago/projects/daladala/apps/staff-portal/dist/index.html (should exist)"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Successfully implemented unified App.tsx with role-based routing for admin (/admin/*) and operator (/ops/*) portals. Merged i18n translations from both admin-panel and operator-dashboard into consolidated src/i18n/en.json and src/i18n/sw.json files. Created AdminSidebar component for admin navigation and updated OperatorSidebar to accept userProfile prop and onLogout callback. Refactored Layout component to accept role prop and render appropriate sidebar (AdminSidebar or OperatorSidebar) based on user role. Updated Login component to use unified AuthContext login method with role detection from API response, navigating to /admin for admin users and /ops for operator users. Implemented RootRedirect component to handle root path (/) redirects based on authentication status and user role. Updated all operator navigation paths to use /ops prefix and admin paths to use /admin prefix. Removed old single-file i18n.ts and updated main.tsx import to use new i18n/index.ts structure. Removed unused OperatorLayout.tsx component. All routes properly wrapped with RoleBasedRoute component for access control. TypeScript compilation and production build completed successfully with no errors."
 }

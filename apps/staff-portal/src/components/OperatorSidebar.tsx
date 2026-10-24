@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Truck,
@@ -22,39 +22,41 @@ import {
   Bell,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAuthStore } from '../store/auth';
+import { UserProfile } from '../context/AuthContext';
 
-const Sidebar: React.FC = () => {
+interface OperatorSidebarProps {
+  userProfile: UserProfile | null;
+  onLogout: () => void;
+}
+
+const OperatorSidebar: React.FC<OperatorSidebarProps> = ({ userProfile, onLogout }) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { t } = useTranslation();
-  const { operator, logout } = useAuthStore();
 
   const operationsItems = [
-    { path: '/',              label: t('nav_live_overview'), icon: LayoutDashboard },
-    { path: '/dispatch',      label: t('nav_dispatch'),      icon: Radio },
-    { path: '/live-map',      label: t('nav_live_map'),      icon: Map },
-    { path: '/active-trips',  label: t('nav_active_trips'),  icon: Navigation },
-    { path: '/drivers',       label: t('nav_drivers'),       icon: Users },
-    { path: '/incidents',     label: t('nav_incidents'),     icon: AlertTriangle },
-    { path: '/cancellations', label: t('nav_cancellations'), icon: XCircle },
-    { path: '/demand-supply', label: t('nav_demand_supply'), icon: TrendingUp },
-    { path: '/support-queue', label: t('nav_support_queue'), icon: MessageSquare },
-    { path: '/service-alerts',label: t('nav_service_alerts'),icon: Bell },
+    { path: '/ops',              label: t('nav_live_overview'), icon: LayoutDashboard },
+    { path: '/ops/dispatch',      label: t('nav_dispatch'),      icon: Radio },
+    { path: '/ops/live-map',      label: t('nav_live_map'),      icon: Map },
+    { path: '/ops/active-trips',  label: t('nav_active_trips'),  icon: Navigation },
+    { path: '/ops/drivers',       label: t('nav_drivers'),       icon: Users },
+    { path: '/ops/incidents',     label: t('nav_incidents'),     icon: AlertTriangle },
+    { path: '/ops/cancellations', label: t('nav_cancellations'), icon: XCircle },
+    { path: '/ops/demand-supply', label: t('nav_demand_supply'), icon: TrendingUp },
+    { path: '/ops/support-queue', label: t('nav_support_queue'), icon: MessageSquare },
+    { path: '/ops/service-alerts',label: t('nav_service_alerts'),icon: Bell },
   ];
 
   const fleetItems = [
-    { path: '/fleet',    label: t('nav_fleet'),    icon: Truck },
-    { path: '/earnings', label: t('nav_earnings'), icon: DollarSign },
-    { path: '/reports',  label: t('nav_reports'),  icon: BarChart3 },
+    { path: '/ops/fleet',    label: t('nav_fleet'),    icon: Truck },
+    { path: '/ops/earnings', label: t('nav_earnings'), icon: DollarSign },
+    { path: '/ops/reports',  label: t('nav_reports'),  icon: BarChart3 },
   ];
 
   const isActive = (path: string) =>
-    path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
+    path === '/ops' ? location.pathname === '/ops' : location.pathname.startsWith(path);
 
   const handleLogout = () => {
-    logout();
-    navigate('/login', { replace: true });
+    onLogout();
   };
 
   return (
@@ -116,8 +118,8 @@ const Sidebar: React.FC = () => {
             <Truck size={18} />
           </div>
           <div className="min-w-0">
-            <p className="font-semibold text-sm truncate">{operator?.name ?? 'Operator'}</p>
-            <p className="text-xs text-gray-400 truncate">{operator?.fleet_name ?? 'Fleet'}</p>
+            <p className="font-semibold text-sm truncate">{userProfile?.name ?? 'Operator'}</p>
+            <p className="text-xs text-gray-400 truncate">{userProfile?.email ?? 'Fleet'}</p>
           </div>
         </div>
       </div>
@@ -125,7 +127,7 @@ const Sidebar: React.FC = () => {
       {/* Footer Actions */}
       <div className="p-4 border-t border-gray-800 space-y-1">
         <Link
-          to="/settings"
+          to="/ops/settings"
           className="flex items-center gap-3 w-full px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition"
         >
           <Settings size={18} />
@@ -143,4 +145,4 @@ const Sidebar: React.FC = () => {
   );
 };
 
-export default Sidebar;
+export default OperatorSidebar;

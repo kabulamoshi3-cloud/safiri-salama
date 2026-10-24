@@ -1,12 +1,11 @@
 import React, { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { login } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
   const { t } = useTranslation();
-  const { setToken } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const [phone, setPhone] = useState('');
@@ -19,14 +18,17 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const data = await login(phone, password);
-      if (data.user.userType !== 'admin') {
-        setError(t('login_error'));
-        return;
+      await login(phone, password);
+      // login method in AuthContext already sets role, so we can read it from localStorage
+      const role = localStorage.getItem('staff_role');
+      if (role === 'operator') {
+        navigate('/ops', { replace: true });
+      } else if (role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/', { replace: true });
       }
-      setToken(data.token);
-      navigate('/', { replace: true });
-    } catch {
+    } catch (err) {
       setError(t('login_error'));
     } finally {
       setLoading(false);
