@@ -118,3 +118,4 @@ src/
 ## License
 
 Copyright © 2024 Safiri Haraka. All rights reserved.
+# Trigger rebuild
