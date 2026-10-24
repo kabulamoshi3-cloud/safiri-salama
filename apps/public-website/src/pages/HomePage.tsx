@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FaMapMarkerAlt,
@@ -8,11 +8,153 @@ import {
   FaStar,
   FaGooglePlay,
   FaApple,
+  FaCar,
+  FaMapMarkedAlt,
 } from 'react-icons/fa';
 import Button from '../components/Button';
 import Card from '../components/Card';
 
 const HomePage: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Animated background with map grid, moving cars, and glowing driver dots
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Grid dots
+    const gridDots: { x: number; y: number; pulse: number }[] = [];
+    for (let i = 0; i < 80; i++) {
+      gridDots.push({
+        x: Math.random() * canvas.offsetWidth,
+        y: Math.random() * canvas.offsetHeight,
+        pulse: Math.random() * Math.PI * 2,
+      });
+    }
+
+    // Moving cars (light trails)
+    const cars: { x: number; y: number; vx: number; vy: number; trail: { x: number; y: number; alpha: number }[] }[] = [];
+    for (let i = 0; i < 5; i++) {
+      cars.push({
+        x: Math.random() * canvas.offsetWidth,
+        y: Math.random() * canvas.offsetHeight,
+        vx: (Math.random() - 0.5) * 2,
+        vy: (Math.random() - 0.5) * 2,
+        trail: [],
+      });
+    }
+
+    // Glowing driver dots (pulsing)
+    const drivers: { x: number; y: number; pulse: number }[] = [];
+    for (let i = 0; i < 8; i++) {
+      drivers.push({
+        x: Math.random() * canvas.offsetWidth,
+        y: Math.random() * canvas.offsetHeight,
+        pulse: Math.random() * Math.PI * 2,
+      });
+    }
+
+    let animationId: number;
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+
+      // Draw grid dots
+      gridDots.forEach((dot) => {
+        dot.pulse += 0.02;
+        const alpha = 0.2 + Math.sin(dot.pulse) * 0.15;
+        ctx.fillStyle = `rgba(147, 197, 253, ${alpha})`; // blue-300
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Draw grid lines (subtle)
+      ctx.strokeStyle = 'rgba(147, 197, 253, 0.1)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < gridDots.length; i++) {
+        for (let j = i + 1; j < gridDots.length; j++) {
+          const dx = gridDots[i].x - gridDots[j].x;
+          const dy = gridDots[i].y - gridDots[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 100) {
+            ctx.beginPath();
+            ctx.moveTo(gridDots[i].x, gridDots[i].y);
+            ctx.lineTo(gridDots[j].x, gridDots[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Update and draw car trails
+      cars.forEach((car) => {
+        car.x += car.vx;
+        car.y += car.vy;
+
+        // Wrap around
+        if (car.x < 0) car.x = canvas.offsetWidth;
+        if (car.x > canvas.offsetWidth) car.x = 0;
+        if (car.y < 0) car.y = canvas.offsetHeight;
+        if (car.y > canvas.offsetHeight) car.y = 0;
+
+        // Add to trail
+        car.trail.push({ x: car.x, y: car.y, alpha: 1 });
+        if (car.trail.length > 30) car.trail.shift();
+
+        // Draw trail
+        car.trail.forEach((point, i) => {
+          point.alpha -= 0.033;
+          const size = (i / car.trail.length) * 3;
+          ctx.fillStyle = `rgba(251, 191, 36, ${point.alpha * 0.6})`; // amber-400
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      });
+
+      // Draw glowing driver dots
+      drivers.forEach((driver) => {
+        driver.pulse += 0.05;
+        const radius = 4 + Math.sin(driver.pulse) * 1.5;
+        const alpha = 0.6 + Math.sin(driver.pulse) * 0.3;
+
+        // Glow
+        const gradient = ctx.createRadialGradient(driver.x, driver.y, 0, driver.x, driver.y, radius * 3);
+        gradient.addColorStop(0, `rgba(34, 197, 94, ${alpha})`); // green-500
+        gradient.addColorStop(1, 'rgba(34, 197, 94, 0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(driver.x, driver.y, radius * 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Dot
+        ctx.fillStyle = `rgba(34, 197, 94, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(driver.x, driver.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(animationId);
+    };
+  }, []);
+
   const benefits = [
     {
       icon: FaMapMarkerAlt,
@@ -56,26 +198,136 @@ const HomePage: React.FC = () => {
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary to-blue-800 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-            DalaSmart — Smart, safe & affordable transport in Tanzania 🇹🇿
-          </h1>
-          <p className="text-xl md:text-2xl mb-8">
-            Karibu! Your journey starts here
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6">
-            <Link to="/login?intent=book">
-              <Button variant="primary">Book a Ride</Button>
-            </Link>
-            <Link to="/become-a-driver">
-              <Button variant="secondary">Become a Driver</Button>
-            </Link>
+      {/* Hero Section with Animated Background */}
+      <section className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 text-white py-20 overflow-hidden">
+        {/* Animated Canvas Background */}
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 w-full h-full"
+          style={{ opacity: 0.6 }}
+        />
+
+        {/* City Silhouette Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-slate-900/80 to-transparent" />
+
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Text Content */}
+            <div className="text-center lg:text-left">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+                DalaSmart — Smart, safe & affordable transport in Tanzania 🇹🇿
+              </h1>
+              <p className="text-xl md:text-2xl mb-8 text-blue-100">
+                Karibu! Your journey starts here
+              </p>
+              <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mb-6">
+                <Link to="/login?intent=book">
+                  <Button variant="primary">Book a Ride</Button>
+                </Link>
+                <Link to="/become-a-driver">
+                  <Button variant="secondary">Become a Driver</Button>
+                </Link>
+              </div>
+              <p className="text-sm opacity-90">
+                Trusted by 10,000+ passengers across Tanzania
+              </p>
+            </div>
+
+            {/* Right: Phone Mockup with Live Tracking */}
+            <div className="flex justify-center lg:justify-end">
+              <div className="relative">
+                {/* Phone Frame */}
+                <div className="relative w-[280px] h-[560px] bg-slate-800 rounded-[3rem] border-8 border-slate-700 shadow-2xl overflow-hidden">
+                  {/* Phone Screen */}
+                  <div className="absolute inset-2 bg-white rounded-[2.5rem] overflow-hidden">
+                    {/* Mini Map with Live Tracking */}
+                    <div className="relative h-[400px] bg-gradient-to-br from-blue-50 to-blue-100">
+                      {/* Map Grid Pattern */}
+                      <div className="absolute inset-0" style={{
+                        backgroundImage: 'linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)',
+                        backgroundSize: '30px 30px'
+                      }} />
+
+                      {/* Route Line */}
+                      <svg className="absolute inset-0 w-full h-full">
+                        <path
+                          d="M 140 350 Q 200 250, 140 150"
+                          stroke="#3b82f6"
+                          strokeWidth="4"
+                          fill="none"
+                          strokeDasharray="10,5"
+                          opacity="0.6"
+                        />
+                      </svg>
+
+                      {/* User Location (Pickup) */}
+                      <div className="absolute bottom-12 left-1/2 -translate-x-1/2">
+                        <div className="relative">
+                          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg border-4 border-white">
+                            <FaMapMarkerAlt className="text-white text-xl" />
+                          </div>
+                          <div className="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-30" />
+                        </div>
+                      </div>
+
+                      {/* Driver Approaching (Animated) */}
+                      <div className="absolute top-24 left-1/2 -translate-x-1/2">
+                        <div className="relative animate-bounce">
+                          <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shadow-lg border-3 border-white">
+                            <FaCar className="text-white text-lg" />
+                          </div>
+                          <div className="absolute inset-0 bg-green-500 rounded-full animate-pulse opacity-40" />
+                        </div>
+                      </div>
+
+                      {/* ETA Card */}
+                      <div className="absolute top-4 left-4 right-4 bg-white rounded-2xl shadow-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                              <FaCar className="text-white text-sm" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Your driver</p>
+                              <p className="font-semibold text-sm text-gray-900">Mohamed K.</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs text-gray-500">ETA</p>
+                            <p className="font-bold text-lg text-green-600">3 min</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                          <FaMapMarkedAlt />
+                          <span>Toyota Ipsum • TSZ 1234</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Payment Methods Bar */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
+                      <p className="text-xs text-gray-500 mb-2 text-center">Pay with</p>
+                      <div className="flex justify-center gap-3">
+                        <div className="px-3 py-2 bg-green-50 rounded-lg text-xs font-semibold text-green-700 border border-green-200">
+                          M-Pesa
+                        </div>
+                        <div className="px-3 py-2 bg-blue-50 rounded-lg text-xs font-semibold text-blue-700 border border-blue-200">
+                          Wallet
+                        </div>
+                        <div className="px-3 py-2 bg-gray-50 rounded-lg text-xs font-semibold text-gray-700 border border-gray-200">
+                          Cash
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Phone Notch */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-800 rounded-b-2xl z-20" />
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="text-sm opacity-90">
-            Trusted by 10,000+ passengers across Tanzania
-          </p>
         </div>
       </section>
 
