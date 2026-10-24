@@ -7,28 +7,11 @@
     <meta name="theme-color" content="#2563eb" />
     <title>Safiri Haraka - Smart Transport in Tanzania</title>
     <meta name="description" content="Smart, safe & affordable ride-hailing in Dar es Salaam and Morogoro. Book rides, track drivers, pay easily." />
-    <link rel="manifest" href="/manifest.json" />
+    <!-- Manifest removed - Install from the web app instead -->
     <link rel="apple-touch-icon" href="/icon-192.png" />
-    
-    <!-- PWA Meta Tags -->
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Safiri Haraka" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    
-    <!-- Service Worker Registration -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/service-worker.js')
-            .then(reg => console.log('Service Worker registered:', reg))
-            .catch(err => console.error('Service Worker registration failed:', err));
-        });
-      }
-    </script>
   </body>
 </html>
