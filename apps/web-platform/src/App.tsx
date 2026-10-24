@@ -31,7 +31,7 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       {isAuthenticated && <Navbar />}
-      <main className={isAuthenticated ? 'pt-20' : ''}>
+      <main className={isAuthenticated ? 'md:pt-20 pb-20' : ''}>
         {/* PWA Install Prompt - shows on all pages */}
         <div className="container mx-auto px-4 pt-4">
           <InstallPrompt />
