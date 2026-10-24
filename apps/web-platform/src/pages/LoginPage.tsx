@@ -101,7 +101,7 @@ const LoginPage: React.FC = () => {
     if (password.length < 6) return setError('Password must be at least 6 characters');
     if (password !== confirm) return setError('Passwords do not match');
     try {
-      await register(phone, password, name.trim());
+      await register(`+255${phone}`, password, name.trim());
       navigate('/');
     } catch (err: any) { setError(err.message); }
   };
@@ -112,7 +112,7 @@ const LoginPage: React.FC = () => {
     if (phone.length < 9)  return setError('Enter a valid phone number (9 digits)');
     if (!password)         return setError('Enter your password');
     try {
-      await login(phone, password);
+      await login(`+255${phone}`, password);
       navigate('/');
     } catch (err: any) { setError(err.message); }
   };

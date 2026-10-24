@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { HomeStackParamList } from '../../navigation/MainNavigator';
 import { startBackgroundTracking, stopBackgroundTracking } from '../../services/BackgroundLocation';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiri-salama.vercel.app/api/v1';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
 
 type RouteStep = {
   instruction: string;

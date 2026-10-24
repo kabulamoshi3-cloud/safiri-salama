@@ -18,7 +18,7 @@ interface Props {
   route: RatePassengerRouteProp;
 }
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiri-salama.vercel.app/api/v1';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
 
 const RatePassengerScreen: React.FC<Props> = ({ navigation, route }) => {
   const { theme } = useTheme();

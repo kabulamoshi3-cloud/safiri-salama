@@ -10,6 +10,7 @@ import InstallPrompt from './components/InstallPrompt';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import BookingPage from './pages/BookingPage';
+import ActiveTripPage from './pages/ActiveTripPage';
 import TripHistoryPage from './pages/TripHistoryPage';
 import WalletPage from './pages/WalletPage';
 import ProfilePage from './pages/ProfilePage';
@@ -45,6 +46,7 @@ const App: React.FC = () => {
             <>
               <Route path="/" element={<HomePage />} />
               <Route path="/book" element={<BookingPage />} />
+              <Route path="/trip/:tripId" element={<ActiveTripPage />} />
               <Route path="/trips" element={<TripHistoryPage />} />
               <Route path="/wallet" element={<WalletPage />} />
               <Route path="/profile" element={<ProfilePage />} />

@@ -16,7 +16,7 @@ try {
 
 export const BACKGROUND_LOCATION_TASK = 'DALASMART_BACKGROUND_LOCATION';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiri-salama.vercel.app/api/v1';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
 
 // Register the background task only if TaskManager is available
 if (TaskManager !== null) {
