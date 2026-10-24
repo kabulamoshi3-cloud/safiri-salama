@@ -6,6 +6,8 @@ import {
   FaHeadset,
   FaShieldAlt,
   FaStar,
+  FaGooglePlay,
+  FaApple,
 } from 'react-icons/fa';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -177,7 +179,7 @@ const HomePage: React.FC = () => {
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-3 bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-colors"
               >
-                <span className="text-2xl">▶</span>
+                <FaGooglePlay size={24} />
                 <div className="text-left">
                   <div className="text-xs opacity-80">GET IT ON</div>
                   <div className="text-sm font-bold">Google Play</div>
@@ -189,7 +191,7 @@ const HomePage: React.FC = () => {
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-3 bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-colors"
               >
-                <span className="text-2xl"></span>
+                <FaApple size={24} />
                 <div className="text-left">
                   <div className="text-xs opacity-80">Download on the</div>
                   <div className="text-sm font-bold">App Store</div>
@@ -210,7 +212,7 @@ const HomePage: React.FC = () => {
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-3 bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-colors"
               >
-                <span className="text-2xl">▶</span>
+                <FaGooglePlay size={24} />
                 <div className="text-left">
                   <div className="text-xs opacity-80">GET IT ON</div>
                   <div className="text-sm font-bold">Google Play</div>
@@ -222,7 +224,7 @@ const HomePage: React.FC = () => {
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-3 bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-colors"
               >
-                <span className="text-2xl"></span>
+                <FaApple size={24} />
                 <div className="text-left">
                   <div className="text-xs opacity-80">Download on the</div>
                   <div className="text-sm font-bold">App Store</div>

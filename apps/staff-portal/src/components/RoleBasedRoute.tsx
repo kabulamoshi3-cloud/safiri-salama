@@ -16,7 +16,7 @@ export default function RoleBasedRoute({ children, allowedRoles }: RoleBasedRout
   }
 
   if (role && !allowedRoles.includes(role) && role !== 'super_admin') {
-    const correctDashboard = role === 'admin' ? '/admin' : '/ops';
+    const correctDashboard = role !== 'operator' ? '/admin' : '/ops';
     
     return (
       <div style={{ padding: '2rem', textAlign: 'center', maxWidth: '600px', margin: '4rem auto' }}>

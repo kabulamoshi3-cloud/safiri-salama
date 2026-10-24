@@ -76,7 +76,10 @@ const Footer: React.FC = () => {
           {/* Download Column */}
           <div>
             <h3 className="text-white text-lg font-semibold mb-4">Download App</h3>
-            <div className="space-y-3">
+
+            {/* Passenger App */}
+            <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Passenger App</p>
+            <div className="space-y-3 mb-4">
               <a
                 href="https://play.google.com/store/apps/details?id=com.dalasmart.passenger"
                 target="_blank"
@@ -91,6 +94,35 @@ const Footer: React.FC = () => {
               </a>
               <a
                 href="https://apps.apple.com/app/dalasmart-passenger/id000000001"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                <FaApple size={18} />
+                <div>
+                  <p className="text-xs opacity-70">Download on the</p>
+                  <p className="text-sm font-semibold">App Store</p>
+                </div>
+              </a>
+            </div>
+
+            {/* Driver App */}
+            <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Driver App</p>
+            <div className="space-y-3">
+              <a
+                href="https://play.google.com/store/apps/details?id=com.dalasmart.driver"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                <FaGooglePlay size={18} />
+                <div>
+                  <p className="text-xs opacity-70">GET IT ON</p>
+                  <p className="text-sm font-semibold">Google Play</p>
+                </div>
+              </a>
+              <a
+                href="https://apps.apple.com/app/dalasmart-driver/id000000002"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors"
