@@ -10,12 +10,15 @@ import {
   FaApple,
   FaCar,
   FaMapMarkedAlt,
+  FaDownload,
 } from 'react-icons/fa';
 import Button from '../components/Button';
 import Card from '../components/Card';
+import { usePWAInstall } from '../hooks/usePWAInstall';
 
 const HomePage: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { isInstallable, isInstalled, promptInstall } = usePWAInstall();
 
   // Animated background with map grid, moving cars, and glowing driver dots
   useEffect(() => {
@@ -426,20 +429,35 @@ const HomePage: React.FC = () => {
               ⚡ INSTANT ACCESS
             </div>
             <h3 className="text-2xl font-bold mb-2 text-gray-800">Web App (Recommended)</h3>
-            <p className="text-gray-600 mb-6">Install directly from your browser - works on all devices!</p>
+            <p className="text-gray-600 mb-6">
+              {isInstalled 
+                ? "✅ App is already installed on your device!" 
+                : "Install directly from your browser - works on all devices!"}
+            </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
+              {isInstallable && !isInstalled && (
+                <button
+                  onClick={promptInstall}
+                  className="flex items-center justify-center gap-3 bg-green-600 text-white px-8 py-4 rounded-xl hover:bg-green-700 transition-colors shadow-lg text-lg font-bold"
+                >
+                  <FaDownload size={24} />
+                  Install App Now
+                </button>
+              )}
               <a
                 href="https://safiriharaka-apps.vercel.app"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-3 bg-blue-600 text-white px-8 py-4 rounded-xl hover:bg-blue-700 transition-colors shadow-lg text-lg font-bold"
               >
-                📱 Open Web App
+                📱 {isInstalled ? "Open App" : "Open Web App"}
               </a>
             </div>
-            <p className="text-sm text-gray-600 mt-4">
-              <strong>How to install:</strong> Open the link → Tap browser menu → Select "Add to Home Screen" or "Install App"
-            </p>
+            {!isInstallable && !isInstalled && (
+              <p className="text-sm text-gray-600 mt-4">
+                <strong>How to install:</strong> Open the link → Tap browser menu → Select "Add to Home Screen" or "Install App"
+              </p>
+            )}
           </div>
 
           <div className="text-center text-gray-500 text-sm mb-6">
