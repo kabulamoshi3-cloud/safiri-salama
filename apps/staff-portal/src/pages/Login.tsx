@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
   const { t } = useTranslation();
-  const { login } = useAuth();
+  const { login, role } = useAuth();
   const navigate = useNavigate();
 
   const [phone, setPhone] = useState('');
@@ -19,8 +19,7 @@ export default function Login() {
     setLoading(true);
     try {
       await login(phone, password);
-      // login method in AuthContext already sets role, so we can read it from localStorage
-      const role = localStorage.getItem('staff_role');
+      // Role is now available from AuthContext state after login
       if (role === 'operator') {
         navigate('/ops', { replace: true });
       } else if (role === 'admin') {

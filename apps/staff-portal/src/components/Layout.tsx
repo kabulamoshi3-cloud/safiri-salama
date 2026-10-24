@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth, UserRole } from '../context/AuthContext';
-import AdminSidebar from './AdminSidebar';
-import OperatorSidebar from './OperatorSidebar';
+
+const AdminSidebar = lazy(() => import('./AdminSidebar'));
+const OperatorSidebar = lazy(() => import('./OperatorSidebar'));
 
 interface LayoutProps {
   role: UserRole;
@@ -17,14 +18,14 @@ export default function Layout({ role }: LayoutProps) {
     navigate('/login', { replace: true });
   }
 
+  const Sidebar = role === 'admin' ? AdminSidebar : OperatorSidebar;
+
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      {/* Role-based Sidebar */}
-      {role === 'admin' ? (
-        <AdminSidebar userProfile={userProfile} onLogout={handleLogout} />
-      ) : (
-        <OperatorSidebar userProfile={userProfile} onLogout={handleLogout} />
-      )}
+      {/* Role-based Sidebar with lazy loading */}
+      <Suspense fallback={<div style={{ width: '240px', background: 'var(--color-sidebar-bg)' }} />}>
+        <Sidebar userProfile={userProfile} onLogout={handleLogout} />
+      </Suspense>
 
       {/* Main content */}
       <div

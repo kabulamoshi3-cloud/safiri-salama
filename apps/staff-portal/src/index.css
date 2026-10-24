@@ -1,5 +1,7 @@
 /* CSS Reset + Custom Properties */
 
+@import 'leaflet/dist/leaflet.css';
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;

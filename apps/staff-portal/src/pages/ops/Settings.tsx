@@ -4,8 +4,9 @@
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Truck, Percent, Bell, Globe, LogOut } from 'lucide-react';
-import { useAuthStore } from '../../store/auth';
+import { useAuth } from '../../context/AuthContext';
 import i18n from '../../i18n/index';
 import api from '../../services/api';
 
@@ -27,12 +28,13 @@ const Toggle: React.FC<{ checked: boolean; onChange: () => void }> = ({ checked,
 
 const Settings: React.FC = () => {
   const { t } = useTranslation();
-  const { operator, logout } = useAuthStore();
+  const { userProfile, logout } = useAuth();
+  const navigate = useNavigate();
 
   // (1) Fleet Info
-  const [fleetName,   setFleetName]   = useState(operator?.fleet_name ?? '');
-  const [contactEmail, setContactEmail] = useState(operator?.email ?? '');
-  const [contactPhone, setContactPhone] = useState(operator?.phone ?? '');
+  const [fleetName,   setFleetName]   = useState('');
+  const [contactEmail, setContactEmail] = useState(userProfile?.email ?? '');
+  const [contactPhone, setContactPhone] = useState(userProfile?.phone ?? '');
   const [fleetSaved,  setFleetSaved]  = useState(false);
 
   const saveFleet = async () => {
@@ -155,7 +157,10 @@ const Settings: React.FC = () => {
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-bold mb-4">Account</h2>
         <button
-          onClick={logout}
+          onClick={() => {
+            logout();
+            navigate('/login');
+          }}
           className="w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 rounded-lg transition"
         >
           <LogOut size={18} />

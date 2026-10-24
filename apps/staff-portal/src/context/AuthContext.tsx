@@ -60,7 +60,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const data = await response.json();
     const newToken = data.token;
-    const userType = data.user?.userType || data.user?.type || 'admin';
+    const userType = data.user?.userType || data.user?.type;
+    
+    if (!userType) {
+      throw new Error('Login response missing user type field');
+    }
+    
     const detectedRole: UserRole = userType === 'operator' ? 'operator' : 'admin';
 
     localStorage.setItem(TOKEN_KEY, newToken);

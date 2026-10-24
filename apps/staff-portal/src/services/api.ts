@@ -14,7 +14,7 @@ async function request<T>(
   path: string,
   body?: unknown
 ): Promise<T> {
-  const token = localStorage.getItem('admin_token') || localStorage.getItem('staff_token');
+  const token = localStorage.getItem('staff_token');
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -48,7 +48,7 @@ export const axiosClient = axios.create({
 
 // Attach auth token from localStorage on every request
 axiosClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('operator_token') || localStorage.getItem('staff_token');
+  const token = localStorage.getItem('staff_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -60,8 +60,8 @@ axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('operator_token');
       localStorage.removeItem('staff_token');
+      localStorage.removeItem('staff_role');
       window.location.href = '/login';
     }
     return Promise.reject(error);
