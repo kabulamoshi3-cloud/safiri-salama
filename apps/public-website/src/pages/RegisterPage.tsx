@@ -62,7 +62,7 @@ const RegisterPage: React.FC = () => {
         phone: phone,
         email: formData.email,
         password: formData.password,
-        role,
+        user_type: role,  // API expects user_type, not role
       };
 
       if (role === 'driver') {

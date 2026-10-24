@@ -33,10 +33,11 @@ const LoginPage: React.FC = () => {
         }
       }
 
-      const data = await login({ email: loginEmail, password, role });
+      const data = await login({ phone: loginEmail, password });
       localStorage.setItem('token', data.token);
 
-      if (role === 'driver') {
+      // Navigate based on user type returned from API
+      if (data.user?.userType === 'driver') {
         navigate('/driver');
       } else {
         navigate('/');
