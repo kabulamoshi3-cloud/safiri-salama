@@ -5,9 +5,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Phone, ArrowRight, Car, MapPin, Star, Clock,
-  ChevronRight, User, Lock, Eye, EyeOff, Zap, CheckCircle,
+  ChevronRight, User, Lock, Eye, EyeOff, Zap, CheckCircle, Globe,
 } from 'lucide-react';
 import { useAuthStore } from '../store/auth';
+import { useTranslation } from 'react-i18next';
 
 /* ─── Slides ──────────────────────────────────────────────────── */
 const SLIDES = [
@@ -50,6 +51,7 @@ type Mode = 'slides' | 'login' | 'register';
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { register, login, loginGoogle, loading } = useAuthStore();
+  const { i18n } = useTranslation();
 
   const [mode,        setMode]        = useState<Mode>('slides');
   const [slide,       setSlide]       = useState(0);
@@ -62,6 +64,7 @@ const LoginPage: React.FC = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [error,       setError]       = useState('');
   const [success,     setSuccess]     = useState('');
+  const [showLangMenu, setShowLangMenu] = useState(false);
 
   /* auto-advance slides */
   useEffect(() => {
@@ -143,12 +146,42 @@ const LoginPage: React.FC = () => {
           <div className="w-8 h-8 bg-secondary-500 rounded-lg flex items-center justify-center">
             <Zap size={16} className="text-white" />
           </div>
-          <span className="text-white font-black text-lg">SafiriSalama</span>
+          <span className="text-white font-black text-lg">Safiri Haraka</span>
         </div>
-        <button onClick={() => switchMode('login')}
-          className="text-white/70 hover:text-white text-sm font-semibold px-4 py-2 rounded-full border border-white/20 transition-all">
-          Skip →
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Language Switcher */}
+          <div className="relative">
+            <button
+              onClick={() => setShowLangMenu(!showLangMenu)}
+              className="text-white/70 hover:text-white p-2 rounded-full border border-white/20 transition-all flex items-center gap-1"
+              aria-label="Change language"
+            >
+              <Globe size={18} />
+            </button>
+            {showLangMenu && (
+              <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50">
+                <button
+                  onClick={() => { i18n.changeLanguage('en'); setShowLangMenu(false); }}
+                  className={`w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors flex items-center gap-2 ${i18n.language === 'en' ? 'bg-gray-50 font-semibold' : ''}`}
+                >
+                  <span className="text-lg">🇬🇧</span>
+                  <span className="text-sm text-gray-700">English</span>
+                </button>
+                <button
+                  onClick={() => { i18n.changeLanguage('sw'); setShowLangMenu(false); }}
+                  className={`w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors flex items-center gap-2 ${i18n.language === 'sw' ? 'bg-gray-50 font-semibold' : ''}`}
+                >
+                  <span className="text-lg">🇹🇿</span>
+                  <span className="text-sm text-gray-700">Kiswahili</span>
+                </button>
+              </div>
+            )}
+          </div>
+          <button onClick={() => switchMode('login')}
+            className="text-white/70 hover:text-white text-sm font-semibold px-4 py-2 rounded-full border border-white/20 transition-all">
+            Skip →
+          </button>
+        </div>
       </div>
 
       {/* Content */}
