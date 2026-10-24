@@ -1,0 +1,26 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Create staff-portal base structure by copying admin-panel, installing all dependencies from both apps (including operator-dashboard-specific deps: axios, recharts, lucide-react, zustand, leaflet, react-leaflet, @types/leaflet, tailwindcss, autoprefixer, postcss), and updating package.json name and metadata.",
+  "status": "completed",
+  "steps": [
+    "Copy entire admin-panel directory to apps/staff-portal using: rsync -av --exclude='node_modules' --exclude='dist' --exclude='.vercel' /home/masalago/projects/daladala/apps/admin-panel/ /home/masalago/projects/daladala/apps/staff-portal/",
+    "Update apps/staff-portal/package.json: change name to '@dalasmart/staff-portal', description to 'DalaSmart Staff Portal — Unified admin and operations console'",
+    "Merge dependencies from apps/operator-dashboard/package.json into apps/staff-portal/package.json. Add: axios@^1.7.7, recharts@^2.12.7, lucide-react@^0.447.0, zustand@^4.5.5, leaflet@^1.9.4, react-leaflet@^4.2.1, @types/leaflet@^1.9.12 to dependencies. Add: tailwindcss@^3.4.13, autoprefixer@^10.4.20, postcss@^8.4.47 to devDependencies.",
+    "Copy tailwind.config.js, postcss.config.js from apps/operator-dashboard to apps/staff-portal if they exist (they are required for Tailwind to work)",
+    "Update apps/staff-portal/vite.config.ts to keep the @ alias: import { resolve } from 'path'; alias: { '@': resolve(__dirname, './src') }",
+    "Update apps/staff-portal/index.html title to 'DalaSmart Staff Portal'",
+    "Run npm install in apps/staff-portal to install all dependencies"
+  ],
+  "acceptance_criteria": [
+    "apps/staff-portal/ exists as a copy of admin-panel",
+    "package.json reflects new name and merged dependencies from both apps",
+    "npm install completes without errors in apps/staff-portal"
+  ],
+  "verification": [
+    "cd /home/masalago/projects/daladala/apps/staff-portal && npm install",
+    "cd /home/masalago/projects/daladala/apps/staff-portal && npm run typecheck (should succeed, no TypeScript errors yet)"
+  ],
+  "blocked_reason": null,
+  "findings": "Successfully created staff-portal by copying admin-panel, merged all dependencies from operator-dashboard (axios, recharts, lucide-react, zustand, leaflet, react-leaflet, @types/leaflet, tailwindcss, autoprefixer, postcss), copied Tailwind config files, updated package.json name and description, and updated index.html title. All dependencies installed successfully. TypeScript compilation passes without errors."
+}
