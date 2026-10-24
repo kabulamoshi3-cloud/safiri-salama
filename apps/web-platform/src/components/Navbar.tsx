@@ -6,6 +6,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Wallet, MapPin, User, ShoppingBag, Home, LogOut } from 'lucide-react';
 import { useAuthStore } from '../store/auth';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const navLinks = [
   { path: '/',       label: 'Home',       icon: Home       },
@@ -37,6 +38,7 @@ const Navbar: React.FC = () => {
             Safiri Haraka
           </Link>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <span className="text-sm text-gray-600 font-medium">
               {user?.name ?? ''}
             </span>
