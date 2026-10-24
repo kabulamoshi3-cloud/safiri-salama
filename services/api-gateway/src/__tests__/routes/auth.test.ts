@@ -90,7 +90,7 @@ describe('POST /api/v1/auth/register', () => {
     mockQuery.mockResolvedValueOnce({ rows: [{ id: 'existing' }], rowCount: 1 });
 
     const res = await request(app).post('/api/v1/auth/register').send({
-      phone: '255744111111', password: PASSWORD, userType: 'passenger',
+      phone: '255744111111', password: PASSWORD, name: 'Amina', userType: 'passenger',
     });
 
     expect(res.status).toBe(400);

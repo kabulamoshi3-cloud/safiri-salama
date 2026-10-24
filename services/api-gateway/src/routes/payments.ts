@@ -135,7 +135,7 @@ paymentsRouter.get('/info', async (req: Request, res: Response) => {
        FROM users u
        LEFT JOIN wallets w ON w.user_id = u.id
        WHERE u.id = $1`,
-      [user.id]
+      [user.userId]
     );
 
     db.release();
@@ -281,7 +281,7 @@ paymentsRouter.post('/pay', async (req: Request, res: Response) => {
        FROM users u
        LEFT JOIN wallets w ON w.user_id = u.id
        WHERE u.id = $1`,
-      [user.id]
+      [user.userId]
     );
 
     if (userResult.rowCount === 0) {
@@ -363,7 +363,7 @@ paymentsRouter.post('/pay', async (req: Request, res: Response) => {
 
       const recipient = recipientResult.rows[0];
 
-      if (String(recipient.id) === String(user.id)) {
+      if (String(recipient.id) === String(user.userId)) {
         db.release();
         return res.status(400).json({ error: 'Cannot transfer to yourself' });
       }
@@ -386,7 +386,7 @@ paymentsRouter.post('/pay', async (req: Request, res: Response) => {
         // Debit sender (full amount including fee)
         await db.query(
           `UPDATE wallets SET balance = balance - $1 WHERE user_id = $2`,
-          [amount, user.id]
+          [amount, user.userId]
         );
 
         // Credit recipient (net of fee)
@@ -401,7 +401,7 @@ paymentsRouter.post('/pay', async (req: Request, res: Response) => {
           `INSERT INTO transactions
              (reference, user_id, context, context_id, amount, type, method, provider, status, description)
            VALUES ($1,$2,'transfer',$3,$4,'debit','wallet','wallet','completed',$5)`,
-          [reference, user.id, String(recipient.id), amount,
+          [reference, user.userId, String(recipient.id), amount,
            description ?? `Transfer to ${recipient.name}`]
         );
 
@@ -411,7 +411,7 @@ paymentsRouter.post('/pay', async (req: Request, res: Response) => {
           `INSERT INTO transactions
              (reference, user_id, context, context_id, amount, type, method, provider, status, description)
            VALUES ($1,$2,'transfer',$3,$4,'credit','wallet','wallet','completed',$5)`,
-          [creditRef, recipient.id, String(user.id), netAmount,
+          [creditRef, recipient.id, String(user.userId), netAmount,
            `Received from ${userResult.rows[0].name ?? 'a user'}`]
         );
 
@@ -488,7 +488,7 @@ paymentsRouter.post('/pay', async (req: Request, res: Response) => {
          VALUES ($1,$2,'bill',$3,$4,'debit','mobile_money',$5,$6,$7,'pending',$8,
                  NOW() + INTERVAL '2 minutes')`,
         [
-          reference, user.id, String(account_number),
+          reference, user.userId, String(account_number),
           amount, method, phoneToUse, phoneSource, billDesc,
         ]
       );
@@ -534,7 +534,7 @@ paymentsRouter.post('/pay', async (req: Request, res: Response) => {
       try {
         await db.query(
           `UPDATE wallets SET balance = balance - $1 WHERE user_id = $2`,
-          [amount, user.id]
+          [amount, user.userId]
         );
 
         // Credit payee (driver / shop owner etc.)
@@ -544,7 +544,7 @@ paymentsRouter.post('/pay', async (req: Request, res: Response) => {
           `INSERT INTO transactions
              (reference, user_id, context, context_id, amount, type, method, provider, status, description)
            VALUES ($1,$2,$3,$4,$5,'debit','wallet','wallet','completed',$6)`,
-          [reference, user.id, context, context_id ?? null, amount, txDesc]
+          [reference, user.userId, context, context_id ?? null, amount, txDesc]
         );
 
         await db.query(`COMMIT`);
@@ -574,7 +574,7 @@ paymentsRouter.post('/pay', async (req: Request, res: Response) => {
         `INSERT INTO transactions
            (reference, user_id, context, context_id, amount, type, method, provider, status, description)
          VALUES ($1,$2,$3,$4,$5,'debit','cash','cash','pending_confirmation',$6)`,
-        [reference, user.id, context, context_id ?? null, amount, txDesc]
+        [reference, user.userId, context, context_id ?? null, amount, txDesc]
       );
 
       db.release();
@@ -602,7 +602,7 @@ paymentsRouter.post('/pay', async (req: Request, res: Response) => {
          VALUES ($1,$2,$3,$4,$5,'debit','mobile_money',$6,$7,$8,'pending',$9,
                  NOW() + INTERVAL '2 minutes')`,
         [
-          reference, user.id, context, context_id ?? null,
+          reference, user.userId, context, context_id ?? null,
           amount, method, phoneToUse, phoneSource, txDesc,
         ]
       );
@@ -760,7 +760,7 @@ paymentsRouter.get('/status/:reference', async (req: Request, res: Response) => 
       `SELECT status, method, provider, amount, phone_number,
               description, created_at, completed_at, failure_reason, expires_at
        FROM transactions WHERE reference = $1 AND user_id = $2`,
-      [reference, user.id]
+      [reference, user.userId]
     );
     db.release();
 
@@ -1093,7 +1093,7 @@ paymentsRouter.post('/cash/confirm/:reference', async (req: Request, res: Respon
     const tx = result.rows[0];
 
     // Only the assigned driver can confirm cash
-    if (tx.driver_id && tx.driver_id !== user.id) {
+    if (tx.driver_id && tx.driver_id !== user.userId) {
       db.release();
       return res.status(403).json({ error: 'Only the assigned driver can confirm cash payment' });
     }
@@ -1144,7 +1144,7 @@ paymentsRouter.post('/qr/generate', async (req: Request, res: Response) => {
       `INSERT INTO qr_payment_tokens
          (token, driver_id, route_id, amount, vehicle_type, expires_at, reference, status)
        VALUES ($1,$2,$3,$4,$5,$6,$7,'active')`,
-      [token, user.id, route_id ?? null, fareAmount, vehicle_type, expiresAt, reference]
+      [token, user.userId, route_id ?? null, fareAmount, vehicle_type, expiresAt, reference]
     );
     db.release();
 
@@ -1155,7 +1155,7 @@ paymentsRouter.post('/qr/generate', async (req: Request, res: Response) => {
       token,
       amount:    fareAmount,
       currency:  'TZS',
-      driver_id: user.id,
+      driver_id: user.userId,
       expires:   expiresAt.toISOString(),
     });
 
@@ -1204,7 +1204,7 @@ paymentsRouter.post('/qr/pay', async (req: Request, res: Response) => {
       // Check wallet balance with row lock inside transaction
       const walletResult = await db.query(
         `SELECT balance FROM wallets WHERE user_id = $1 FOR UPDATE`,
-        [user.id]
+        [user.userId]
       );
 
       const balance = Number(walletResult.rows[0]?.balance ?? 0);
@@ -1220,7 +1220,7 @@ paymentsRouter.post('/qr/pay', async (req: Request, res: Response) => {
         });
       }
       // Debit passenger
-      await db.query(`UPDATE wallets SET balance = balance - $1 WHERE user_id = $2`, [qr.amount, user.id]);
+      await db.query(`UPDATE wallets SET balance = balance - $1 WHERE user_id = $2`, [qr.amount, user.userId]);
 
       // Credit driver using the same fee rate as regular ride payments
       const driverShare = Math.round(qr.amount * (1 - PLATFORM_FEE_RATES.ride));
@@ -1236,7 +1236,7 @@ paymentsRouter.post('/qr/pay', async (req: Request, res: Response) => {
         `INSERT INTO transactions
            (reference, user_id, context, amount, type, method, provider, status, description)
          VALUES ($1,$2,'ride',$3,'debit','qr_code','wallet','completed','Bus fare — QR payment')`,
-        [reference, user.id, qr.amount]
+        [reference, user.userId, qr.amount]
       );
 
       // Record payment_splits (same pattern as creditPayee)
@@ -1253,7 +1253,7 @@ paymentsRouter.post('/qr/pay', async (req: Request, res: Response) => {
 
       await db.query(
         `UPDATE qr_payment_tokens SET status = 'used', used_at = NOW(), used_by = $1 WHERE token = $2`,
-        [user.id, token]
+        [user.userId, token]
       );
 
       await db.query(`COMMIT`);
@@ -1299,7 +1299,7 @@ paymentsRouter.post('/wallet/topup', async (req: Request, res: Response) => {
   try {
     const db = await database.getClient();
 
-    const userResult = await db.query(`SELECT phone FROM users WHERE id = $1`, [user.id]);
+    const userResult = await db.query(`SELECT phone FROM users WHERE id = $1`, [user.userId]);
     if (userResult.rowCount === 0) {
       db.release();
       return res.status(404).json({ error: 'User not found' });
@@ -1326,7 +1326,7 @@ paymentsRouter.post('/wallet/topup', async (req: Request, res: Response) => {
        VALUES ($1,$2,'topup',$3,'credit','mobile_money',$4,$5,$6,'pending',
                'Wallet top-up', NOW() + INTERVAL '2 minutes')`,
       [
-        reference, user.id, amount, provider, phoneToUse,
+        reference, user.userId, amount, provider, phoneToUse,
         (use_registered_phone || !providedPhone) ? 'registered' : 'user_provided',
       ]
     );
@@ -1359,7 +1359,7 @@ paymentsRouter.get('/wallet', async (req: Request, res: Response) => {
 
     await db.query(
       `INSERT INTO wallets (user_id, balance, currency) VALUES ($1,0,'TZS') ON CONFLICT (user_id) DO NOTHING`,
-      [user.id]
+      [user.userId]
     );
 
     const result = await db.query(
@@ -1367,7 +1367,7 @@ paymentsRouter.get('/wallet', async (req: Request, res: Response) => {
               (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE user_id=$1 AND type='credit' AND status='completed') AS total_in,
               (SELECT COALESCE(SUM(amount),0) FROM transactions WHERE user_id=$1 AND type='debit'  AND status='completed') AS total_out
        FROM wallets w WHERE w.user_id = $1`,
-      [user.id]
+      [user.userId]
     );
 
     db.release();
@@ -1403,7 +1403,7 @@ paymentsRouter.get('/receipt/:reference', async (req: Request, res: Response) =>
        FROM transactions t
        JOIN users u ON u.id = t.user_id
        WHERE t.reference = $1 AND t.user_id = $2`,
-      [reference, user.id]
+      [reference, user.userId]
     );
     db.release();
 
@@ -1446,7 +1446,7 @@ paymentsRouter.get('/history', async (req: Request, res: Response) => {
   try {
     const db = await database.getClient();
     let q = `SELECT * FROM transactions WHERE user_id = $1`;
-    const p: any[] = [user.id];
+    const p: any[] = [user.userId];
 
     if (type)   { p.push(type);   q += ` AND type   = $${p.length}`; }
     if (method) { p.push(method); q += ` AND method  = $${p.length}`; }
@@ -1459,7 +1459,7 @@ paymentsRouter.get('/history', async (req: Request, res: Response) => {
 
     const result = await db.query(q, p);
     const totalResult = await db.query(
-      `SELECT COUNT(*) AS total FROM transactions WHERE user_id = $1`, [user.id]
+      `SELECT COUNT(*) AS total FROM transactions WHERE user_id = $1`, [user.userId]
     );
     db.release();
 
@@ -1496,7 +1496,7 @@ paymentsRouter.post('/refund', async (req: Request, res: Response) => {
     const db = await database.getClient();
     const txResult = await db.query(
       `SELECT * FROM transactions WHERE reference = $1 AND user_id = $2`,
-      [reference, user.id]
+      [reference, user.userId]
     );
 
     if (txResult.rowCount === 0) {
@@ -1532,7 +1532,7 @@ paymentsRouter.post('/refund', async (req: Request, res: Response) => {
     // Credit payer wallet
     await db.query(
       `UPDATE wallets SET balance = balance + $1 WHERE user_id = $2`,
-      [tx.amount, user.id]
+      [tx.amount, user.userId]
     );
     // Reverse payee credit: debit the payee's share back from their wallet
     // Only applies to contexts where creditPayee() ran (ride/food/shop/market)
@@ -1564,7 +1564,7 @@ paymentsRouter.post('/refund', async (req: Request, res: Response) => {
       `INSERT INTO transactions
          (reference, user_id, context, amount, type, method, provider, status, description)
        VALUES ($1,$2,$3,$4,'credit','refund','wallet','completed',$5)`,
-      [refundRef, user.id, tx.context, tx.amount, `Refund: ${reason}`]
+      [refundRef, user.userId, tx.context, tx.amount, `Refund: ${reason}`]
     );
     await db.query(`COMMIT`);
     db.release();
@@ -1827,7 +1827,7 @@ paymentsRouter.get('/methods', async (req: Request, res: Response) => {
     const db = await database.getClient();
     const result = await db.query(
       `SELECT phone, preferred_payment FROM users WHERE id = $1`,
-      [user.id]
+      [user.userId]
     );
     db.release();
 
@@ -1896,7 +1896,7 @@ paymentsRouter.post('/methods', async (req: Request, res: Response) => {
 
     await db.query(
       `UPDATE users SET preferred_payment = $1 WHERE id = $2`,
-      [provider, user.id]
+      [provider, user.userId]
     );
     db.release();
 
@@ -1930,7 +1930,7 @@ paymentsRouter.delete('/methods/:provider', async (req: Request, res: Response) 
 
     const result = await db.query(
       `SELECT preferred_payment FROM users WHERE id = $1`,
-      [user.id]
+      [user.userId]
     );
 
     if (result.rowCount === 0) {
@@ -1943,7 +1943,7 @@ paymentsRouter.delete('/methods/:provider', async (req: Request, res: Response) 
     if (current === provider) {
       await db.query(
         `UPDATE users SET preferred_payment = NULL WHERE id = $1`,
-        [user.id]
+        [user.userId]
       );
       db.release();
       return res.json({ message: 'Preferred payment method cleared' });

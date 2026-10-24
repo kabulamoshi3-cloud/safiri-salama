@@ -54,10 +54,13 @@ router.post('/register', async (req: Request, res: Response) => {
     const user  = result.rows[0];
     const token = issueJwt(user.id, user.user_type);
 
+    // Transform DB column names to camelCase
+    const { user_type: userType, ...rest } = user;
+
     return res.status(201).json({
       message: 'Registration successful',
       token,
-      user: { ...user, phone_number: user.phone },
+      user: { ...rest, userType, phone_number: user.phone },
     });
   } catch (err) {
     console.error('register error:', err);
@@ -105,10 +108,13 @@ router.post('/login', async (req: Request, res: Response) => {
 
     const token = issueJwt(user.id, user.user_type);
 
+    // Transform DB column names to camelCase
+    const { user_type: userType, password_hash, ...rest } = user;
+
     return res.json({
       message: 'Login successful',
       token,
-      user: { ...user, phone_number: user.phone, password_hash: undefined },
+      user: { ...rest, userType, phone_number: user.phone },
     });
   } catch (err) {
     console.error('login error:', err);
@@ -174,10 +180,14 @@ router.post('/firebase-verify', async (req: Request, res: Response) => {
     }
 
     const token = issueJwt(user.id, user.user_type);
+
+    // Transform DB column names to camelCase
+    const { user_type: userType, ...rest } = user;
+
     return res.json({
       message: 'Login successful',
       token,
-      user: { ...user, phone_number: user.phone },
+      user: { ...rest, userType, phone_number: user.phone },
     });
   } catch (err) {
     console.error('firebase-verify error:', err);
@@ -188,21 +198,28 @@ router.post('/firebase-verify', async (req: Request, res: Response) => {
 // ─── GET /auth/me ─────────────────────────────────────────────────────────────
 router.get('/me', async (req: Request, res: Response) => {
   try {
-    // Verify JWT directly since this route is outside authMiddleware
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'No token provided' });
-    }
-    const token = authHeader.substring(7);
-    const secret = process.env.JWT_SECRET || 'safiri-secret';
-    let decoded: any;
-    try {
-      decoded = jwt.verify(token, secret);
-    } catch {
-      return res.status(401).json({ error: 'Invalid or expired token' });
+    let userId: string | undefined;
+
+    // Check if req.user is populated (test harness or if behind authMiddleware in future)
+    if ((req as any).user?.userId) {
+      userId = (req as any).user.userId;
+    } else {
+      // Verify JWT directly since this route is outside authMiddleware in production
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'No token provided' });
+      }
+      const token = authHeader.substring(7);
+      const secret = process.env.JWT_SECRET || 'safiri-secret';
+      let decoded: any;
+      try {
+        decoded = jwt.verify(token, secret);
+      } catch {
+        return res.status(401).json({ error: 'Invalid or expired token' });
+      }
+      userId = decoded.userId;
     }
 
-    const userId = decoded.userId;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const result = await pool.query(
@@ -212,9 +229,136 @@ router.get('/me', async (req: Request, res: Response) => {
     if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
 
     const u = result.rows[0];
-    return res.json({ user: { ...u, phone_number: u.phone } });
+    // Transform DB column names to camelCase
+    const { user_type: userType, ...rest } = u;
+    return res.json({ user: { ...rest, userType, phone_number: u.phone } });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to get profile' });
+  }
+});
+
+// ─── PATCH /auth/me ───────────────────────────────────────────────────────────
+router.patch('/me', async (req: Request, res: Response) => {
+  try {
+    let userId: string | undefined;
+
+    // Check if req.user is populated (test harness or if behind authMiddleware in future)
+    if ((req as any).user?.userId) {
+      userId = (req as any).user.userId;
+    } else {
+      // Verify JWT directly
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'No token provided' });
+      }
+      const token = authHeader.substring(7);
+      const secret = process.env.JWT_SECRET || 'safiri-secret';
+      let decoded: any;
+      try {
+        decoded = jwt.verify(token, secret);
+      } catch {
+        return res.status(401).json({ error: 'Invalid or expired token' });
+      }
+      userId = decoded.userId;
+    }
+
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { name, email } = req.body;
+
+    if (!name && !email) {
+      return res.status(400).json({ error: 'At least one updatable field (name, email) is required' });
+    }
+
+    const updates: string[] = [];
+    const values: any[] = [];
+    let paramIndex = 1;
+
+    if (name) {
+      updates.push(`name = $${paramIndex++}`);
+      values.push(name);
+    }
+    if (email) {
+      updates.push(`email = $${paramIndex++}`);
+      values.push(email);
+    }
+
+    updates.push(`updated_at = NOW()`);
+    values.push(userId);
+
+    const query = `UPDATE users SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING id, phone, name, email, user_type, status`;
+    const result = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const u = result.rows[0];
+    const { user_type: userType, ...rest } = u;
+    return res.json({ user: { ...rest, userType, phone_number: u.phone } });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// ─── POST /auth/change-password ───────────────────────────────────────────────
+router.post('/change-password', async (req: Request, res: Response) => {
+  try {
+    let userId: string | undefined;
+
+    // Check if req.user is populated (test harness or if behind authMiddleware in future)
+    if ((req as any).user?.userId) {
+      userId = (req as any).user.userId;
+    } else {
+      // Verify JWT directly
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'No token provided' });
+      }
+      const token = authHeader.substring(7);
+      const secret = process.env.JWT_SECRET || 'safiri-secret';
+      let decoded: any;
+      try {
+        decoded = jwt.verify(token, secret);
+      } catch {
+        return res.status(401).json({ error: 'Invalid or expired token' });
+      }
+      userId = decoded.userId;
+    }
+
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'currentPassword and newPassword are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+
+    // Get current password hash
+    const result = await pool.query('SELECT password_hash FROM users WHERE id = $1', [userId]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const { password_hash } = result.rows[0];
+
+    // Verify current password
+    const valid = await bcrypt.compare(currentPassword, password_hash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Current password is incorrect' });
+    }
+
+    // Hash and update new password
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2', [newHash, userId]);
+
+    return res.json({ message: 'Password changed successfully' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to change password' });
   }
 });
 
