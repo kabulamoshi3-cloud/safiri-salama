@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "Operator dashboard live data via HTTP polling: create usePolling hook, replace all mock data in LiveMap, SupportQueue, Incidents, DemandSupply with real API calls + polling. Add Recharts chart to DemandSupply. Wire incident case management modal. Independent of FEAT-002 and FEAT-003.",
+  "status": "pending",
+  "steps": [
+    "Create apps/operator-dashboard/src/hooks/usePolling.ts: generic hook with signature usePolling<T>(fetchFn: () => Promise<T>, intervalMs: number): { data: T | null, error: Error | null, loading: boolean }. Use useEffect with setInterval. Fetch immediately on mount (call fetchFn() once before starting interval). Return cleanup that calls clearInterval. Handle errors by setting error state without crashing.",
+    "Modify apps/operator-dashboard/src/pages/LiveMap.tsx: remove mockDrivers array. Add usePolling hook call: const { data: driversData } = usePolling(() => api.get('/tracking/nearby-drivers?lat=-6.7924&lng=39.2083&radius=20').then(r => r.data), 10000). Replace filtered mockDrivers references with driversData?.drivers ?? []. Keep existing Leaflet map and marker rendering logic unchanged.",
+    "Modify apps/operator-dashboard/src/pages/SupportQueue.tsx: remove mockTickets array. Add usePolling call: usePolling(() => api.get('/support').then(r => r.data?.tickets ?? []), 30000). Replace all mockTickets references with polled data. The 'Open' button should call a state setter for selectedTicket. Add inline TicketDetailModal (status update dropdown + notes textarea + PATCH /support/:id call).",
+    "Modify apps/operator-dashboard/src/pages/Incidents.tsx: remove mockIncidents array. Add usePolling call: usePolling(() => api.get('/admin/incidents').then(r => r.data?.incidents ?? []), 30000). Replace mockIncidents references. Add IncidentDetailModal: show incident fields (type, severity, linked tripId, driver, passenger), status dropdown (Open/In Review/Resolved), notes textarea, save button calls PATCH /admin/incidents/:id.",
+    "Modify apps/operator-dashboard/src/pages/DemandSupply.tsx: remove hardcoded zones array. Add usePolling(() => api.get('/admin/analytics?period=1d').then(r => r.data), 60000). Use returned demand_by_zone data to populate existing zone bar display. Add a BarChart from Recharts (already installed) showing demand vs supply per zone. Chart import pattern: follow apps/operator-dashboard/src/pages/Dashboard.tsx lines 8-20 exactly."
+  ],
+  "acceptance_criteria": [
+    "usePolling hook exported from apps/operator-dashboard/src/hooks/usePolling.ts with correct TypeScript generics",
+    "LiveMap.tsx has no mockDrivers const — data comes from usePolling with /tracking/nearby-drivers",
+    "SupportQueue.tsx has no mockTickets const — data from usePolling, 'Open' button shows detail modal",
+    "Incidents.tsx has no mockIncidents const — data from usePolling, incident detail modal present",
+    "DemandSupply.tsx has Recharts BarChart component for demand vs supply visualization",
+    "cd apps/operator-dashboard && npm run build exits 0"
+  ],
+  "verification": [
+    "cd /home/masalago/projects/daladala/apps/operator-dashboard && npm run build 2>&1 | tail -20",
+    "grep -n 'usePolling' /home/masalago/projects/daladala/apps/operator-dashboard/src/pages/LiveMap.tsx",
+    "grep -n 'usePolling' /home/masalago/projects/daladala/apps/operator-dashboard/src/pages/SupportQueue.tsx",
+    "grep -n 'mockTickets\\|mockIncidents\\|mockDrivers' /home/masalago/projects/daladala/apps/operator-dashboard/src/pages/SupportQueue.tsx /home/masalago/projects/daladala/apps/operator-dashboard/src/pages/Incidents.tsx /home/masalago/projects/daladala/apps/operator-dashboard/src/pages/LiveMap.tsx | wc -l"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

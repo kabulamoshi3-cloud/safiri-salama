@@ -1,0 +1,32 @@
+{
+  "project_type": "Monorepo with React Native (Expo) mobile apps and React+Vite web dashboards",
+  "language": "TypeScript",
+  "build_system": "Expo for mobile apps (passenger-app, driver-app). Vite+React for web apps (admin-panel, operator-dashboard). No workspace-level build orchestrator.",
+  "test_framework": "Jest for api-gateway. No test frameworks currently configured for the mobile/web apps.",
+  "build_command": "Per-app: cd apps/<app-name> && npm run build (or expo build for mobile)",
+  "test_command": "No app-level tests currently exist. API has: cd services/api-gateway && npm test",
+  "verification_instructions": "1. Start each app in dev mode and verify navigation works. 2. For passenger-app and driver-app: npx expo start, then test on simulator/device. 3. For admin-panel and operator-dashboard: npm run dev, then open browser. 4. Verify all tabs/screens are accessible, i18n keys resolve correctly in both English and Swahili.",
+  "snapshot_or_generated_files": null,
+  "environment_constraints": "React Native apps use Expo SDK 51 with React Navigation v6. Both use @react-navigation/bottom-tabs. Web apps use react-router-dom v6 with sidebar navigation. No live reload issues known. Maintain existing navigation library versions.",
+  "contribution_requirements": "Use TypeScript strict mode where already enabled. Follow existing code style (functional components, hooks). Preserve all existing features and routes. Match existing i18n patterns (passenger-app uses custom i18n module, driver-app uses react-i18next, admin and operator use react-i18next or inline resources). No breaking API changes.",
+  "key_patterns": "Passenger-app: Stack navigator with drawer-style MainScreen, no bottom tabs currently. Driver-app: Bottom tabs (Home, Trips, Earnings, Profile) with nested stacks. Admin-panel: react-router with sidebar Layout, routes defined in App.tsx. Operator-dashboard: react-router with Tailwind-styled Sidebar, Lucide icons. All apps support English/Swahili i18n.",
+  "relevant_files": [
+    "apps/passenger-app/App.tsx",
+    "apps/passenger-app/screens/MainScreen.tsx",
+    "apps/passenger-app/i18n/en.json",
+    "apps/passenger-app/i18n/sw.json",
+    "apps/driver-app/src/App.tsx",
+    "apps/driver-app/src/navigation/MainNavigator.tsx",
+    "apps/driver-app/src/navigation/RootNavigator.tsx",
+    "apps/driver-app/src/i18n/locales/en.json",
+    "apps/driver-app/src/i18n/locales/sw.json",
+    "apps/admin-panel/src/App.tsx",
+    "apps/admin-panel/src/components/Layout.tsx",
+    "apps/admin-panel/src/i18n.ts",
+    "apps/operator-dashboard/src/App.tsx",
+    "apps/operator-dashboard/src/components/Sidebar.tsx",
+    "apps/operator-dashboard/src/i18n/en.json",
+    "apps/operator-dashboard/src/i18n/sw.json"
+  ],
+  "directory_structure": "apps/passenger-app: screens/ (all screens flat), i18n/ (en.json, sw.json). apps/driver-app: src/screens/ organized by category (main/, trip/, profile/), src/navigation/ (navigators), src/i18n/locales/. apps/admin-panel: src/pages/ (flat), src/components/ (Layout, RequireAuth), src/i18n.ts (inline resources). apps/operator-dashboard: src/pages/ (flat), src/components/ (Sidebar, Layout), src/i18n/ (en.json, sw.json)."
+}

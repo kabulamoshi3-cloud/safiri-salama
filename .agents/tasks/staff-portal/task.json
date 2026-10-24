@@ -1,0 +1,7 @@
+{
+  "task_id": "task-staff-portal",
+  "task_description": "Merge admin-panel and operator-dashboard into unified staff-portal with role-based routing and shared authentication",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

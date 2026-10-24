@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getStats, getTrips, AdminStats, Trip } from '../services/api';
-import StatusBadge from '../components/StatusBadge';
-import Table, { Column } from '../components/Table';
+import { getStats, getTrips, AdminStats, Trip } from '../../services/api';
+import StatusBadge from '../../components/StatusBadge';
+import Table, { Column } from '../../components/Table';
 
 function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (

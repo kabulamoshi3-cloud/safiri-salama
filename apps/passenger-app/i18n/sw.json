@@ -377,5 +377,26 @@
   "waiting_passenger_status": "Kusubiri abiria...",
   "trip_done_alert": "Safari Imekamilika!",
   "you_earned_alert": "Umepata",
-  "emergency_sos_btn": "Dharura SOS"
+  "emergency_sos_btn": "Dharura SOS",
+
+  "tab_home": "Nyumbani",
+  "tab_activity": "Shughuli",
+  "tab_payments": "Malipo",
+  "tab_notifications": "Arifa",
+  "tab_account": "Akaunti",
+  "activity_title": "Shughuli",
+  "payments_title": "Malipo",
+  "notifications_title": "Arifa",
+  "account_title": "Akaunti",
+  "no_notifications": "Hakuna arifa",
+  "mark_all_read": "Weka yote kusoma",
+  "add_payment_method": "Ongeza njia ya malipo",
+  "transaction_history": "Historia ya Miamala",
+  "saved_places": "Maeneo Yaliyohifadhiwa",
+  "refer_friends": "Tuma Marafiki",
+  "legal_terms": "Masharti",
+  "about_app": "Kuhusu DalaSmart",
+  "logout_confirm": "Una uhakika unataka kutoka?",
+  "no_trips_yet": "Hakuna safari bado",
+  "trip_history_message": "Historia ya safari zako itaonekana hapa"
 }

@@ -7,10 +7,10 @@ import {
   rejectDriver,
   banDriver,
   Driver,
-} from '../services/api';
-import Table, { Column } from '../components/Table';
-import StatusBadge from '../components/StatusBadge';
-import Modal from '../components/Modal';
+} from '../../services/api';
+import Table, { Column } from '../../components/Table';
+import StatusBadge from '../../components/StatusBadge';
+import Modal from '../../components/Modal';
 
 const FILTER_KEYS = ['', 'pending', 'approved', 'rejected'];
 

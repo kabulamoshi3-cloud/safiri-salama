@@ -10,11 +10,18 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: '/',            labelKey: 'nav_dashboard',  icon: '📊' },
-  { to: '/drivers',     labelKey: 'nav_drivers',    icon: '🚗' },
-  { to: '/passengers',  labelKey: 'nav_passengers', icon: '👤' },
-  { to: '/trips',       labelKey: 'nav_trips',      icon: '📍' },
-  { to: '/settings',    labelKey: 'nav_settings',   icon: '⚙️' },
+  { to: '/',            labelKey: 'nav_overview',    icon: '📊' },
+  { to: '/users',       labelKey: 'nav_users',       icon: '👤' },
+  { to: '/drivers',     labelKey: 'nav_drivers',     icon: '🚗' },
+  { to: '/fleet',       labelKey: 'nav_fleet',       icon: '🚙' },
+  { to: '/trips',       labelKey: 'nav_trips',       icon: '📍' },
+  { to: '/finance',     labelKey: 'nav_finance',     icon: '💰' },
+  { to: '/pricing',     labelKey: 'nav_pricing',     icon: '💵' },
+  { to: '/promotions',  labelKey: 'nav_promotions',  icon: '🎁' },
+  { to: '/analytics',   labelKey: 'nav_analytics',   icon: '📈' },
+  { to: '/support',     labelKey: 'nav_support',     icon: '💬' },
+  { to: '/staff',       labelKey: 'nav_staff',       icon: '👥' },
+  { to: '/settings',    labelKey: 'nav_settings',    icon: '⚙️' },
 ];
 
 export default function Layout() {

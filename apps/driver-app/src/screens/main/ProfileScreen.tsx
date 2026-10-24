@@ -47,18 +47,45 @@ const ProfileScreen: React.FC = () => {
   const menuItems = [
     {
       icon: 'truck',
-      label: t('profile.vehicleInfo'),
+      label: t('vehicle_registration') || t('profile.vehicleInfo'),
+      subtitle: 'Vehicle details and registration',
       onPress: () => navigation.navigate('VehicleInfo'),
     },
     {
+      icon: 'card-account-details',
+      label: t('driving_license') || 'Driving License',
+      subtitle: 'License information and validity',
+      onPress: () => navigation.navigate('VehicleInfo'),
+    },
+    {
+      icon: 'file-document-multiple',
+      label: t('required_documents') || 'Required Documents',
+      subtitle: 'Insurance, registration, etc.',
+      onPress: () => {},
+    },
+    {
+      icon: 'shield-check',
+      label: t('verification_status') || 'Verification Status',
+      subtitle: 'Approved',
+      onPress: () => {},
+    },
+    {
       icon: 'cog',
-      label: t('tabs.profile'),
+      label: 'Preferences',
+      subtitle: 'App settings',
       onPress: () => navigation.navigate('Settings'),
     },
     {
       icon: 'help-circle',
       label: t('profile.helpSupport'),
+      subtitle: 'Contact support',
       onPress: () => {},
+    },
+    {
+      icon: 'shield-alert',
+      label: 'Safety',
+      subtitle: 'Emergency contacts, SOS',
+      onPress: () => navigation.navigate('Settings'),
     },
   ];
 
@@ -97,10 +124,19 @@ const ProfileScreen: React.FC = () => {
             style={[styles.menuItem, { backgroundColor: theme.colors.surface }]}
             onPress={item.onPress}
           >
-            <Icon name={item.icon} size={24} color={theme.colors.primary} />
-            <Text style={[styles.menuItemText, { color: theme.colors.text }]}>
-              {item.label}
-            </Text>
+            <View style={[styles.menuIconContainer, { backgroundColor: theme.colors.primary + '20' }]}>
+              <Icon name={item.icon} size={24} color={theme.colors.primary} />
+            </View>
+            <View style={styles.menuItemContent}>
+              <Text style={[styles.menuItemText, { color: theme.colors.text }]}>
+                {item.label}
+              </Text>
+              {item.subtitle && (
+                <Text style={[styles.menuItemSubtitle, { color: theme.colors.textSecondary }]}>
+                  {item.subtitle}
+                </Text>
+              )}
+            </View>
             <Icon name="chevron-right" size={24} color={theme.colors.textSecondary} />
           </TouchableOpacity>
         ))}
@@ -178,10 +214,24 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
   },
-  menuItemText: {
+  menuIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  menuItemContent: {
     flex: 1,
+    marginLeft: 12,
+  },
+  menuItemText: {
     fontSize: 16,
-    marginLeft: 16,
+    fontWeight: '600',
+  },
+  menuItemSubtitle: {
+    fontSize: 13,
+    marginTop: 2,
   },
   logoutButton: {
     flexDirection: 'row',

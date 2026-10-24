@@ -3,6 +3,8 @@
  * All HTTP calls for the admin panel
  */
 
+import axios from 'axios';
+
 const BASE_URL =
   (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_URL) ||
   'http://localhost:3000/api/v1';
@@ -12,7 +14,7 @@ async function request<T>(
   path: string,
   body?: unknown
 ): Promise<T> {
-  const token = localStorage.getItem('admin_token');
+  const token = localStorage.getItem('admin_token') || localStorage.getItem('staff_token');
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -33,6 +35,40 @@ async function request<T>(
 
   return response.json() as Promise<T>;
 }
+
+// ── Axios instance for operator pages ────────────────────────────────
+
+export const axiosClient = axios.create({
+  baseURL: BASE_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Attach auth token from localStorage on every request
+axiosClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('operator_token') || localStorage.getItem('staff_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Handle 401 globally - redirect to login
+axiosClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('operator_token');
+      localStorage.removeItem('staff_token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default axiosClient;
 
 // ── Types ────────────────────────────────────────────────
 

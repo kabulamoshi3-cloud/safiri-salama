@@ -8,18 +8,18 @@ import { AuthProvider } from './context/AuthContext';
 import RequireAuth from './components/RequireAuth';
 import Layout from './components/Layout';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Users from './pages/Users';
-import Drivers from './pages/Drivers';
-import Fleet from './pages/Fleet';
-import Trips from './pages/Trips';
-import Finance from './pages/Finance';
-import Pricing from './pages/Pricing';
-import Promotions from './pages/Promotions';
-import Analytics from './pages/Analytics';
-import Support from './pages/Support';
-import StaffRoles from './pages/StaffRoles';
-import Settings from './pages/Settings';
+import Dashboard from './pages/admin/Dashboard';
+import Users from './pages/admin/Users';
+import Drivers from './pages/admin/Drivers';
+import Fleet from './pages/admin/Fleet';
+import Trips from './pages/admin/Trips';
+import Finance from './pages/admin/Finance';
+import Pricing from './pages/admin/Pricing';
+import Promotions from './pages/admin/Promotions';
+import Analytics from './pages/admin/Analytics';
+import Support from './pages/admin/Support';
+import StaffRoles from './pages/admin/StaffRoles';
+import Settings from './pages/admin/Settings';
 
 const router = createBrowserRouter([
   {

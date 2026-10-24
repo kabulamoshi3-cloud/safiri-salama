@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getTrips, cancelTrip, Trip } from '../services/api';
-import Table, { Column } from '../components/Table';
-import StatusBadge from '../components/StatusBadge';
-import Modal from '../components/Modal';
+import { getTrips, cancelTrip, Trip } from '../../services/api';
+import Table, { Column } from '../../components/Table';
+import StatusBadge from '../../components/StatusBadge';
+import Modal from '../../components/Modal';
 
 const TERMINAL_STATUSES = ['completed', 'cancelled'];
 

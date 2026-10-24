@@ -1,0 +1,7 @@
+{
+  "task_id": "task-public-website",
+  "task_description": "Build a new public marketing website for DalaSmart at /home/masalago/projects/daladala/apps/public-website using Vite + React + TypeScript, with 8 pages (Home, Services, Traffic Insights, Become a Driver, About, Help & Safety, Login, Register) and shared components following the project's existing conventions from apps/web-platform",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

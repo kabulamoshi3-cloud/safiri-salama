@@ -12,18 +12,14 @@ import OnboardingScreen from './screens/OnboardingScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import LoginScreen from './screens/LoginScreen';
 
-// Main (Maxim-style: single screen + drawer)
-import MainScreen from './screens/MainScreen';
-import RideRequestScreen from './screens/RideRequestScreen';
-import TripActiveScreen from './screens/TripActiveScreen';
-import RatingScreen from './screens/RatingScreen';
-import OrdersScreen from './screens/OrdersScreen';
+// Main Tab Navigator
+import MainTabNavigator from './navigation/MainTabNavigator';
+
+// Screens still used by other flows
 import PaymentScreen from './screens/PaymentScreen';
 import PromoScreen from './screens/PromoScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import SupportScreen from './screens/SupportScreen';
-import ProfileScreen from './screens/ProfileScreen';
-import TrafficScreen from './screens/TrafficScreen';
 
 // Driver
 import DriverMainScreen from './screens/DriverMainScreen';
@@ -51,7 +47,7 @@ export default function App() {
       const hasCountry = await AsyncStorage.getItem('@dalasmart:country');
 
       if (token && role === 'driver') setInitialRoute('DriverMain');
-      else if (token) setInitialRoute('Main');
+      else if (token) setInitialRoute('MainTabs');
       else if (hasOnboarded) setInitialRoute('Welcome');
       else if (hasCountry) setInitialRoute('Onboarding');
       else setInitialRoute('CountryLanguage');
@@ -83,18 +79,12 @@ export default function App() {
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
 
-        {/* Passenger (Maxim-style: no tabs) */}
-        <Stack.Screen name="Main" component={MainScreen} />
-        <Stack.Screen name="RideRequest" component={RideRequestScreen} options={{ headerShown: true, title: '', headerTransparent: true }} />
-        <Stack.Screen name="TripActive" component={TripActiveScreen} />
-        <Stack.Screen name="Traffic" component={TrafficScreen} />
-        <Stack.Screen name="Rating" component={RatingScreen} />
-        <Stack.Screen name="Orders" component={OrdersScreen} options={{ headerShown: true, title: 'My Orders' }} />
+        {/* Passenger (Bottom Tabs) */}
+        <Stack.Screen name="MainTabs" component={MainTabNavigator} />
         <Stack.Screen name="Payment" component={PaymentScreen} options={{ headerShown: true, title: 'Payment' }} />
         <Stack.Screen name="Promo" component={PromoScreen} options={{ headerShown: true, title: 'Promo Codes' }} />
         <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: true, title: 'Settings' }} />
         <Stack.Screen name="Support" component={SupportScreen} options={{ headerShown: true, title: 'Help' }} />
-        <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: true, title: 'Profile' }} />
 
         {/* Driver */}
         <Stack.Screen name="DriverMain" component={DriverMainScreen} />

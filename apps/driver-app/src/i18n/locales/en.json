@@ -5,6 +5,17 @@
     "earnings": "Earnings",
     "profile": "Profile"
   },
+  "tab_activity": "Activity",
+  "tab_notifications": "Notifications",
+  "tab_account": "Account",
+  "notifications_title": "Notifications",
+  "no_notifications": "No notifications",
+  "mark_all_read": "Mark all read",
+  "account_title": "Account",
+  "vehicle_registration": "Vehicle Registration",
+  "driving_license": "Driving License",
+  "required_documents": "Required Documents",
+  "verification_status": "Verification Status",
   "auth": {
     "welcome": "Welcome Driver",
     "tagline": "Start earning with DalaSmart",

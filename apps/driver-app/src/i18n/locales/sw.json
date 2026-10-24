@@ -5,6 +5,17 @@
     "earnings": "Mapato",
     "profile": "Wasifu"
   },
+  "tab_activity": "Shughuli",
+  "tab_notifications": "Arifa",
+  "tab_account": "Akaunti",
+  "notifications_title": "Arifa",
+  "no_notifications": "Hakuna arifa",
+  "mark_all_read": "Weka yote kusoma",
+  "account_title": "Akaunti",
+  "vehicle_registration": "Usajili wa Gari",
+  "driving_license": "Leseni ya Udereva",
+  "required_documents": "Hati Zinazohitajika",
+  "verification_status": "Hali ya Uthibitisho",
   "auth": {
     "welcome": "Karibu Dereva",
     "tagline": "Anza kupata mapato na DalaSmart",

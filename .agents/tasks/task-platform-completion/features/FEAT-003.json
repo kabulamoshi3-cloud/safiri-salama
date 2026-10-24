@@ -1,0 +1,40 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Driver app document upload + admin panel completion: add DocumentUploadScreen and VerificationStatusScreen to driver app, wire into ProfileNavigator; add DriverVerificationModal to admin Drivers.tsx; implement Analytics charts, Audit Logs page, Finance page, and Support page with real data in admin panel. Requires FEAT-001 backend endpoints.",
+  "status": "pending",
+  "steps": [
+    "Install expo-image-picker in driver app: cd apps/driver-app && expo install expo-image-picker. Add 'expo-image-picker' to apps/driver-app/package.json dependencies.",
+    "Create apps/driver-app/src/screens/onboarding/DocumentUploadScreen.tsx: on mount fetch GET /api/v1/upload/config (Cloudinary config) and GET /api/v1/upload/documents (existing docs). Show 5 doc type cards (drivers_license, vehicle_registration, vehicle_insurance, national_id, selfie). Each card shows current status (pending/approved/rejected with color). Tap → ImagePicker.launchImageLibraryAsync(), POST to Cloudinary URL with FormData, then POST /api/v1/upload/document { documentType, imageUrl }. Use APIClient.post() from apps/driver-app/src/services/api/client.ts. Use theme from useTheme() and Icon from react-native-vector-icons/MaterialCommunityIcons to match existing screen patterns.",
+    "Create apps/driver-app/src/screens/onboarding/VerificationStatusScreen.tsx: fetch GET /api/v1/upload/documents, show timeline per document (Uploaded → Under Review → Approved/Rejected). Show overall status from driver profile. If any doc rejected, show rejection_reason + 'Re-upload' button navigating back to DocumentUploadScreen.",
+    "Modify apps/driver-app/src/navigation/MainNavigator.tsx: add to ProfileStackParamList type: DocumentUpload: undefined; VerificationStatus: undefined. Add Stack.Screen entries in ProfileNavigator for both. Import the two new screens.",
+    "Modify apps/driver-app/src/screens/main/ProfileScreen.tsx: change 'Required Documents' menu item onPress to () => navigation.navigate('DocumentUpload'). Change 'Verification Status' onPress to () => navigation.navigate('VerificationStatus').",
+    "Add missing dependencies to apps/admin-panel/package.json: in dependencies add 'axios': '^1.7.7', 'recharts': '^2.12.7', 'lucide-react': '^0.447.0'. Run npm install in that directory.",
+    "Create apps/admin-panel/src/components/DriverVerificationModal.tsx: two-tab component (Details tab = existing DriverDetail table from Drivers.tsx, Documents tab = grid of doc cards with <img src={doc.image_url} /> + status badge + per-doc approve/reject buttons calling PATCH /api/v1/upload/documents/:docId/review). Use existing Modal component from apps/admin-panel/src/components/Modal.tsx as outer wrapper.",
+    "Modify apps/admin-panel/src/pages/Drivers.tsx: replace inline DriverDetail function call with <DriverVerificationModal> import. Add getDriverDocuments(selected.id) call when modal opens.",
+    "Add getDriverDocuments, getAuditLogs, getFinanceTransactions, getAnalytics functions to apps/admin-panel/src/services/api.ts matching the existing request<T>() pattern.",
+    "Modify apps/admin-panel/src/pages/Analytics.tsx: import LineChart, BarChart, PieChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip from 'recharts'. Replace 4 placeholder divs with real charts fed by getAnalytics('30d') called in useEffect. Follow the identical Recharts pattern from apps/operator-dashboard/src/pages/Dashboard.tsx lines 1-80.",
+    "Create apps/admin-panel/src/pages/AuditLogs.tsx: table of audit_log entries (timestamp, admin name, action, affected account, reason). Date range + admin filter inputs. Paginated (50/page). Fetches from GET /api/v1/admin/audit-logs. Styled with inline styles matching Drivers.tsx (var(--color-card-bg), var(--color-border) etc.).",
+    "Modify apps/admin-panel/src/pages/Finance.tsx: replace hardcoded cards + empty placeholder with real data. Tab switcher: 'Transactions' (table from GET /api/v1/admin/finance) and 'Payouts' (table from GET /api/v1/earnings scoped to admin). Summary cards from GET /api/v1/admin/stats (revenue_today) + calculated totals.",
+    "Modify apps/admin-panel/src/pages/Support.tsx: replace static empty table with real data from request<>('GET', '/support'). Add ticket detail inline expansion or modal with status update (PATCH /support/:id). Use existing Table component from apps/admin-panel/src/components/Table.tsx.",
+    "Add AuditLogs route to apps/admin-panel/src/App.tsx and nav item to apps/admin-panel/src/components/Layout.tsx (NAV_ITEMS array)."
+  ],
+  "acceptance_criteria": [
+    "Driver app: DocumentUploadScreen renders 5 doc type cards, tapping opens image picker",
+    "Driver app: VerificationStatusScreen shows per-document status timeline",
+    "Driver app: ProfileScreen 'Required Documents' and 'Verification Status' items navigate to new screens",
+    "Admin panel: DriverVerificationModal shows Documents tab with images when driver has uploads",
+    "Admin panel: Analytics.tsx renders 4 Recharts charts with data from API",
+    "Admin panel: AuditLogs.tsx page accessible at /audit-logs route",
+    "Admin panel: Finance.tsx shows real transaction data",
+    "Admin panel: Support.tsx shows real support tickets",
+    "cd apps/driver-app && npx expo export --platform web exits 0",
+    "cd apps/admin-panel && npm run build exits 0"
+  ],
+  "verification": [
+    "cd /home/masalago/projects/daladala/apps/driver-app && npx expo export --platform web 2>&1 | tail -20",
+    "cd /home/masalago/projects/daladala/apps/admin-panel && npm install && npm run build 2>&1 | tail -20"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -1,0 +1,46 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Refactor passenger-app from single MainScreen with drawer to industry-standard bottom tabs (Home, Activity, Payments, Notifications, Account). Currently uses Stack navigation with drawer-style MainScreen. Target: 5 bottom tabs matching Bolt/Uber patterns. Preserve all existing screens (Orders, Payment, Promo, Settings, Support, Profile, RideRequest, TripActive, Rating, Traffic) and wire them into appropriate tab stacks.",
+  "status": "pending",
+  "steps": [
+    "Read apps/passenger-app/App.tsx and apps/passenger-app/screens/MainScreen.tsx to understand current navigation structure and drawer implementation",
+    "Create apps/passenger-app/navigation/MainTabNavigator.tsx with @react-navigation/bottom-tabs, defining 5 tabs: Home (home icon), Activity (list icon), Payments (wallet icon), Notifications (bell icon), Account (person icon)",
+    "Create apps/passenger-app/navigation/HomeStackNavigator.tsx - stack containing HomeScreen (new, replaces map view from MainScreen), RideRequestScreen, TripActiveScreen, RatingScreen, TrafficScreen",
+    "Create apps/passenger-app/screens/HomeScreen.tsx by extracting map, location, nearby drivers, and booking UI from MainScreen.tsx. Include 'Where to?' input, saved places, recent trips, refer & earn card, and services shortcuts",
+    "Create apps/passenger-app/screens/ActivityScreen.tsx for trip history with filters (All/Completed/Cancelled/Pending). Use existing OrdersScreen as reference. Fetch trips from /api/v1/trips endpoint and display with date groupings (Today/Yesterday)",
+    "Create apps/passenger-app/screens/PaymentsScreen.tsx showing payment methods (Cash, M-Pesa, Tigo Pesa, Airtel Money), transaction history, and 'Add payment method' button. Link to existing PaymentScreen for details",
+    "Create apps/passenger-app/screens/NotificationsScreen.tsx with notification list (driver updates, payment confirmations, booking changes, promos) and read/unread status. Mock data initially, prepared for push notification integration",
+    "Create apps/passenger-app/screens/AccountScreen.tsx by refactoring existing ProfileScreen content. Add sections: Edit Profile, Payments (link), Saved Places, Promo Codes (link to PromoScreen), Refer Friends, Safety, Language (existing i18n switcher), Notifications settings, Help & Support (link to SupportScreen), Legal, About, Logout",
+    "Update apps/passenger-app/App.tsx to replace Stack.Screen name='Main' with the new MainTabNavigator. Keep auth flow (CountryLanguage, Onboarding, Welcome, Login) and driver screens unchanged",
+    "Add i18n keys to apps/passenger-app/i18n/en.json and sw.json: tab_home, tab_activity, tab_payments, tab_notifications, tab_account, activity_title, payments_title, notifications_title, account_title, no_notifications, mark_all_read, add_payment_method, transaction_history, saved_places, refer_friends, legal_terms, about_app",
+    "Update apps/passenger-app/package.json to ensure @react-navigation/bottom-tabs is listed (already present per exploration)"
+  ],
+  "acceptance_criteria": [
+    "Passenger app displays 5 bottom tabs: Home, Activity, Payments, Notifications, Account",
+    "Home tab shows map, location, 'Where to?' input, saved places, recent trips, and ride booking flow works end-to-end",
+    "Activity tab displays trip history with filters and date groupings",
+    "Payments tab shows payment methods and transaction history",
+    "Notifications tab displays notifications list with read/unread states",
+    "Account tab provides access to all settings, profile, help, and logout",
+    "All existing screens (RideRequest, TripActive, Rating, Orders, Payment, Promo, Settings, Support, Profile, Traffic) are accessible from appropriate tabs",
+    "i18n works in both English and Swahili for all new navigation labels",
+    "No existing functionality is lost or broken"
+  ],
+  "verification": [
+    "Run: cd apps/passenger-app && npx expo start",
+    "Open in iOS Simulator or Android Emulator",
+    "Verify 5 bottom tabs appear and are tappable",
+    "Tap each tab and verify correct screen loads",
+    "From Home tab, tap 'Where to?' and verify RideRequestScreen opens",
+    "Navigate to Activity tab and verify trip history displays",
+    "Navigate to Payments tab and verify payment methods list",
+    "Navigate to Notifications tab and verify notifications list (mock data OK)",
+    "Navigate to Account tab and verify all menu items are present and tappable",
+    "Tap Settings in Account tab and verify SettingsScreen opens",
+    "Change language to Swahili and verify all tab labels and screen titles update",
+    "Change back to English and verify labels revert"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

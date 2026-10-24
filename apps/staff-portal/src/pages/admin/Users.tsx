@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getPassengers, banPassenger, Passenger } from '../services/api';
-import Table, { Column } from '../components/Table';
-import StatusBadge from '../components/StatusBadge';
-import Modal from '../components/Modal';
+import { getPassengers, banPassenger, Passenger } from '../../services/api';
+import Table, { Column } from '../../components/Table';
+import StatusBadge from '../../components/StatusBadge';
+import Modal from '../../components/Modal';
 
-export default function Passengers() {
+export default function Users() {
   const { t } = useTranslation();
   const [passengers, setPassengers] = useState<Passenger[]>([]);
   const [loading, setLoading] = useState(true);

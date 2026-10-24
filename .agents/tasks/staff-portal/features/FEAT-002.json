@@ -1,0 +1,31 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Implement unified authentication with role-based routing. Extend AuthContext to support both admin and operator roles, merge Zustand auth store patterns, create RoleBasedRoute wrapper, and copy all operator pages under src/pages/ops/ while keeping admin pages under src/pages/admin/.",
+  "status": "completed",
+  "steps": [
+    "Create src/pages/admin/ directory and move all existing admin pages from src/pages/ to src/pages/admin/: Dashboard.tsx, Users.tsx, Drivers.tsx, Fleet.tsx, Trips.tsx, Finance.tsx, Pricing.tsx, Promotions.tsx, Analytics.tsx, Support.tsx, StaffRoles.tsx, Settings.tsx. Keep Login.tsx in src/pages/.",
+    "Create src/pages/ops/ directory",
+    "Copy operator-dashboard pages to src/pages/ops/: Dashboard.tsx, Dispatch.tsx, LiveMap.tsx, ActiveTrips.tsx, Drivers.tsx, Incidents.tsx, Cancellations.tsx, DemandSupply.tsx, SupportQueue.tsx, ServiceAlerts.tsx, Fleet.tsx, Earnings.tsx, Reports.tsx, Settings.tsx from /home/masalago/projects/daladala/apps/operator-dashboard/src/pages/",
+    "Copy operator-dashboard components to src/components/: Sidebar.tsx (rename to OperatorSidebar.tsx), StatCard.tsx, VehicleCard.tsx, DriverCard.tsx, AlertBadge.tsx from /home/masalago/projects/daladala/apps/operator-dashboard/src/components/. Admin Layout.tsx already exists as src/components/Layout.tsx; copy operator Layout.tsx as src/components/OperatorLayout.tsx.",
+    "Copy operator-dashboard Zustand store: copy /home/masalago/projects/daladala/apps/operator-dashboard/src/store/auth.ts to src/store/auth.ts",
+    "Extend src/context/AuthContext.tsx to add role field ('admin' | 'operator'), userProfile (name, phone, email), login method that calls API and determines role from response, and fetchProfile method. Interface: { token, isAuthenticated, role, userProfile, setToken, login, logout, fetchProfile }",
+    "Create src/components/RoleBasedRoute.tsx: wrapper component that takes allowedRoles prop (array of 'admin' | 'operator'), reads role from useAuth(), redirects to /login if not authenticated, shows 'Access Denied' if authenticated but wrong role",
+    "Update all import paths in src/pages/admin/*.tsx from '../components/*' to '../../components/*' and from '../services/*' to '../../services/*' and from '../context/*' to '../../context/*'",
+    "Update all import paths in src/pages/ops/*.tsx: change './components/' to '../../components/', './store/auth' to '../../store/auth', './services/api' to '../../services/api'",
+    "Update src/services/api.ts to merge patterns: keep existing fetch-based functions, add axios instance from operator-dashboard (export both default axios and named functions)",
+    "Create src/services/operatorApi.ts as a copy of operator-dashboard api.ts for the axios client (or merge into api.ts as separate export)"
+  ],
+  "acceptance_criteria": [
+    "src/pages/admin/ contains 12 admin pages",
+    "src/pages/ops/ contains 14 operator pages",
+    "AuthContext extended with role and login method",
+    "RoleBasedRoute component created",
+    "All imports updated and no broken import paths"
+  ],
+  "verification": [
+    "cd /home/masalago/projects/daladala/apps/staff-portal && npm run typecheck (should have no import errors)"
+  ],
+  "blocked_reason": null,
+  "findings": "Successfully implemented unified authentication with role-based routing. Created src/pages/admin/ with 13 admin pages (Dashboard, Users, Passengers, Drivers, Fleet, Trips, Finance, Pricing, Promotions, Analytics, Support, StaffRoles, Settings) and src/pages/ops/ with 14 operator pages (Dashboard, Dispatch, LiveMap, ActiveTrips, Drivers, Incidents, Cancellations, DemandSupply, SupportQueue, ServiceAlerts, Fleet, Earnings, Reports, Settings). Extended AuthContext with role field (admin/operator), userProfile, login method with role detection from API response, and fetchProfile method. Created RoleBasedRoute component for role-based access control. Copied operator components (OperatorSidebar, OperatorLayout, StatCard, VehicleCard, DriverCard, AlertBadge) and Zustand auth store. Updated all import paths in admin and ops pages to use correct relative paths (../../). Merged axios client into api.ts with both fetch-based functions for admin and axios instance export for operator pages. Created vite-env.d.ts for proper Vite and image import types. Copied i18n folder structure from operator-dashboard for operator pages. Updated App.tsx to import admin pages correctly. TypeScript compilation passes without errors."
+}

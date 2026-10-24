@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import HomeScreen from '../screens/main/HomeScreen';
 import TripsScreen from '../screens/main/TripsScreen';
 import EarningsScreen from '../screens/main/EarningsScreen';
+import NotificationsScreen from '../screens/main/NotificationsScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
 import TripDetailsScreen from '../screens/trip/TripDetailsScreen';
 import ActiveTripScreen from '../screens/trip/ActiveTripScreen';
@@ -19,9 +20,10 @@ import SettingsScreen from '../screens/profile/SettingsScreen';
 
 export type MainTabParamList = {
   Home: undefined;
-  Trips: undefined;
   Earnings: undefined;
-  Profile: undefined;
+  Activity: undefined;
+  Notifications: undefined;
+  Account: undefined;
 };
 
 export type HomeStackParamList = {
@@ -144,16 +146,6 @@ const MainNavigator: React.FC = () => {
         }}
       />
       <Tab.Screen
-        name="Trips"
-        component={TripsScreen}
-        options={{
-          tabBarLabel: t('tabs.trips'),
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="map-marker-path" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
         name="Earnings"
         component={EarningsScreen}
         options={{
@@ -164,12 +156,32 @@ const MainNavigator: React.FC = () => {
         }}
       />
       <Tab.Screen
-        name="Profile"
+        name="Activity"
+        component={TripsScreen}
+        options={{
+          tabBarLabel: t('tab_activity') || t('tabs.trips'),
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="map-marker-path" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{
+          tabBarLabel: t('tab_notifications') || 'Notifications',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="bell" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Account"
         component={ProfileNavigator}
         options={{
-          tabBarLabel: t('tabs.profile'),
+          tabBarLabel: t('tab_account') || t('tabs.profile'),
           tabBarIcon: ({ color, size }) => (
-            <Icon name="account" size={size} color={color} />
+            <Icon name="account-circle" size={size} color={color} />
           ),
         }}
       />

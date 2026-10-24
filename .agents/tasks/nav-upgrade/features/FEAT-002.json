@@ -1,0 +1,45 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Enhance driver-app navigation from current 4 tabs (Home, Trips, Earnings, Profile) to industry-standard 5 tabs (Home, Earnings, Activity, Notifications, Account). Currently has Home/Trips/Earnings/Profile. Target: add Notifications tab, rename Trips to Activity, rename Profile to Account, and ensure all driver workflows (trip requests, active trips, navigation, rating) are properly integrated.",
+  "status": "pending",
+  "steps": [
+    "Read apps/driver-app/src/navigation/MainNavigator.tsx to understand current 4-tab structure (Home, Trips, Earnings, Profile)",
+    "Update apps/driver-app/src/navigation/MainNavigator.tsx to reorder tabs: Home, Earnings, Activity (rename from Trips), Notifications (new), Account (rename from Profile)",
+    "Create apps/driver-app/src/screens/main/NotificationsScreen.tsx for driver notifications: new trip requests, document approval/expiry reminders, payment/payout updates, service announcements, account/safety alerts. Use list with unread indicators",
+    "Rename tab labels in apps/driver-app/src/navigation/MainNavigator.tsx: 'Trips' → 'Activity', 'Profile' → 'Account'. Update icon for Activity to 'map-marker-path', Account to 'account-circle'",
+    "Update apps/driver-app/src/screens/main/ProfileScreen.tsx content to match industry Account pattern: add sections for Vehicle Registration, Driving License, Required Documents, Verification Status, Preferences, Support, Safety, Sign Out. Preserve existing VehicleInfo and Settings links",
+    "Update apps/driver-app/src/screens/main/TripsScreen.tsx to emphasize it as Activity history: show completed/cancelled rides, routes, distances, passenger ratings, dispute details. Add filter tabs (All/Completed/Cancelled)",
+    "Add i18n keys to apps/driver-app/src/i18n/locales/en.json and sw.json: tab_activity (en: 'Activity', sw: 'Shughuli'), tab_notifications (en: 'Notifications', sw: 'Arifa'), tab_account (en: 'Account', sw: 'Akaunti'), notifications_title (en: 'Notifications', sw: 'Arifa'), no_notifications (en: 'No notifications', sw: 'Hakuna arifa'), mark_all_read (en: 'Mark all read', sw: 'Weka yote kusoma'), account_title (en: 'Account', sw: 'Akaunti'), vehicle_registration (en: 'Vehicle Registration', sw: 'Usajili wa Gari'), driving_license (en: 'Driving License', sw: 'Leseni ya Udereva'), required_documents (en: 'Required Documents', sw: 'Hati Zinazohitajika'), verification_status (en: 'Verification Status', sw: 'Hali ya Uthibitisho')",
+    "Update the HomeStack in MainNavigator.tsx to ensure ActiveTrip, TripDetails, Navigation, and RatePassenger screens remain accessible from Home tab's trip workflow",
+    "Verify that driver online/offline toggle, trip request acceptance, active trip navigation, and trip completion flows remain intact after tab restructuring"
+  ],
+  "acceptance_criteria": [
+    "Driver app displays 5 bottom tabs: Home, Earnings, Activity, Notifications, Account in that order",
+    "Home tab shows online/offline toggle, today's earnings, total trips, rating, acceptance rate, and new trip requests",
+    "Earnings tab shows daily/weekly/monthly earnings, fare breakdown, bonuses, payout history",
+    "Activity tab shows completed/cancelled rides with filters, routes, distances, passenger ratings",
+    "Notifications tab displays driver-specific notifications (trip requests, document reminders, payment updates, service announcements, safety alerts) with read/unread states",
+    "Account tab shows profile, vehicle registration, driving license, required documents, verification status, support, safety, sign out",
+    "All existing driver workflows (accept trip, navigate to pickup, start trip, navigate to destination, complete trip, rate passenger) work without regression",
+    "i18n works in both English and Swahili for all navigation labels and new screen content",
+    "Tab icons match industry standards (home, cash-multiple, map-marker-path, bell, account-circle)"
+  ],
+  "verification": [
+    "Run: cd apps/driver-app && npx expo start",
+    "Open in iOS Simulator or Android Emulator",
+    "Verify 5 bottom tabs appear: Home, Earnings, Activity, Notifications, Account",
+    "Tap each tab and verify correct screen loads",
+    "On Home tab, toggle online/offline and verify status changes",
+    "Verify trip request UI appears when tapping 'Accept' from HomeScreen (may need backend or mock)",
+    "Navigate to Earnings tab and verify daily/weekly/monthly earnings display with breakdown",
+    "Navigate to Activity tab and verify trip history with filters (All/Completed/Cancelled)",
+    "Navigate to Notifications tab and verify notifications list appears (mock data OK if no real notifications)",
+    "Navigate to Account tab and verify all sections are present: profile info, vehicle registration link, driving license, required documents, verification status, support, safety, sign out",
+    "Tap Settings in Account tab and verify SettingsScreen opens",
+    "Change language to Swahili and verify all tab labels and screen titles update to Swahili",
+    "Change back to English and verify labels revert to English"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

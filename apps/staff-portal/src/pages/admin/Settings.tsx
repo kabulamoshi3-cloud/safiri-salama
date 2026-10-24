@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getSettings, saveSetting, Setting } from '../services/api';
+import { getSettings, saveSetting, Setting } from '../../services/api';
 
 const SETTING_KEYS = [
   'base_fare_tzs',

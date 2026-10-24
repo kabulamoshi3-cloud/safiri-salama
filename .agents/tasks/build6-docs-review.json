@@ -1,10 +1,60 @@
 {
-  "verdict": "APPROVED",
+  "approved": false,
   "findings": [
-    "JWT_SECRET generation command discrepancy — SETUP.md shows `node -e \"require('crypto').randomBytes(64).toString('hex')|head -c64\"` (pipe inside quotes, won't execute), while .env.example shows the correct `node -e \"console.log(require('crypto').randomBytes(64).toString('hex'))\"`.",
-    "Undocumented optional integrations — .env.example includes AT_USERNAME, AT_API_KEY (SMS/OTP), CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET (uploads), GOOGLE_MAPS_API_KEY (geocoding), WEBHOOK_SECRET, and TRACKING_SERVICE_URL. Add these to README.md's optional variables table.",
-    "Payment provider keys need 'optional' marker — .env.example groups payment keys (M-Pesa, Airtel, Tigo, Halotel) before the Redis 'optional' comment. Add comment above them clarifying they're optional.",
-    "Migration troubleshooting references SQL instead of TypeScript — SETUP.md suggests `psql < migrations/001_initial.sql` as fallback. Migration is `scripts/run-migrations.ts`. Clarify that migrations are TypeScript and suggest running the script directly with ts-node if npm fails."
+    {
+      "title": "JWT field mismatch in payments.ts",
+      "description": "authMiddleware sets req.user.userId, but payments.ts reads user.id. Change payments.ts to read user.userId or extend the middleware to also populate id.",
+      "severity": "critical",
+      "confidence": "confirmed"
+    },
+    {
+      "title": "JWT field mismatch in auth.ts response",
+      "description": "Database returns user_type, but tests expect userType. Transform DB column to camelCase in register/login responses.",
+      "severity": "major",
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Auth route inconsistency",
+      "description": "/me, PATCH /me, and change-password are mounted on /api/v1/auth (no authMiddleware), so they manually verify the JWT but then can't run under the test harness without the stub app. Consider moving them to /api/v1/profile or /api/v1/user so they sit behind authMiddleware.",
+      "severity": "minor",
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Misleading documentation claim",
+      "description": "README.md still contains 'Planned Future Architecture' section listing Go fleet-tracker, Python AI, Kafka, TimescaleDB, Elasticsearch. The brief says these were removed, but they're present. Either remove the section entirely or acknowledge it as future roadmap.",
+      "severity": "minor",
+      "confidence": "likely"
+    },
+    {
+      "title": "Missing PATCH /me validation test",
+      "description": "No test for what happens when the DB update fails (e.g., network timeout, constraint violation). Add a test that mocks query to reject.",
+      "severity": "minor",
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Missing payment transaction conflict test",
+      "description": "No test for concurrent payment attempts that would trigger a DB serialization failure. Add a test that mocks getClient().query to throw a serialization error and verify the response is 500 or 409.",
+      "severity": "minor",
+      "confidence": "confirmed"
+    },
+    {
+      "title": "GPS validation not tested",
+      "description": "validateGpsObservation is called in tracking.ts but no test exercises an invalid GPS coordinate (e.g., lat > 90, speed < 0). Add a test that sends invalid GPS and verifies the response is 400.",
+      "severity": "minor",
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Missing README.md reference to test command",
+      "description": "SETUP.md documents npm test thoroughly, but README.md's 'Running Tests' section doesn't mention that tests require no live DB or internet. Add a note that all external dependencies are mocked.",
+      "severity": "minor",
+      "confidence": "confirmed"
+    },
+    {
+      "title": "Payment client release not verified",
+      "description": "Payments tests don't verify that db.release() is called. Add .toHaveBeenCalled() assertions on mockClient.release in the happy-path tests to catch pool leaks.",
+      "severity": "minor",
+      "confidence": "confirmed"
+    }
   ],
-  "reviewDoc": "/run/media/masalago/5a19708f-dc92-4a1e-9cea-08f3109bf2db/projects/daladala/.agents/tasks/build6-docs-review.md"
+  "reviewDoc": "/home/masalago/projects/daladala/.agents/tasks/2026-10-24-065923-review.md"
 }
