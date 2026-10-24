@@ -74,20 +74,23 @@ const Navbar: React.FC = () => {
   );
 
   return (
-    <nav className="sticky top-0 z-50 bg-white shadow-sm">
+    <nav className="sticky top-0 z-50 bg-dark-900 shadow-lg border-b border-dark-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
 
           {/* Logo */}
-          <Link to="/" className="text-2xl font-bold text-primary">
-            Safiri Haraka
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-secondary-500 rounded-lg flex items-center justify-center">
+              <span className="text-dark-900 font-black text-sm">SH</span>
+            </div>
+            <span className="text-xl font-black text-white">Safiri <span className="text-secondary-400">Haraka</span></span>
           </Link>
 
           {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center space-x-6">
             {navLinks.map((link) => (
               <Link key={link.path} to={link.path}
-                className="text-gray-700 hover:text-primary transition-colors text-sm font-medium">
+                className="text-dark-300 hover:text-secondary-400 transition-colors text-sm font-medium">
                 {link.name}
               </Link>
             ))}
@@ -99,19 +102,23 @@ const Navbar: React.FC = () => {
             <div className="relative">
               <button
                 onClick={() => setShowLangMenu(!showLangMenu)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-sm text-gray-700 font-medium"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dark-600 hover:bg-dark-800 transition-colors text-sm text-dark-200 font-medium"
               >
-                <FaGlobe className="text-primary" />
+                <FaGlobe className="text-secondary-400" />
                 <span>{lang === 'en' ? '🇬🇧 EN' : '🇹🇿 SW'}</span>
               </button>
               {showLangMenu && <LangMenu />}
             </div>
 
             <Link to="/login">
-              <Button variant="outline">{t.signIn}</Button>
+              <button className="px-4 py-2 rounded-lg border border-dark-600 text-dark-200 hover:bg-dark-800 transition-colors text-sm font-semibold">
+                {t.signIn}
+              </button>
             </Link>
             <Link to="/login?intent=book">
-              <Button variant="primary">{t.bookRide}</Button>
+              <button className="px-4 py-2 rounded-lg bg-secondary-500 hover:bg-secondary-600 text-dark-900 transition-colors text-sm font-black shadow-lg">
+                {t.bookRide}
+              </button>
             </Link>
           </div>
 
@@ -136,20 +143,24 @@ const Navbar: React.FC = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 space-y-2">
+          <div className="md:hidden py-4 space-y-2 border-t border-dark-700">
             {navLinks.map((link) => (
               <Link key={link.path} to={link.path}
-                className="block text-gray-700 hover:text-primary transition-colors py-2 font-medium"
+                className="block text-dark-300 hover:text-secondary-400 transition-colors py-2 font-medium"
                 onClick={() => setMobileMenuOpen(false)}>
                 {link.name}
               </Link>
             ))}
-            <div className="space-y-2 pt-4 border-t border-gray-100">
+            <div className="space-y-2 pt-4 border-t border-dark-700">
               <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="outline" fullWidth>{t.signIn}</Button>
+                <button className="w-full py-3 rounded-lg border border-dark-600 text-dark-200 hover:bg-dark-800 transition-colors font-semibold">
+                  {t.signIn}
+                </button>
               </Link>
               <Link to="/login?intent=book" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="primary" fullWidth>{t.bookRide}</Button>
+                <button className="w-full py-3 rounded-lg bg-secondary-500 hover:bg-secondary-600 text-dark-900 transition-colors font-black">
+                  {t.bookRide}
+                </button>
               </Link>
             </div>
           </div>
