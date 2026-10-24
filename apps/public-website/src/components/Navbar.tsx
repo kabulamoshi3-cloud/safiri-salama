@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaBars, FaTimes, FaGlobe } from 'react-icons/fa';
-import Button from './Button';
 
 export type Lang = 'en' | 'sw';
 
