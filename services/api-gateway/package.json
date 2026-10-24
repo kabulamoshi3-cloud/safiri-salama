@@ -1,5 +1,5 @@
 {
-  "name": "@safiriharaka/api-gateway",
+  "name": "safiriharaka-api",
   "version": "1.0.0",
   "description": "Safiri Haraka API Gateway with JWT authentication and rate limiting",
   "main": "dist/index.js",
