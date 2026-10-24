@@ -6,6 +6,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import InstallPrompt from './components/InstallPrompt';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import BookingPage from './pages/BookingPage';
@@ -30,6 +31,10 @@ const App: React.FC = () => {
     <BrowserRouter>
       {isAuthenticated && <Navbar />}
       <main className={isAuthenticated ? 'pt-20' : ''}>
+        {/* PWA Install Prompt - shows on all pages */}
+        <div className="container mx-auto px-4 pt-4">
+          <InstallPrompt />
+        </div>
         <Routes>
           {!isAuthenticated ? (
             <>
