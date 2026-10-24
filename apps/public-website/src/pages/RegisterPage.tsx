@@ -60,10 +60,14 @@ const RegisterPage: React.FC = () => {
       const payload: any = {
         name: formData.name,
         phone: phone,
-        email: formData.email,
         password: formData.password,
         user_type: role,  // API expects user_type, not role
       };
+
+      // Add email only if provided
+      if (formData.email && formData.email.trim()) {
+        payload.email = formData.email.trim();
+      }
 
       if (role === 'driver') {
         payload.vehicleType = formData.vehicleType;
@@ -148,14 +152,13 @@ const RegisterPage: React.FC = () => {
             />
 
             <Input
-              label="Email"
+              label="Email (Optional)"
               id="email"
               name="email"
               type="email"
               placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
-              required
             />
 
             <Input
