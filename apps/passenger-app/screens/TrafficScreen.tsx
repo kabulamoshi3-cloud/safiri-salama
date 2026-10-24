@@ -6,30 +6,39 @@ import MapView, { Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import i18n from '../i18n';
 
-const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiri-salama.vercel.app/api/v1';
+const API = 'https://simon-daladala-api.vercel.app/api/v1';
 
 interface TrafficSegment {
   segment_id: string;
   road_name: string;
-  lat_start: number;
-  lng_start: number;
-  lat_end: number;
-  lng_end: number;
-  status: 'clear' | 'slow' | 'jam';
-  speed_kmh: number;
+  coords?: Array<{ latitude: number; longitude: number }>;
+  lat_start?: number;
+  lng_start?: number;
+  lat_end?: number;
+  lng_end?: number;
+  current_status: 'clear' | 'slow' | 'jam';
+  current_speed_kmh?: number;
+  length_m?: number;
+  source?: string;
 }
 
 interface Prediction {
   segment_id: string;
-  road_name: string;
+  road_name?: string;
   predicted_speed_kmh: number;
-  status: 'clear' | 'slow' | 'jam';
+  predicted_status?: string;
+  status?: 'clear' | 'slow' | 'jam';
   color: string;
   confidence: number;
-  model_type: string;
-  observations_used: number;
+  model_type?: string;
+  observations_used?: number;
+}
+
+interface BestTimeResult {
+  best_departure_time?: string;
+  best_time?: string;
+  savings_minutes: number;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -43,7 +52,6 @@ export default function TrafficScreen({ navigation }: any) {
   const [segments, setSegments] = useState<TrafficSegment[]>([]);
   const [loading, setLoading] = useState(true);
   const [overallStatus, setOverallStatus] = useState<string>('clear');
-  const [, forceUpdate] = useState(0);
   const [region, setRegion] = useState({
     latitude: -6.7924,
     longitude: 39.2083,
@@ -54,44 +62,16 @@ export default function TrafficScreen({ navigation }: any) {
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Departure-time selector + ML prediction state
-  const [departureOffset, setDepartureOffset] = useState<0 | 30 | 60>(0);
+  const [departureOffset, setDepartureOffset] = useState<number>(0);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
-  const [confidenceKey, setConfidenceKey] = useState<string>('');
-  const [bestTime, setBestTime] = useState<{ best_time: string; savings_minutes: number } | null>(null);
+  const [avgConfidence, setAvgConfidence] = useState<number | null>(null);
+  const [bestTime, setBestTime] = useState<BestTimeResult | null>(null);
   const [usingCache, setUsingCache] = useState(false);
 
-  useEffect(() => {
-    return i18n.subscribe(() => forceUpdate(n => n + 1));
-  }, []);
-
-  const fetchTraffic = async () => {
-    setUsingCache(false);
-    try {
-      const token = await AsyncStorage.getItem('@dalasmart:token');
-      const res = await axios.get(`${API}/tracking/traffic/segments`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data: TrafficSegment[] = res.data.segments || res.data;
-      if (data && data.length > 0) {
-        setSegments(data);
-        if (data.some((s) => s.status === 'jam')) {
-          setOverallStatus('jam');
-        } else if (data.some((s) => s.status === 'slow')) {
-          setOverallStatus('slow');
-        } else {
-          setOverallStatus('clear');
-        }
-      }
-    } catch {
-      // Keep last known segments on failure
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchPredict = async (segmentIds: string[]) => {
-    if (!segmentIds.length) return;
-    const departure_time = new Date(Date.now() + departureOffset * 60000).toISOString();
+  const fetchPredict = async (segs: TrafficSegment[], offset: number) => {
+    if (!segs.length) return;
+    const segmentIds = segs.map((s) => s.segment_id);
+    const departure_time = new Date(Date.now() + offset * 60000).toISOString();
     try {
       const token = await AsyncStorage.getItem('@dalasmart:token');
       const res = await axios.post(
@@ -102,10 +82,8 @@ export default function TrafficScreen({ navigation }: any) {
       const preds: Prediction[] = res.data.predictions || res.data;
       if (preds && preds.length > 0) {
         setPredictions(preds);
-        const avgConf = preds.reduce((sum, p) => sum + (p.confidence || 0), 0) / preds.length;
-        if (avgConf >= 0.7) setConfidenceKey('high_confidence');
-        else if (avgConf >= 0.4) setConfidenceKey('medium_confidence');
-        else setConfidenceKey('baseline_prediction');
+        const avg = preds.reduce((sum, p) => sum + (p.confidence || 0), 0) / preds.length;
+        setAvgConfidence(avg);
       }
       setUsingCache(false);
 
@@ -116,9 +94,9 @@ export default function TrafficScreen({ navigation }: any) {
           `${API}/tracking/traffic/best-time?segment_ids=${segmentIds.join(',')}&from_time=${encodeURIComponent(fromTime)}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        const bt = btRes.data;
+        const bt: BestTimeResult = btRes.data;
         if (bt && bt.savings_minutes && bt.savings_minutes > 5) {
-          setBestTime({ best_time: bt.best_time, savings_minutes: bt.savings_minutes });
+          setBestTime(bt);
         } else {
           setBestTime(null);
         }
@@ -131,13 +109,40 @@ export default function TrafficScreen({ navigation }: any) {
     }
   };
 
-  // Re-predict whenever the segment list loads or the departure offset changes
+  const fetchTraffic = async () => {
+    try {
+      const token = await AsyncStorage.getItem('@dalasmart:token');
+      const res = await axios.get(`${API}/tracking/traffic/segments`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data: TrafficSegment[] = res.data.segments || res.data;
+      if (data && data.length > 0) {
+        setSegments(data);
+        if (data.some((s) => s.current_status === 'jam')) {
+          setOverallStatus('jam');
+        } else if (data.some((s) => s.current_status === 'slow')) {
+          setOverallStatus('slow');
+        } else {
+          setOverallStatus('clear');
+        }
+        // Trigger predict after a successful segment refresh
+        await fetchPredict(data, departureOffset);
+      }
+    } catch {
+      // Keep last known segments on failure, show stale banner
+      setUsingCache(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Re-predict whenever the departure offset changes (uses current segments)
   useEffect(() => {
     if (segments.length > 0) {
-      fetchPredict(segments.map((s) => s.segment_id));
+      fetchPredict(segments, departureOffset);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [segments, departureOffset]);
+  }, [departureOffset]);
 
   useEffect(() => {
     (async () => {
@@ -164,9 +169,18 @@ export default function TrafficScreen({ navigation }: any) {
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const predictionFor = (id: string) => predictions.find((p) => p.segment_id === id);
+  const predictionFor = (id: string) => predictions.find((p: Prediction) => p.segment_id === id);
+
+  const segmentCoords = (seg: TrafficSegment): Array<{ latitude: number; longitude: number }> => {
+    if (seg.coords && seg.coords.length >= 2) return seg.coords;
+    return [
+      { latitude: seg.lat_start ?? 0, longitude: seg.lng_start ?? 0 },
+      { latitude: seg.lat_end ?? 0, longitude: seg.lng_end ?? 0 },
+    ];
+  };
 
   const formatBestTime = (iso: string) => {
     try {
@@ -176,21 +190,28 @@ export default function TrafficScreen({ navigation }: any) {
     }
   };
 
+  const confidenceLabel = (): string | null => {
+    if (predictions.length === 0 || avgConfidence === null) return null;
+    if (avgConfidence > 0.7) return 'Utabiri wa juu';
+    if (avgConfidence >= 0.4) return 'Utabiri wa wastani';
+    return 'Mfumo wa msingi';
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
 
       {/* Top card */}
       <View style={styles.topCard}>
-        <Text style={styles.topTitle}>🗺️ {i18n.t('road_conditions')}</Text>
+        <Text style={styles.topTitle}>🗺️ Hali ya Barabara</Text>
         <View style={styles.statusBadgeRow}>
           <View style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[overallStatus] }]}>
             <Text style={styles.statusBadgeText}>
-              {overallStatus === 'clear' ? i18n.t('traffic_good') : overallStatus === 'slow' ? i18n.t('traffic_fair') : i18n.t('traffic_jam')}
+              {overallStatus === 'clear' ? 'Barabara Wazi' : overallStatus === 'slow' ? 'Msongamano Mdogo' : 'Msongamano'}
             </Text>
           </View>
-          {confidenceKey ? (
-            <Text style={styles.confidenceText}>{i18n.t(confidenceKey)}</Text>
+          {confidenceLabel() !== null ? (
+            <Text style={styles.confidenceText}>{confidenceLabel()}</Text>
           ) : null}
         </View>
       </View>
@@ -202,7 +223,7 @@ export default function TrafficScreen({ navigation }: any) {
           onPress={() => setDepartureOffset(0)}
         >
           <Text style={[styles.departureBtnText, departureOffset === 0 && styles.departureBtnTextActive]}>
-            {i18n.t('depart_now')}
+            Ondoka Sasa
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -210,7 +231,7 @@ export default function TrafficScreen({ navigation }: any) {
           onPress={() => setDepartureOffset(30)}
         >
           <Text style={[styles.departureBtnText, departureOffset === 30 && styles.departureBtnTextActive]}>
-            {i18n.t('depart_30min')}
+            +Dakika 30
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -218,7 +239,7 @@ export default function TrafficScreen({ navigation }: any) {
           onPress={() => setDepartureOffset(60)}
         >
           <Text style={[styles.departureBtnText, departureOffset === 60 && styles.departureBtnTextActive]}>
-            {i18n.t('depart_1hr')}
+            +Saa 1
           </Text>
         </TouchableOpacity>
       </View>
@@ -236,16 +257,16 @@ export default function TrafficScreen({ navigation }: any) {
             region={region}
             showsUserLocation
           >
-            {segments.map((seg) => {
+            {segments.map((seg: TrafficSegment) => {
               const pred = predictionFor(seg.segment_id);
-              const color = (pred && pred.color) || STATUS_COLORS[seg.status];
+              const color =
+                (pred && (pred.color || STATUS_COLORS[pred.predicted_status ?? pred.status ?? ''])) ||
+                STATUS_COLORS[seg.current_status] ||
+                '#00d46a';
               return (
                 <Polyline
                   key={seg.segment_id}
-                  coordinates={[
-                    { latitude: seg.lat_start, longitude: seg.lng_start },
-                    { latitude: seg.lat_end, longitude: seg.lng_end },
-                  ]}
+                  coordinates={segmentCoords(seg)}
                   strokeColor={color}
                   strokeWidth={5}
                 />
@@ -257,14 +278,14 @@ export default function TrafficScreen({ navigation }: any) {
         {/* No data banner */}
         {!loading && segments.length === 0 && (
           <View style={styles.noDataBanner}>
-            <Text style={styles.noDataText}>{i18n.t('no_traffic_data')}</Text>
+            <Text style={styles.noDataText}>Hakuna data ya msongamano</Text>
           </View>
         )}
 
-        {/* Cached-data / offline banner */}
+        {/* Stale-data / offline banner */}
         {usingCache && (
           <View style={styles.cacheBanner}>
-            <Text style={styles.cacheText}>{i18n.t('traffic_unavailable')}</Text>
+            <Text style={styles.cacheText}>Kutumia data ya zamani</Text>
           </View>
         )}
 
@@ -272,7 +293,7 @@ export default function TrafficScreen({ navigation }: any) {
         {bestTime && bestTime.savings_minutes > 5 && (
           <View style={styles.bestTimeCard}>
             <Text style={styles.bestTimeText}>
-              {i18n.t('best_time')} {formatBestTime(bestTime.best_time)} — {i18n.t('save_minutes').replace('{n}', String(Math.round(bestTime.savings_minutes)))} 🕒
+              Ondoka {formatBestTime(bestTime.best_departure_time ?? bestTime.best_time ?? '')} — okoa dakika {Math.round(bestTime.savings_minutes)} 🕒
             </Text>
           </View>
         )}
@@ -280,14 +301,14 @@ export default function TrafficScreen({ navigation }: any) {
 
       {/* Legend */}
       <View style={styles.legend}>
-        <Text style={styles.legendItem}>{i18n.t('legend_clear')}</Text>
-        <Text style={styles.legendItem}>{i18n.t('legend_slow')}</Text>
-        <Text style={styles.legendItem}>{i18n.t('legend_congested')}</Text>
+        <Text style={styles.legendItem}>🟢 Wazi</Text>
+        <Text style={styles.legendItem}>🟠 Polepole</Text>
+        <Text style={styles.legendItem}>🔴 Msongamano</Text>
       </View>
 
       {/* CTA */}
       <TouchableOpacity style={styles.ctaBtn} onPress={() => navigation.goBack()}>
-        <Text style={styles.ctaBtnText}>{i18n.t('start_journey')} 🚀</Text>
+        <Text style={styles.ctaBtnText}>Anza Safari 🚀</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

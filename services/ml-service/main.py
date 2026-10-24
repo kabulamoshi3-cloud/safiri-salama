@@ -1,27 +1,49 @@
+"""
+FastAPI app for traffic speed prediction using trained XGBoost model.
+"""
 import os
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from predictor import Predictor
+from predictor import TrafficPredictor
+from dotenv import load_dotenv
 
-app = FastAPI(title="Daladala ML Traffic Service")
+load_dotenv()
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "")
-MODEL_PATH = os.environ.get("MODEL_PATH", "./models/traffic_speed_xgb.json")
-MIN_TRAINING_SAMPLES = int(os.environ.get("MIN_TRAINING_SAMPLES", "500"))
+app = FastAPI(title="DalaSmart ML Service", version="1.0.0")
 
-predictor = Predictor(MODEL_PATH)
+# Initialize predictor
+MODEL_PATH = os.getenv("MODEL_PATH", "model.pkl")
+predictor = TrafficPredictor(MODEL_PATH)
 
-class PredictRequest(BaseModel):
+
+class PredictionRequest(BaseModel):
     segment_id: str
-    departure_time: str
+    departure_time: str  # ISO 8601 format
+
+
+class PredictionResponse(BaseModel):
+    segment_id: str
+    predicted_speed_kmh: float
+    confidence: float
+    model_type: str
+
 
 @app.get("/health")
-def health():
-    return {"status": "ok"}
+async def health():
+    """Health check endpoint."""
+    return {"status": "ok", "model_loaded": predictor.model_loaded}
 
-@app.post("/predict")
-def predict(req: PredictRequest):
-    result = predictor.predict(req.segment_id, req.departure_time)
-    if result is None:
-        raise HTTPException(status_code=503, detail="Model not available; use SQL baseline")
-    return result
+
+@app.post("/predict", response_model=PredictionResponse)
+async def predict(request: PredictionRequest):
+    """
+    Predict traffic speed for a given segment and departure time.
+    
+    If the model is not loaded (insufficient training data or model file missing),
+    returns a fallback prediction with low confidence.
+    """
+    try:
+        result = predictor.predict(request.segment_id, request.departure_time)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")

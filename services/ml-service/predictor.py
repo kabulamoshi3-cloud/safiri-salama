@@ -1,47 +1,99 @@
+"""
+Traffic speed predictor using trained XGBoost model.
+"""
 import os
-from typing import Optional
+import pickle
+from datetime import datetime
+from typing import Dict
 
-class Predictor:
+# Known segment IDs from migration 016 seed data
+KNOWN_SEGMENTS = [
+    'nyerere-n-001', 'nyerere-s-001', 'morogoro-001', 'morogoro-002',
+    'sam-nujoma-001', 'bagamoyo-001', 'ali-mwinyi-001', 'mandela-001',
+    'kilwa-001', 'pugu-001', 'bibi-titi-001', 'kivukoni-001'
+]
+
+
+class TrafficPredictor:
+    """Loads trained model and makes predictions."""
+    
     def __init__(self, model_path: str):
         self.model_path = model_path
-        self._model = None
-        self._label_encoder = None
+        self.model = None
+        self.label_encoder = None
+        self.model_loaded = False
         self._load_model()
-
+    
     def _load_model(self):
+        """Load model and label encoder from disk."""
+        if not os.path.exists(self.model_path):
+            print(f"Model file not found: {self.model_path}")
+            print("Predictor will return fallback predictions.")
+            return
+        
         try:
-            import xgboost as xgb
-            if os.path.exists(self.model_path):
-                self._model = xgb.XGBRegressor()
-                self._model.load_model(self.model_path)
+            with open(self.model_path, 'rb') as f:
+                data = pickle.load(f)
+                self.model = data['model']
+                self.label_encoder = data['label_encoder']
+                self.model_loaded = True
+                print(f"Model loaded from {self.model_path}")
         except Exception as e:
-            print(f"Model load failed: {e}; will return unavailable for all predictions")
-            self._model = None
-
-    def predict(self, segment_id: str, departure_time: str) -> Optional[dict]:
-        if self._model is None:
-            return None
-        try:
-            import numpy as np
-            import datetime as _dt_mod
-            from datetime import datetime, timezone
-            dt = datetime.fromisoformat(departure_time.replace('Z', '+00:00'))
-            # Shift UTC to Africa/Dar_es_Salaam (UTC+3)
-            dar_dt = dt + _dt_mod.timedelta(hours=3)
-            # Python weekday: Mon=0, Sun=6 → Postgres DOW: Sun=0, Sat=6
-            dar_day = (dar_dt.weekday() + 1) % 7
-            dar_hour = dar_dt.hour
-            # Simple segment hash encoding (must match training; use 0 for unknown)
-            segment_hash = abs(hash(segment_id)) % 1000
-            X = np.array([[segment_hash, dar_day, dar_hour]])
-            speed = float(self._model.predict(X)[0])
-            speed = max(0.0, min(speed, 120.0))
-            confidence = 0.85  # fixed when model is available
+            print(f"Failed to load model: {e}")
+    
+    def predict(self, segment_id: str, departure_time: str) -> Dict:
+        """
+        Predict speed for a segment at a given time.
+        
+        Args:
+            segment_id: Road segment ID (e.g., 'nyerere-n-001')
+            departure_time: ISO 8601 datetime string
+        
+        Returns:
+            Dict with keys: segment_id, predicted_speed_kmh, confidence, model_type
+        """
+        # Parse departure time to get day_of_week and hour_of_day (in EAT = UTC+3)
+        dt = datetime.fromisoformat(departure_time.replace('Z', '+00:00'))
+        # Convert to EAT
+        eat_hour = (dt.hour + 3) % 24
+        eat_day = dt.weekday()  # Monday=0, Sunday=6
+        if dt.hour + 3 >= 24:
+            eat_day = (eat_day + 1) % 7
+        
+        # If model not loaded, return fallback
+        if not self.model_loaded:
             return {
-                "segment_id": segment_id,
-                "predicted_speed_kmh": round(speed, 1),
-                "confidence": confidence
+                'segment_id': segment_id,
+                'predicted_speed_kmh': 35.0,
+                'confidence': 0.2,
+                'model_type': 'fallback'
             }
-        except Exception as e:
-            print(f"Prediction error for {segment_id}: {e}")
-            return None
+        
+        # Encode segment_id
+        if segment_id not in self.label_encoder.classes_:
+            # Unknown segment
+            return {
+                'segment_id': segment_id,
+                'predicted_speed_kmh': 40.0,
+                'confidence': 0.1,
+                'model_type': 'unknown_segment'
+            }
+        
+        segment_encoded = self.label_encoder.transform([segment_id])[0]
+        
+        # Predict
+        X = [[eat_day, eat_hour, segment_encoded]]
+        predicted_speed = float(self.model.predict(X)[0])
+        
+        # Clamp to realistic range
+        predicted_speed = max(5.0, min(80.0, predicted_speed))
+        
+        # Confidence heuristic (simplified)
+        confidence = 0.75  # Could be computed from model uncertainty if available
+        
+        return {
+            'segment_id': segment_id,
+            'predicted_speed_kmh': round(predicted_speed, 1),
+            'confidence': confidence,
+            'model_type': 'ml'
+        }
