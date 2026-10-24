@@ -21,7 +21,7 @@ export default function ActivityScreen({ navigation }: any) {
   const fetchTrips = async () => {
     setLoading(true);
     try {
-      const token = await AsyncStorage.getItem('@dalasmart:token');
+      const token = await AsyncStorage.getItem('@safiriharaka:token');
       const res = await axios.get(`${API}/trips`, {
         headers: { Authorization: `Bearer ${token}` },
         params: filter !== 'all' ? { status: filter } : {},

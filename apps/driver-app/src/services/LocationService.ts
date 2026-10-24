@@ -126,10 +126,10 @@ class LocationServiceClass {
 
       // Save to AsyncStorage for recovery
       try {
-        const saved = await AsyncStorage.getItem('@dalasmart:location_queue');
+        const saved = await AsyncStorage.getItem('@safiriharaka:location_queue');
         const queue = saved ? JSON.parse(saved) : [];
         await AsyncStorage.setItem(
-          '@dalasmart:location_queue',
+          '@safiriharaka:location_queue',
           JSON.stringify([...queue, ...toSend])
         );
       } catch (storageError) {
@@ -170,7 +170,7 @@ class LocationServiceClass {
 
   async recoverFromStorage(): Promise<void> {
     try {
-      const saved = await AsyncStorage.getItem('@dalasmart:location_queue');
+      const saved = await AsyncStorage.getItem('@safiriharaka:location_queue');
       if (saved) {
         const queue = JSON.parse(saved) as LocationUpdate[];
         this.locationQueue = queue;

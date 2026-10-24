@@ -1,8 +1,8 @@
-# Implementation Plan: DalaSmart Navigation Upgrade
+# Implementation Plan: Safiri Haraka Navigation Upgrade
 
 ## Overview
 
-Upgrade navigation across all four DalaSmart apps to match Bolt-like industry standards:
+Upgrade navigation across all four Safiri Haraka apps to match Bolt-like industry standards:
 - **Passenger app**: Add bottom tabs (Home, Activity, Payments, Notifications, Account)
 - **Driver app**: Enhance bottom tabs from 4 to 5 (Home, Earnings, Activity, Notifications, Account)
 - **Admin panel**: Expand sidebar from 5 to 12 sections (Overview, Users, Drivers, Fleet, Trips, Finance, Pricing, Promotions, Analytics, Support, Staff & Roles, Settings)

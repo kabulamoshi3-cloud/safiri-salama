@@ -41,10 +41,10 @@ export default function App() {
       await registerForPushNotifications();
       setupNotificationHandlers();
 
-      const token = await AsyncStorage.getItem('@dalasmart:token');
-      const role = await AsyncStorage.getItem('@dalasmart:role');
-      const hasOnboarded = await AsyncStorage.getItem('@dalasmart:onboarded');
-      const hasCountry = await AsyncStorage.getItem('@dalasmart:country');
+      const token = await AsyncStorage.getItem('@safiriharaka:token');
+      const role = await AsyncStorage.getItem('@safiriharaka:role');
+      const hasOnboarded = await AsyncStorage.getItem('@safiriharaka:onboarded');
+      const hasCountry = await AsyncStorage.getItem('@safiriharaka:country');
 
       if (token && role === 'driver') setInitialRoute('DriverMain');
       else if (token) setInitialRoute('MainTabs');
@@ -58,10 +58,10 @@ export default function App() {
 
   const handleNavigationReady = async () => {
     try {
-      const raw = await AsyncStorage.getItem('@dalasmart:pending_nav');
+      const raw = await AsyncStorage.getItem('@safiriharaka:pending_nav');
       if (raw && navigationRef.current) {
         const { screen, params } = JSON.parse(raw);
-        await AsyncStorage.removeItem('@dalasmart:pending_nav');
+        await AsyncStorage.removeItem('@safiriharaka:pending_nav');
         navigationRef.current.navigate(screen, params);
       }
     } catch (_) {

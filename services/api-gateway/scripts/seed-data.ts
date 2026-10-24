@@ -9,7 +9,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/dalasmart';
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/safiriharaka';
 
 async function seedDatabase() {
   const client = new Client({ connectionString: DATABASE_URL });
@@ -26,7 +26,7 @@ async function seedDatabase() {
     const promoCodes = [
       {
         code: 'WELCOME2024',
-        description: 'Welcome to DalaSmart - 30% off first 3 rides',
+        description: 'Welcome to Safiri Haraka - 30% off first 3 rides',
         discount_percentage: 30,
         discount_fixed: 0,
         max_uses: 10000,
@@ -88,7 +88,7 @@ async function seedDatabase() {
 
     const plans = [
       {
-        name: 'DalaSmart Plus',
+        name: 'Safiri Haraka Plus',
         description: 'Get 10% off all rides + Sh2,000 monthly credit',
         price_monthly: 10000,
         price_annual: 100000,
@@ -96,7 +96,7 @@ async function seedDatabase() {
         features: ['10% discount on all rides', 'Sh2,000 monthly bonus credit', 'Priority support', 'No surge pricing'],
       },
       {
-        name: 'DalaSmart Pro',
+        name: 'Safiri Haraka Pro',
         description: 'Get 15% off all rides + Sh5,000 monthly credit',
         price_monthly: 20000,
         price_annual: 200000,
@@ -104,7 +104,7 @@ async function seedDatabase() {
         features: ['15% discount on all rides', 'Sh5,000 monthly bonus', 'VIP support', 'Priority booking', 'Exclusive promos'],
       },
       {
-        name: 'DalaSmart Business',
+        name: 'Safiri Haraka Business',
         description: 'Corporate bulk discount for businesses',
         price_monthly: 100000,
         price_annual: 1000000,
@@ -205,10 +205,10 @@ async function seedDatabase() {
     console.log('\n→ Seeding support agents...');
 
     const agents = [
-      { name: 'Sarah Wanjiru',  email: 'sarah@dalasmart.com',  department: 'general'  },
-      { name: 'James Omondi',   email: 'james@dalasmart.com',  department: 'technical'},
-      { name: 'Grace Njeri',    email: 'grace@dalasmart.com',  department: 'payment'  },
-      { name: 'David Kimani',   email: 'david@dalasmart.com',  department: 'safety'   },
+      { name: 'Sarah Wanjiru',  email: 'sarah@safiriharaka.com',  department: 'general'  },
+      { name: 'James Omondi',   email: 'james@safiriharaka.com',  department: 'technical'},
+      { name: 'Grace Njeri',    email: 'grace@safiriharaka.com',  department: 'payment'  },
+      { name: 'David Kimani',   email: 'david@safiriharaka.com',  department: 'safety'   },
     ];
 
     for (const agent of agents) {

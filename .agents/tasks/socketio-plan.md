@@ -54,7 +54,7 @@ FEAT artifacts are under `.agents/tasks/socketio-wireup/`. The workflow tail has
 - [ ] 6. **Update `apps/passenger-app/screens/TripActiveScreen.tsx`**  
       In the existing `useEffect` that runs when `hasTripId` is true and `liveStatuses.includes(status)`:
       - At the top of the effect, after the `if (!hasTripId) return;` guard: import `TrackingSocket` from `'../services/TrackingSocket'` (top-level import) and `AsyncStorage` from `'@react-native-async-storage/async-storage'`.
-      - Add async socket setup: `AsyncStorage.getItem('@dalasmart:token').then(token => { if (token) { TrackingSocket.connect(token); TrackingSocket.joinTrip(tripId); } })`.
+      - Add async socket setup: `AsyncStorage.getItem('@safiriharaka:token').then(token => { if (token) { TrackingSocket.connect(token); TrackingSocket.joinTrip(tripId); } })`.
       - Register listeners: `const unsubMove = TrackingSocket.onDriverMoved(loc => setDriverLocation({ lat: loc.latitude, lng: loc.longitude, bearing: loc.heading ?? 0, speed_kmh: loc.speed ?? 0, eta_minutes: loc.eta ?? 0, progress_percent: 0 })); const unsubStatus = TrackingSocket.onTripStatus(t => { if (t.status) setStatus(t.status as TripStatus); }); const unsubETA = TrackingSocket.onETAChanged(({ newETA }) => setEtaMinutes(newETA));`
       - In the cleanup return: `unsubMove(); unsubStatus(); unsubETA(); TrackingSocket.leaveTrip();`
       - **Keep** the existing `setInterval(fetchLocation, 5000)` polling unchanged — it remains the fallback.
@@ -83,7 +83,7 @@ FEAT artifacts are under `.agents/tasks/socketio-wireup/`. The workflow tail has
 
 - [ ] 9. **Update `apps/driver-app/src/screens/trip/ActiveTripScreen.tsx`**  
       Add top-level imports: `import TrackingSocket from '../../services/TrackingSocket'` and `import AsyncStorage from '@react-native-async-storage/async-storage'` and `import * as Location from 'expo-location'`.  
-      - In `handleStartTrip()`, before calling `navigation.navigate('Navigation', ...)`, add: `AsyncStorage.getItem('@dalasmart:token').then(token => { if (!token) return; TrackingSocket.connect(token); TrackingSocket.startLocationEmit(route.params.tripId, async () => { const loc = await Location.getCurrentPositionAsync({}); return { latitude: loc.coords.latitude, longitude: loc.coords.longitude, heading: loc.coords.heading ?? undefined, speed: loc.coords.speed ?? undefined }; }); });`
+      - In `handleStartTrip()`, before calling `navigation.navigate('Navigation', ...)`, add: `AsyncStorage.getItem('@safiriharaka:token').then(token => { if (!token) return; TrackingSocket.connect(token); TrackingSocket.startLocationEmit(route.params.tripId, async () => { const loc = await Location.getCurrentPositionAsync({}); return { latitude: loc.coords.latitude, longitude: loc.coords.longitude, heading: loc.coords.heading ?? undefined, speed: loc.coords.speed ?? undefined }; }); });`
       - In `confirmPayment()` inside the Alert `onPress` callback, after `setShowPaymentModal(false)` and before `navigation.replace(...)` add: `TrackingSocket.stopLocationEmit(); TrackingSocket.disconnect();`
       - Add a cleanup `useEffect`: `useEffect(() => () => { TrackingSocket.stopLocationEmit(); TrackingSocket.disconnect(); }, []);`
       
@@ -126,6 +126,6 @@ FEAT artifacts are under `.agents/tasks/socketio-wireup/`. The workflow tail has
 
 - Do NOT modify: `services/tracking-service/src/index.ts` Socket.io event handlers, `intelligence.ts`, `safety.ts`.
 - Keep REST polling fallback in all apps (never remove the existing polling loops).
-- JWT token source: `AsyncStorage.getItem('@dalasmart:token')` in both mobile apps; `localStorage.getItem('token')` in web (already in place).
+- JWT token source: `AsyncStorage.getItem('@safiriharaka:token')` in both mobile apps; `localStorage.getItem('token')` in web (already in place).
 - Socket handshake: `{ auth: { token } }` — matches the `io.use()` middleware in tracking-service.
 - Use `socket.io-client@4.7.5` (pinned) in all three apps.

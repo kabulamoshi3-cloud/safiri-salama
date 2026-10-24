@@ -4,7 +4,7 @@
  * Findings: passenger_profiles.emergency_contacts JSONB exists in the DB schema
  * but there is no REST endpoint (GET/PATCH /passengers/emergency-contacts) yet.
  * As a pragmatic fallback, contacts are persisted in AsyncStorage under
- * '@dalasmart:emergency_contacts' (up to 3). A future PATCH /auth/profile or
+ * '@safiriharaka:emergency_contacts' (up to 3). A future PATCH /auth/profile or
  * dedicated endpoint should sync this with the backend.
  */
 import React, { useState, useEffect, useCallback } from 'react';
@@ -15,7 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const STORAGE_KEY = '@dalasmart:emergency_contacts';
+const STORAGE_KEY = '@safiriharaka:emergency_contacts';
 const MAX_CONTACTS = 3;
 
 interface EmergencyContact {

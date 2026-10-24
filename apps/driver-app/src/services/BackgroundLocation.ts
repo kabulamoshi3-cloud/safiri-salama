@@ -48,8 +48,8 @@ if (TaskManager !== null) {
 
     try {
       const [token, tripId] = await Promise.all([
-        AsyncStorage.getItem('@dalasmart:token'),
-        AsyncStorage.getItem('@dalasmart:active_trip_id'),
+        AsyncStorage.getItem('@safiriharaka:token'),
+        AsyncStorage.getItem('@safiriharaka:active_trip_id'),
       ]);
 
       await fetch(`${API_BASE}/tracking/driver/location`, {
@@ -99,7 +99,7 @@ export async function startBackgroundTracking(): Promise<void> {
     timeInterval: 10000,   // 10 seconds
     distanceInterval: 10,  // 10 metres
     foregroundService: {
-      notificationTitle: 'DalaSmart',
+      notificationTitle: 'Safiri Haraka',
       notificationBody: 'Inafuatilia mahali pako kwa ajili ya safari',
       notificationColor: '#2e7d32',
     },

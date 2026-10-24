@@ -1,8 +1,8 @@
-# DalaSmart Quick Start Guide
+# Safiri Haraka Quick Start Guide
 
 ## 🚀 Getting Started
 
-This guide will get DalaSmart running locally in under 10 minutes.
+This guide will get Safiri Haraka running locally in under 10 minutes.
 
 ---
 
@@ -17,7 +17,7 @@ This guide will get DalaSmart running locally in under 10 minutes.
 ## Step 1: Clone & Install
 
 ```bash
-cd "c:\project\INF 319\dalasmart"
+cd "c:\project\INF 319\safiriharaka"
 
 # Install API Gateway dependencies
 cd services/api-gateway
@@ -41,7 +41,7 @@ npm install
 ```bash
 # Using psql
 psql -U postgres
-CREATE DATABASE dalasmart;
+CREATE DATABASE safiriharaka;
 \q
 ```
 
@@ -51,7 +51,7 @@ Create `.env` in `services/api-gateway`:
 
 ```env
 # Database
-DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/dalasmart
+DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/safiriharaka
 
 # JWT
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
@@ -194,9 +194,9 @@ npm run dev
 - `NEWUSER` - 40% off first ride
 
 ### Subscription Plans
-- **DalaSmart Plus**: Sh10,000/month (10% discount)
-- **DalaSmart Pro**: Sh20,000/month (15% discount)
-- **DalaSmart Business**: Sh100,000/month (20% discount)
+- **Safiri Haraka Plus**: Sh10,000/month (10% discount)
+- **Safiri Haraka Pro**: Sh20,000/month (15% discount)
+- **Safiri Haraka Business**: Sh100,000/month (20% discount)
 
 ### Restaurants (Food Delivery)
 - Mama Oliech Restaurant
@@ -292,7 +292,7 @@ npm run migrate
 npm run seed
 
 # Reset database (caution!)
-psql -U postgres -d dalasmart < migrations/008_add_features.sql
+psql -U postgres -d safiriharaka < migrations/008_add_features.sql
 ```
 
 ### Development
@@ -320,7 +320,7 @@ npm test
 ### "Cannot connect to database"
 - Check PostgreSQL is running: `pg_isready`
 - Verify connection string in `.env`
-- Check database exists: `psql -U postgres -l | grep dalasmart`
+- Check database exists: `psql -U postgres -l | grep safiriharaka`
 
 ### "Port 3000 already in use"
 - Change PORT in `.env` to 3001 or another available port
@@ -328,7 +328,7 @@ npm test
 
 ### "Migration failed"
 - Check PostgreSQL version (need 14+)
-- Ensure database is empty or run: `DROP DATABASE dalasmart; CREATE DATABASE dalasmart;`
+- Ensure database is empty or run: `DROP DATABASE safiriharaka; CREATE DATABASE safiriharaka;`
 - Re-run: `npm run migrate`
 
 ### "API returns 401 Unauthorized"

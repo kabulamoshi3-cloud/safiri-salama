@@ -55,7 +55,7 @@ export const themeManager = {
 
   async setMode(mode: ThemeMode) {
     currentTheme = mode;
-    await AsyncStorage.setItem('@dalasmart:theme', mode);
+    await AsyncStorage.setItem('@safiriharaka:theme', mode);
     listeners.forEach(fn => fn());
   },
 
@@ -65,7 +65,7 @@ export const themeManager = {
   },
 
   async loadSaved() {
-    const saved = await AsyncStorage.getItem('@dalasmart:theme');
+    const saved = await AsyncStorage.getItem('@safiriharaka:theme');
     if (saved === 'dark' || saved === 'light') currentTheme = saved;
   },
 

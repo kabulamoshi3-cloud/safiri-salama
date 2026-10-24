@@ -11,7 +11,7 @@ export default function WelcomeScreen({ navigation }: any) {
 
   const selectRole = async (role: 'passenger' | 'driver') => {
     try {
-      await AsyncStorage.setItem('@dalasmart:onboarded', 'true');
+      await AsyncStorage.setItem('@safiriharaka:onboarded', 'true');
     } catch {}
     navigation.navigate('Login', { role });
   };

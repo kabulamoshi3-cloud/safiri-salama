@@ -1,4 +1,4 @@
-# Implementation Plan — DalaSmart Passenger App Live Tracking
+# Implementation Plan — Safiri Haraka Passenger App Live Tracking
 
 ## Context from codebase exploration
 

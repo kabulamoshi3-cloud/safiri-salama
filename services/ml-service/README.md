@@ -1,4 +1,4 @@
-# DalaSmart ML Service
+# Safiri Haraka ML Service
 
 Python-based ML microservice for traffic speed prediction using XGBoost.
 

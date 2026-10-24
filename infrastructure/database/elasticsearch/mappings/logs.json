@@ -2,8 +2,8 @@
   "settings": {
     "number_of_shards": 3,
     "number_of_replicas": 1,
-    "index.lifecycle.name": "dalasmart-logs-policy",
-    "index.lifecycle.rollover_alias": "dalasmart-logs",
+    "index.lifecycle.name": "safiriharaka-logs-policy",
+    "index.lifecycle.rollover_alias": "safiriharaka-logs",
     "analysis": {
       "analyzer": {
         "log_message_analyzer": {

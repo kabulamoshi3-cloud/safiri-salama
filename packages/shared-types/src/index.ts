@@ -1,5 +1,5 @@
 /**
- * Shared Types for DalaSmart Platform
+ * Shared Types for Safiri Haraka Platform
  * Used across all applications and services
  */
 

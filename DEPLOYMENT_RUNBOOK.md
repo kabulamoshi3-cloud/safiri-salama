@@ -1,4 +1,4 @@
-# DalaSmart deployment runbook
+# Safiri Haraka deployment runbook
 
 Use [DEPLOY_ALL.md](DEPLOY_ALL.md) for the complete setup of the database, Vercel API and website, Koyeb tracking service, and Android/iOS builds. It records the correct repository paths, required variables, migration command, release checks, and free-tier limits.
 

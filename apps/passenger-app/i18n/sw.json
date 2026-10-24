@@ -1,5 +1,5 @@
 {
-  "app_name": "DalaSmart",
+  "app_name": "Safiri Haraka",
   "tagline": "Usafiri wa kisasa, salama na bei nafuu",
 
   "country_select": "Chagua nchi yako",
@@ -108,7 +108,7 @@
   "trip_completed": "Safari imekamilika! 🎉",
   "trip_completed_title": "Safari Imekamilika",
   "trip_cancelled": "Safari imefutwa",
-  "thank_you_ride": "Asante kwa kusafiri na DalaSmart",
+  "thank_you_ride": "Asante kwa kusafiri na Safiri Haraka",
   "cancel_trip": "Futa Safari",
   "cancel_confirm": "Una uhakika unataka kufuta?",
   "no": "Hapana",
@@ -165,7 +165,7 @@
   "earn_per_referral": "Pata Sh 5,000 kwa kila mwaliko",
   "promotions": "Ofa",
   "promotions_desc": "Kodi za punguzo & punguzo",
-  "dalasmart_plus": "DalaSmart Plus",
+  "safiriharaka_plus": "Safiri Haraka Plus",
   "business_profile": "Wasifu wa biashara",
   "safety": "Usalama",
   "sos_contacts": "Anwani za dharura, SOS",
@@ -184,7 +184,7 @@
   "help_support": "Msaada",
   "legal": "Kisheria",
   "terms_privacy": "Masharti, Sera ya Faragha",
-  "about": "Kuhusu DalaSmart",
+  "about": "Kuhusu Safiri Haraka",
   "logout": "Ondoka",
   "logout_confirm": "Una uhakika unataka kuondoka?",
   "cancel": "Futa",
@@ -395,7 +395,7 @@
   "saved_places": "Maeneo Yaliyohifadhiwa",
   "refer_friends": "Tuma Marafiki",
   "legal_terms": "Masharti",
-  "about_app": "Kuhusu DalaSmart",
+  "about_app": "Kuhusu Safiri Haraka",
   "logout_confirm": "Una uhakika unataka kutoka?",
   "no_trips_yet": "Hakuna safari bado",
   "trip_history_message": "Historia ya safari zako itaonekana hapa"

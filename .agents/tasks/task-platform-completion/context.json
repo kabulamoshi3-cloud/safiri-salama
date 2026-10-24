@@ -9,7 +9,7 @@
   "snapshot_or_generated_files": null,
   "environment_constraints": "Deployment is Vercel (web) + Render (backend) free tier. NEVER use Socket.io for real-time — use HTTP polling only (setInterval + fetch/axios). No push to main; commit locally on branch only.",
   "contribution_requirements": "HTTP polling pattern only. No Socket.io. Auth token patterns must match existing patterns per app (see below). Admin panel is MISSING recharts/axios/lucide-react in package.json — must install before using them.",
-  "key_patterns": "Passenger/Driver app: AsyncStorage.getItem('@dalasmart:token') for JWT. API base: process.env.EXPO_PUBLIC_API_URL ?? 'https://safiri-salama.vercel.app/api/v1'. Admin panel: localStorage.getItem('admin_token') + native fetch wrapper in services/api.ts. Operator dashboard: localStorage.getItem('operator_token') + axios instance in services/api.ts. Backend routes: pool.query() with $1/$2 params. All routes under /api/v1/. Admin routes require userType='admin' check.",
+  "key_patterns": "Passenger/Driver app: AsyncStorage.getItem('@safiriharaka:token') for JWT. API base: process.env.EXPO_PUBLIC_API_URL ?? 'https://safiri-salama.vercel.app/api/v1'. Admin panel: localStorage.getItem('admin_token') + native fetch wrapper in services/api.ts. Operator dashboard: localStorage.getItem('operator_token') + axios instance in services/api.ts. Backend routes: pool.query() with $1/$2 params. All routes under /api/v1/. Admin routes require userType='admin' check.",
   "relevant_files": [
     "apps/passenger-app/screens/ActivityScreen.tsx",
     "apps/passenger-app/screens/PaymentsScreen.tsx",

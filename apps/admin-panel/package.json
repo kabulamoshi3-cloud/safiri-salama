@@ -1,7 +1,7 @@
 {
-  "name": "@dalasmart/admin-panel",
+  "name": "@safiriharaka/admin-panel",
   "version": "1.0.0",
-  "description": "DalaSmart Admin Panel — React + TypeScript SPA",
+  "description": "Safiri Haraka Admin Panel — React + TypeScript SPA",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,7 @@
     "lint": "eslint src --ext .ts,.tsx"
   },
   "dependencies": {
-    "@dalasmart/shared-types": "file:../../packages/shared-types",
+    "@safiriharaka/shared-types": "file:../../packages/shared-types",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^15.0.1",

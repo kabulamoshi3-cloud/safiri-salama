@@ -41,7 +41,7 @@ insuranceRouter.get('/plans', (_req: Request, res: Response) => {
       },
       {
         type: 'monthly_passenger',
-        name: 'DalaSmart Passenger Shield',
+        name: 'Safiri Haraka Passenger Shield',
         description: 'Monthly accident cover for unlimited trips.',
         premium_tzs: 5_000,
         coverage_tzs: 5_000_000,
@@ -72,7 +72,7 @@ insuranceRouter.get('/plans', (_req: Request, res: Response) => {
       },
       {
         type: 'health_basic',
-        name: 'DalaSmart Health Basic',
+        name: 'Safiri Haraka Health Basic',
         description: 'Basic outpatient and inpatient health cover.',
         premium_tzs: 15_000,
         coverage_tzs: 3_000_000,
@@ -87,7 +87,7 @@ insuranceRouter.get('/plans', (_req: Request, res: Response) => {
       },
       {
         type: 'health_premium',
-        name: 'DalaSmart Health Premium',
+        name: 'Safiri Haraka Health Premium',
         description: 'Comprehensive health cover — top-up for NHIF members.',
         premium_tzs: 35_000,
         coverage_tzs: 10_000_000,
@@ -267,7 +267,7 @@ insuranceRouter.post('/claims', async (req: Request, res: Response) => {
       claim: result.rows[0],
       claim_number: claimNumber,
       expected_response: '3–5 business days',
-      contact: 'insurance@dalasmart.co.tz or call 0800-DALA-INS',
+      contact: 'insurance@safiriharaka.co.tz or call 0800-DALA-INS',
     });
   } catch (err: any) {
     res.status(500).json({ error: 'Failed to submit claim', details: err.message });

@@ -64,7 +64,7 @@ export default function Layout() {
               letterSpacing: '-0.5px',
             }}
           >
-            🚕 DalaSmart
+            🚕 Safiri Haraka
           </div>
           <div
             style={{

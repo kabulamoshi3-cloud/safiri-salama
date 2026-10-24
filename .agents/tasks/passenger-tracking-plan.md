@@ -4,7 +4,7 @@
 
 - **API base URL**: `https://simon-daladala-api.vercel.app/api/v1` (from OrdersScreen.tsx)
 - **HTTP client**: `axios` (already in package.json ^1.7.7)
-- **Auth pattern**: `AsyncStorage.getItem('@dalasmart:token')` → `Authorization: Bearer ${token}` header
+- **Auth pattern**: `AsyncStorage.getItem('@safiriharaka:token')` → `Authorization: Bearer ${token}` header
 - **Maps library**: `react-native-maps` 1.14.0 with `MapView`, `Marker`, `Polyline` from `react-native-maps`
 - **No new packages**: everything needed is already installed
 - **Design system**: `#1a1a2e` bg, `#00d46a` green accent, `#ffffff` text, `#ff9500` orange, `#ff3b30` red; 12px border radius cards
@@ -49,7 +49,7 @@
   ```ts
   const fetchNearbyDrivers = async () => {
     try {
-      const token = await AsyncStorage.getItem('@dalasmart:token');
+      const token = await AsyncStorage.getItem('@safiriharaka:token');
       const res = await axios.get(
         `${API}/tracking/nearby-drivers?lat=${region.latitude}&lng=${region.longitude}&radius=3`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -289,7 +289,7 @@
     const poll = async () => {
       if (!tripId) return; // no tripId yet — wait for backend to assign
       try {
-        const token = await AsyncStorage.getItem('@dalasmart:token');
+        const token = await AsyncStorage.getItem('@safiriharaka:token');
         const res = await axios.get(`${API}/tracking/trip/${tripId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -340,7 +340,7 @@
         text: 'Ndio, Futa', style: 'destructive',
         onPress: async () => {
           try {
-            const token = await AsyncStorage.getItem('@dalasmart:token');
+            const token = await AsyncStorage.getItem('@safiriharaka:token');
             if (tripId) {
               await axios.post(`${API}/trips/${tripId}/cancel`, {}, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -391,7 +391,7 @@
       case 'in_progress':
         return { emoji: '🛣️', title: 'Inaendelea', subtitle: `ETA: dakika ${tripData?.eta_minutes ?? '...'}`, color: '#00d46a' };
       case 'completed':
-        return { emoji: '🎉', title: 'Imefika!', subtitle: 'Asante kwa kutumia DalaSmart', color: '#00d46a' };
+        return { emoji: '🎉', title: 'Imefika!', subtitle: 'Asante kwa kutumia Safiri Haraka', color: '#00d46a' };
       case 'cancelled':
         return { emoji: '❌', title: 'Imefutwa', subtitle: 'Safari imefutwa', color: '#ff3b30' };
     }
@@ -479,7 +479,7 @@
   ```ts
   const fetchTraffic = async () => {
     try {
-      const token = await AsyncStorage.getItem('@dalasmart:token');
+      const token = await AsyncStorage.getItem('@safiriharaka:token');
       const res = await axios.get(
         `${API}/tracking/traffic?lat=${region.latitude}&lng=${region.longitude}&radius=5`,
         { headers: { Authorization: `Bearer ${token}` } }

@@ -1,6 +1,6 @@
 {
   "task_id": "task-nav-upgrade",
-  "task_description": "Upgrade DalaSmart navigation across all four apps (passenger, driver, admin, operator) to match Bolt-like industry standards with bottom tabs for mobile apps and comprehensive sidebar navigation for web dashboards",
+  "task_description": "Upgrade Safiri Haraka navigation across all four apps (passenger, driver, admin, operator) to match Bolt-like industry standards with bottom tabs for mobile apps and comprehensive sidebar navigation for web dashboards",
   "status": "pending",
   "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
   "blocked_reason": null

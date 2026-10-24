@@ -1,6 +1,6 @@
 {
   "task_id": "task-build7-admin-panel",
-  "task_description": "Build a functional web-based admin panel (React + TypeScript + Vite SPA) for DalaSmart operators, plus all required backend admin API endpoints and a SQL migration for system_settings.",
+  "task_description": "Build a functional web-based admin panel (React + TypeScript + Vite SPA) for Safiri Haraka operators, plus all required backend admin API endpoints and a SQL migration for system_settings.",
   "status": "pending",
   "feature_order": ["FEAT-001", "FEAT-002"],
   "blocked_reason": null

@@ -41,9 +41,9 @@ export default function LoginScreen({ route, navigation }: any) {
       const endpoint = isRegister ? `${API}/auth/register` : `${API}/auth/login`;
       const body = isRegister ? { phone, password, name, userType: role } : { phone, password };
       const res = await axios.post(endpoint, body);
-      await AsyncStorage.setItem('@dalasmart:token', res.data.token);
-      await AsyncStorage.setItem('@dalasmart:role', role);
-      await AsyncStorage.setItem('@dalasmart:user', JSON.stringify(res.data.user));
+      await AsyncStorage.setItem('@safiriharaka:token', res.data.token);
+      await AsyncStorage.setItem('@safiriharaka:role', role);
+      await AsyncStorage.setItem('@safiriharaka:user', JSON.stringify(res.data.user));
       navigation.reset({ index: 0, routes: [{ name: role === 'driver' ? 'DriverMain' : 'Main' }] });
     } catch (err: any) {
       Alert.alert(i18n.t('error'), err.response?.data?.error || i18n.t('auth_failed'));

@@ -1,4 +1,4 @@
-# Test and Documentation Implementation for DalaSmart API Gateway
+# Test and Documentation Implementation for Safiri Haraka API Gateway
 
 65 backend tests were added covering auth, tracking, and payments routes, alongside README.md updates and SETUP.md/`.env.example` creation. The auth suite has eight failing tests driven by two root causes: missing route handlers in `auth.ts` and a `req.user` field mismatch between `authMiddleware` and the payments handler. The tracking and payments suites pass. Documentation accurately reflects the current codebase; minor gaps from the prior docs-only pass remain open.
 
@@ -105,7 +105,7 @@ The expected output should list the three suites that actually run: `src/__tests
 - `src/__tests__/routes/auth.test.ts` — 20 tests; 8 failing (missing handlers, field mismatches)
 - `src/__tests__/routes/tracking.test.ts` — 27 tests; all passing; mocks `database/connection` pool
 - `src/__tests__/routes/payments.test.ts` — 18 tests; all passing; mocks `database` module with `getClient`/`query`
-- `jest.config.js` — `ts-jest`, `maxWorkers: 1`, excludes 4 pre-existing test files, maps `@dalasmart/shared-types`
+- `jest.config.js` — `ts-jest`, `maxWorkers: 1`, excludes 4 pre-existing test files, maps `@safiriharaka/shared-types`
 - `README.md` — Architecture, API reference, environment variables, deployment; correctly omits unbuilt services
 - `SETUP.md` — Step-by-step setup guide; stale expected test output in "Run Tests" section
 - `services/api-gateway/.env.example` — All required and optional environment variables with inline comments

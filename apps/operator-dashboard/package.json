@@ -1,7 +1,7 @@
 {
-  "name": "@dalasmart/operator-dashboard",
+  "name": "@safiriharaka/operator-dashboard",
   "version": "1.0.0",
-  "description": "DalaSmart Operator Dashboard — React + TypeScript SPA",
+  "description": "Safiri Haraka Operator Dashboard — React + TypeScript SPA",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,7 @@
     "lint": "eslint src --ext .ts,.tsx"
   },
   "dependencies": {
-    "@dalasmart/shared-types": "file:../../packages/shared-types",
+    "@safiriharaka/shared-types": "file:../../packages/shared-types",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^15.0.1",

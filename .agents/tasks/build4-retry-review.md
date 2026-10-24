@@ -1,4 +1,4 @@
-# DalaSmart Admin Panel
+# Safiri Haraka Admin Panel
 
 This adds a full admin panel SPA (React + TypeScript + Vite) alongside a new Express router (`/api/v1/admin`) that backs it. The frontend covers five pages — Dashboard, Drivers, Passengers, Trips, Settings — each behind a `RequireAuth` guard. The backend exposes 11 endpoints covering stats, driver approval/rejection/banning, passenger banning, trip management, and platform settings stored in a new `system_settings` table. Auth is enforced by a role-check middleware at router level rather than per-handler. A `dist/` folder is present in the repo, providing some evidence that a build was run.
 

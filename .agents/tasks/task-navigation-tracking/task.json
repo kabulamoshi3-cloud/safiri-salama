@@ -1,6 +1,6 @@
 {
   "task_id": "task-navigation-tracking",
-  "task_description": "Build the full navigation + routing + live tracking system for DalaSmart: ORS-based route calculation backend endpoint, passenger geocoding autocomplete + map route, TripActiveScreen live driver tracking enhancements, and driver-app text-based turn-by-turn NavigationScreen with live GPS reporting.",
+  "task_description": "Build the full navigation + routing + live tracking system for Safiri Haraka: ORS-based route calculation backend endpoint, passenger geocoding autocomplete + map route, TripActiveScreen live driver tracking enhancements, and driver-app text-based turn-by-turn NavigationScreen with live GPS reporting.",
   "status": "pending",
   "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
   "blocked_reason": null

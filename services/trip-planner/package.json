@@ -1,7 +1,7 @@
 {
-  "name": "@dalasmart/trip-planner",
+  "name": "@safiriharaka/trip-planner",
   "version": "1.0.0",
-  "description": "DalaSmart Trip Planner Service — Python / FastAPI (multi-modal routing, schedules)",
+  "description": "Safiri Haraka Trip Planner Service — Python / FastAPI (multi-modal routing, schedules)",
   "private": true,
   "scripts": {
     "install:python": "pip install -r requirements.txt",

@@ -35,7 +35,7 @@ export default function SupportScreen() {
           <Text style={styles.contactEmoji}>💬</Text>
           <Text style={styles.contactLabel}>{i18n.t('whatsapp')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.contactCard} onPress={() => Linking.openURL('mailto:support@dalasmart.com')}>
+        <TouchableOpacity style={styles.contactCard} onPress={() => Linking.openURL('mailto:support@safiriharaka.com')}>
           <Text style={styles.contactEmoji}>✉️</Text>
           <Text style={styles.contactLabel}>{i18n.t('email')}</Text>
         </TouchableOpacity>

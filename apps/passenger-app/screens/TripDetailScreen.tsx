@@ -76,7 +76,7 @@ export default function TripDetailScreen({ route }: any) {
     setLoading(true);
     setError(null);
     try {
-      const token = await AsyncStorage.getItem('@dalasmart:token');
+      const token = await AsyncStorage.getItem('@safiriharaka:token');
       const res = await axios.get(`${API}/trips/${tripId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });

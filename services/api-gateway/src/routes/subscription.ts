@@ -1,6 +1,6 @@
 /**
  * Subscription Service API Routes
- * Handles premium subscription plans (DalaSmart Plus)
+ * Handles premium subscription plans (Safiri Haraka Plus)
  */
 
 import express, { Request, Response } from 'express';

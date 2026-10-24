@@ -1,7 +1,7 @@
 {
-  "name": "@dalasmart/test-scripts",
+  "name": "@safiriharaka/test-scripts",
   "version": "1.0.0",
-  "description": "Testing and simulation scripts for DalaSmart platform",
+  "description": "Testing and simulation scripts for Safiri Haraka platform",
   "private": true,
   "scripts": {
     "simulate": "node fake-driver-simulator.js",

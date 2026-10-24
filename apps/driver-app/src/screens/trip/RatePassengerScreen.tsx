@@ -29,7 +29,7 @@ const RatePassengerScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const submitRating = async () => {
     try {
-      const token = await AsyncStorage.getItem('@dalasmart:token');
+      const token = await AsyncStorage.getItem('@safiriharaka:token');
       await axios.post(
         `${API_BASE}/ratings`,
         { trip_id: tripId, rating, review: comment || null },

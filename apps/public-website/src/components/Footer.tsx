@@ -9,7 +9,7 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Column */}
           <div>
-            <h3 className="text-white text-xl font-bold mb-4">DalaSmart</h3>
+            <h3 className="text-white text-xl font-bold mb-4">Safiri Haraka</h3>
             <p className="text-sm mb-4">Smart, safe & affordable transport in Tanzania</p>
             <div className="flex space-x-4">
               <a href="#" className="hover:text-primary transition-colors">
@@ -81,7 +81,7 @@ const Footer: React.FC = () => {
             <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Passenger App</p>
             <div className="space-y-3 mb-4">
               <a
-                href="https://play.google.com/store/apps/details?id=com.dalasmart.passenger"
+                href="https://play.google.com/store/apps/details?id=com.safiriharaka.passenger"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors"
@@ -93,7 +93,7 @@ const Footer: React.FC = () => {
                 </div>
               </a>
               <a
-                href="https://apps.apple.com/app/dalasmart-passenger/id000000001"
+                href="https://apps.apple.com/app/safiriharaka-passenger/id000000001"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors"
@@ -110,7 +110,7 @@ const Footer: React.FC = () => {
             <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Driver App</p>
             <div className="space-y-3">
               <a
-                href="https://play.google.com/store/apps/details?id=com.dalasmart.driver"
+                href="https://play.google.com/store/apps/details?id=com.safiriharaka.driver"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors"
@@ -122,7 +122,7 @@ const Footer: React.FC = () => {
                 </div>
               </a>
               <a
-                href="https://apps.apple.com/app/dalasmart-driver/id000000002"
+                href="https://apps.apple.com/app/safiriharaka-driver/id000000002"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors"
@@ -138,7 +138,7 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-          <p>&copy; 2024 DalaSmart. All rights reserved.</p>
+          <p>&copy; 2024 Safiri Haraka. All rights reserved.</p>
         </div>
       </div>
     </footer>

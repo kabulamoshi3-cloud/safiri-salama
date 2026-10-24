@@ -181,7 +181,7 @@ const HomePage: React.FC = () => {
   const testimonials = [
     {
       name: 'Amina T.',
-      text: 'DalaSmart has made my daily commute so much easier. The drivers are professional and the prices are fair.',
+      text: 'Safiri Haraka has made my daily commute so much easier. The drivers are professional and the prices are fair.',
       rating: 5,
     },
     {
@@ -191,7 +191,7 @@ const HomePage: React.FC = () => {
     },
     {
       name: 'Fatuma S.',
-      text: 'Safe, reliable, and affordable. DalaSmart is my go-to for getting around Dar es Salaam.',
+      text: 'Safe, reliable, and affordable. Safiri Haraka is my go-to for getting around Dar es Salaam.',
       rating: 5,
     },
   ];
@@ -216,7 +216,7 @@ const HomePage: React.FC = () => {
             {/* Left: Text Content */}
             <div className="text-center lg:text-left">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-                DalaSmart — Smart, safe & affordable transport in Tanzania 🇹🇿
+                Safiri Haraka — Smart, safe & affordable transport in Tanzania 🇹🇿
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-blue-100">
                 Karibu! Your journey starts here
@@ -417,16 +417,16 @@ const HomePage: React.FC = () => {
       <section className="py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Download the DalaSmart App
+            Download the Safiri Haraka App
           </h2>
 
           {/* Passenger App */}
           <div className="mb-10">
-            <h3 className="text-xl font-semibold mb-2 text-gray-800">Download DalaSmart for Passengers</h3>
+            <h3 className="text-xl font-semibold mb-2 text-gray-800">Download Safiri Haraka for Passengers</h3>
             <p className="text-gray-600 mb-4 text-sm">Book rides, track your driver, pay seamlessly</p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <a
-                href="https://play.google.com/store/apps/details?id=com.dalasmart.passenger"
+                href="https://play.google.com/store/apps/details?id=com.safiriharaka.passenger"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-3 bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-colors"
@@ -438,7 +438,7 @@ const HomePage: React.FC = () => {
                 </div>
               </a>
               <a
-                href="https://apps.apple.com/app/dalasmart-passenger/id000000001"
+                href="https://apps.apple.com/app/safiriharaka-passenger/id000000001"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-3 bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-colors"
@@ -455,11 +455,11 @@ const HomePage: React.FC = () => {
           {/* Driver App */}
           <div className="bg-gray-50 rounded-2xl p-6">
             <p className="text-primary font-semibold mb-1">Are you a driver?</p>
-            <h3 className="text-xl font-semibold mb-2 text-gray-800">Download DalaSmart for Drivers</h3>
+            <h3 className="text-xl font-semibold mb-2 text-gray-800">Download Safiri Haraka for Drivers</h3>
             <p className="text-gray-600 mb-4 text-sm">Accept rides, track earnings, manage your profile</p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <a
-                href="https://play.google.com/store/apps/details?id=com.dalasmart.driver"
+                href="https://play.google.com/store/apps/details?id=com.safiriharaka.driver"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-3 bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-colors"
@@ -471,7 +471,7 @@ const HomePage: React.FC = () => {
                 </div>
               </a>
               <a
-                href="https://apps.apple.com/app/dalasmart-driver/id000000002"
+                href="https://apps.apple.com/app/safiriharaka-driver/id000000002"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-3 bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-colors"

@@ -271,10 +271,10 @@ Root already has `README.md`, `DEPLOYMENT_GUIDE.md`, `FEATURES_README.md`, `QUIC
       Verify: `cd services/api-gateway && npm test -- --testPathPattern=routes/payments` — all cases pass.
 
 - [ ] 6. Run full test suite and fix remaining failures
-      Run `npm test` from `services/api-gateway`. The existing middleware tests (`auth.test.ts`, `rbac.test.ts`, `validation.test.ts`) may fail if they import from `@dalasmart/shared-types` or rely on a different `req.user` shape. Check their imports and add a `moduleNameMapper` in `jest.config.js` if needed:
+      Run `npm test` from `services/api-gateway`. The existing middleware tests (`auth.test.ts`, `rbac.test.ts`, `validation.test.ts`) may fail if they import from `@safiriharaka/shared-types` or rely on a different `req.user` shape. Check their imports and add a `moduleNameMapper` in `jest.config.js` if needed:
       ```js
       moduleNameMapper: {
-        '^@dalasmart/shared-types(.*)$': '<rootDir>/../../packages/shared-types/src$1',
+        '^@safiriharaka/shared-types(.*)$': '<rootDir>/../../packages/shared-types/src$1',
       }
       ```
       Fix any TypeScript type errors in newly created test files (common: `jest.fn()` return type on pool.query).
@@ -293,7 +293,7 @@ Root already has `README.md`, `DEPLOYMENT_GUIDE.md`, `FEATURES_README.md`, `QUIC
 - Trips (create, status, assign driver, complete, cancel, rate, nearby)
 - Driver management
 - Real-time tracking (in-memory + DB fallback, ORS route calculation with straight-line estimate fallback)
-- Payments (M-Pesa, Airtel Money, Tigo Pesa, Halotel, DalaSmart Wallet, Cash, QR Code; receipts; status polling; P2P transfer; bill payments: LUKU/DAWASCO/DSTV/NHIF)
+- Payments (M-Pesa, Airtel Money, Tigo Pesa, Halotel, Safiri Haraka Wallet, Cash, QR Code; receipts; status polling; P2P transfer; bill payments: LUKU/DAWASCO/DSTV/NHIF)
 - Push notifications (Expo/FCM)
 - Ratings and earnings
 - Promo codes and referral
@@ -328,7 +328,7 @@ Root already has `README.md`, `DEPLOYMENT_GUIDE.md`, `FEATURES_README.md`, `QUIC
 
       # Database (PostgreSQL)
       # Format: postgresql://USER:PASSWORD@HOST:PORT/DBNAME
-      DATABASE_URL=postgresql://postgres:password@localhost:5432/dalasmart
+      DATABASE_URL=postgresql://postgres:password@localhost:5432/safiriharaka
 
       # Authentication
       # Generate with: node -e "require('crypto').randomBytes(64).toString('hex')|head -c64"
@@ -385,7 +385,7 @@ Root already has `README.md`, `DEPLOYMENT_GUIDE.md`, `FEATURES_README.md`, `QUIC
       1. **Prerequisites** — Node.js 20+, npm 10+, PostgreSQL 15+, Git. Redis is optional. No Go, Python, or Kafka required.
       2. **Clone and install** — `git clone`, `npm install` at repo root.
       3. **Environment setup** — `cp services/api-gateway/.env.example services/api-gateway/.env`, then edit at minimum `DATABASE_URL` and `JWT_SECRET`.
-      4. **Database setup** — create database (`createdb dalasmart`), run migrations (`cd services/api-gateway && npm run migrate`), optionally seed data (`npm run seed`).
+      4. **Database setup** — create database (`createdb safiriharaka`), run migrations (`cd services/api-gateway && npm run migrate`), optionally seed data (`npm run seed`).
       5. **Start the API** — `cd services/api-gateway && npm run dev`. Server starts on `PORT` (default 3000).
       6. **Smoke test** — `curl http://localhost:3000/health` returns `{"status":"healthy",...}`.
       7. **Run tests** — `cd services/api-gateway && npm test`.

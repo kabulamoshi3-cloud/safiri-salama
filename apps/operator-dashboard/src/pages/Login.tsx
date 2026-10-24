@@ -30,7 +30,7 @@ export default function Login() {
         {/* Logo / Header */}
         <div className="text-center mb-8">
           <div className="text-4xl mb-2">🚌</div>
-          <h1 className="text-2xl font-bold text-blue-600">DalaSmart</h1>
+          <h1 className="text-2xl font-bold text-blue-600">Safiri Haraka</h1>
           <p className="text-sm text-gray-500 mt-1">{t('login_title')}</p>
         </div>
 

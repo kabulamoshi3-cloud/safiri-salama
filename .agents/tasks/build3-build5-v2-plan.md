@@ -420,7 +420,7 @@
          ```typescript
          const submitRating = async () => {
            try {
-             const token = await AsyncStorage.getItem('@dalasmart:token');
+             const token = await AsyncStorage.getItem('@safiriharaka:token');
              await axios.post(
                `${process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1'}/ratings`,
                { trip_id: tripId, ratee_id: driverId ?? driver?.id, rating, review: comment || null },
@@ -479,7 +479,7 @@
 
         const submitRating = async () => {
           try {
-            const token = await AsyncStorage.getItem('@dalasmart:token');
+            const token = await AsyncStorage.getItem('@safiriharaka:token');
             await axios.post(
               `${API_BASE}/ratings`,
               { trip_id: tripId, ratee_id: passengerId, rating, review: comment || null },

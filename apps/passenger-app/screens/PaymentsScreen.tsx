@@ -67,7 +67,7 @@ export default function PaymentsScreen() {
 
   const fetchPaymentInfo = useCallback(async () => {
     try {
-      const token = await AsyncStorage.getItem('@dalasmart:token');
+      const token = await AsyncStorage.getItem('@safiriharaka:token');
       const res = await axios.get(`${API}/payments/info`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -81,7 +81,7 @@ export default function PaymentsScreen() {
 
   const fetchHistory = useCallback(async () => {
     try {
-      const token = await AsyncStorage.getItem('@dalasmart:token');
+      const token = await AsyncStorage.getItem('@safiriharaka:token');
       const res = await axios.get(`${API}/payments/history`, {
         headers: { Authorization: `Bearer ${token}` },
         params: { limit: 20 },
@@ -149,7 +149,7 @@ export default function PaymentsScreen() {
         {paymentInfo && (
           <View style={styles.walletCard}>
             <Ionicons name="wallet" size={28} color="#fff" />
-            <Text style={styles.walletLabel}>DalaSmart Wallet</Text>
+            <Text style={styles.walletLabel}>Safiri Haraka Wallet</Text>
             <Text style={styles.walletBalance}>{paymentInfo.wallet_balance_formatted}</Text>
             {paymentInfo.masked_phone ? (
               <Text style={styles.walletPhone}>{paymentInfo.masked_phone}</Text>

@@ -105,7 +105,7 @@ export default function AdminSidebar({ userProfile, onLogout, role }: AdminSideb
             letterSpacing: '-0.5px',
           }}
         >
-          🚕 DalaSmart
+          🚕 Safiri Haraka
         </div>
         <div
           style={{

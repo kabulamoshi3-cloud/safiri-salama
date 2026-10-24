@@ -1,8 +1,8 @@
 {
-  "name": "dalasmart",
+  "name": "safiriharaka",
   "version": "1.0.0",
   "private": true,
-  "description": "DalaSmart AI-Powered Mobility Platform — monorepo root",
+  "description": "Safiri Haraka AI-Powered Mobility Platform — monorepo root",
   "scripts": {
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",

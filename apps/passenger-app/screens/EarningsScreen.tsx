@@ -32,7 +32,7 @@ export default function EarningsScreen() {
   const load = useCallback(async () => {
     try {
       setError(null);
-      const token = await AsyncStorage.getItem('@dalasmart:token');
+      const token = await AsyncStorage.getItem('@safiriharaka:token');
       const resp = await axios.get<EarningsSummary>(`${API_BASE}/earnings/summary`, {
         headers: { Authorization: `Bearer ${token}` },
       });

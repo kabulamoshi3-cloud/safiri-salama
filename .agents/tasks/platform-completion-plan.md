@@ -1,4 +1,4 @@
-# DalaSmart Platform Completion Plan
+# Safiri Haraka Platform Completion Plan
 
 **Generated:** 2024-10-24  
 **Based on:** navigation-audit-report.md + direct codebase exploration  
@@ -12,7 +12,7 @@
 ### Passenger App (React Native / Expo)
 ```ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const token = await AsyncStorage.getItem('@dalasmart:token');
+const token = await AsyncStorage.getItem('@safiriharaka:token');
 const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiri-salama.vercel.app/api/v1';
 // axios: { headers: { Authorization: `Bearer ${token}` } }
 ```
@@ -20,9 +20,9 @@ const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiri-salama.vercel.app
 ### Driver App (React Native / Expo)
 ```ts
 // Uses APIClient from apps/driver-app/src/services/api/client.ts
-// Token key: '@dalasmart:token' (same as passenger app)
+// Token key: '@safiriharaka:token' (same as passenger app)
 // APIClient.get('/endpoint') — handles token automatically
-// For raw axios: same AsyncStorage.getItem('@dalasmart:token') pattern
+// For raw axios: same AsyncStorage.getItem('@safiriharaka:token') pattern
 ```
 
 ### Admin Panel (React/Vite)

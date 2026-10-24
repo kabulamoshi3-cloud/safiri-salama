@@ -249,7 +249,7 @@ supportRouter.post('/whatsapp-webhook', async (req: Request, res: Response) => {
     if (userResult.rows.length === 0) {
       // Send message asking to register
       await sendWhatsAppMessage(phoneNumber, 
-        'Welcome to DalaSmart Support! Please register at https://app.dalasmart.com to create a ticket.'
+        'Welcome to Safiri Haraka Support! Please register at https://app.safiriharaka.com to create a ticket.'
       );
       return res.status(200).json({ success: true });
     }
@@ -346,7 +346,7 @@ supportRouter.post('/resolve-ticket', auth, async (req: Request, res: Response) 
 
     // Notify user via WhatsApp
     await sendWhatsAppMessage(ticket.phone_number,
-      `Your support ticket #${ticket.ticket_number} has been resolved. ${resolution_message || 'Thank you for contacting DalaSmart Support!'}`
+      `Your support ticket #${ticket.ticket_number} has been resolved. ${resolution_message || 'Thank you for contacting Safiri Haraka Support!'}`
     );
 
     return res.status(200).json({

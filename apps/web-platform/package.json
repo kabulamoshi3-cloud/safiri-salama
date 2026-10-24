@@ -1,7 +1,7 @@
 {
-  "name": "dalasmart-web",
+  "name": "safiriharaka-web",
   "version": "1.0.0",
-  "description": "DalaSmart Web Platform - Responsive web app for passengers",
+  "description": "Safiri Haraka Web Platform - Responsive web app for passengers",
   "private": true,
   "dependencies": {
     "react": "^18.2.0",

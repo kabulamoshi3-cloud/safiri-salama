@@ -13,7 +13,7 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.dalasmart.passenger",
+      "bundleIdentifier": "com.safiriharaka.passenger",
       "config": {}
     },
     "android": {
@@ -21,7 +21,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1a73e8"
       },
-      "package": "com.dalasmart.passenger",
+      "package": "com.safiriharaka.passenger",
       "config": {},
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
@@ -32,7 +32,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "DalaSmart needs your location to find nearby drivers."
+          "locationAlwaysAndWhenInUsePermission": "Safiri Haraka needs your location to find nearby drivers."
         }
       ],
       [

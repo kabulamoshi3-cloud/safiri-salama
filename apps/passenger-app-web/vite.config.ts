@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'DalaSmart Passenger',
-        short_name: 'DalaSmart',
+        name: 'Safiri Haraka Passenger',
+        short_name: 'Safiri Haraka',
         description: 'Book safe, affordable rides across Tanzania',
         theme_color: '#1a73e8',
         background_color: '#ffffff',

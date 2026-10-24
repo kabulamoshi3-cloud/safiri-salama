@@ -1,8 +1,8 @@
-# DalaSmart Missing Features Implementation
+# Safiri Haraka Missing Features Implementation
 
 ## Executive Summary
 
-Implemented 7 critical features to bring DalaSmart to feature parity with Bolt. All backend APIs are production-ready with comprehensive database schemas, error handling, and test coverage.
+Implemented 7 critical features to bring Safiri Haraka to feature parity with Bolt. All backend APIs are production-ready with comprehensive database schemas, error handling, and test coverage.
 
 **Implementation Status**: 64% Complete (7 out of 11 features)
 **Code Lines**: ~2,500 backend + 600 tests + 800 SQL
@@ -132,9 +132,9 @@ Total per trip: Sh2,080
 - Subscription management (view benefits, cancel, upgrade)
 
 **Plans Available**:
-1. **DalaSmart Plus**: Sh10,000/month = 10% discount + Sh2K bonus
-2. **DalaSmart Pro**: Sh20,000/month = 15% discount + Sh5K bonus
-3. **DalaSmart Business**: Sh100,000/month = 20% discount (corporate)
+1. **Safiri Haraka Plus**: Sh10,000/month = 10% discount + Sh2K bonus
+2. **Safiri Haraka Pro**: Sh20,000/month = 15% discount + Sh5K bonus
+3. **Safiri Haraka Business**: Sh100,000/month = 20% discount (corporate)
 
 **Key Endpoints**:
 ```
@@ -152,7 +152,7 @@ POST   /api/v1/subscription/cancel    - Cancel subscription
 
 **Example**:
 ```
-User subscribes: DalaSmart Plus (Sh10K/month)
+User subscribes: Safiri Haraka Plus (Sh10K/month)
 - 10% off all future rides
 - Sh2,000 monthly credit
 - Priority support
@@ -374,7 +374,7 @@ npm test:features
 **Database Migration**:
 ```bash
 # File: migrations/008_add_features.sql
-psql dalasmart_db < migrations/008_add_features.sql
+psql safiriharaka_db < migrations/008_add_features.sql
 
 # Includes:
 - 20 tables with proper indexes
@@ -392,8 +392,8 @@ npm run build
 npm run test:features
 
 # Deploy
-docker build -t dalasmart-api:latest .
-docker push dalasmart-api:latest
+docker build -t safiriharaka-api:latest .
+docker push safiriharaka-api:latest
 kubectl apply -f k8s/api-gateway.yaml
 ```
 
@@ -414,7 +414,7 @@ Corporate Accounts
 └── Monthly billing cycle
 
 Food Delivery
-├── Uses same drivers (DalaSmart fleet)
+├── Uses same drivers (Safiri Haraka fleet)
 ├── Similar payment & ratings system
 └── Complementary to ride business
 
@@ -544,7 +544,7 @@ Support System
 ### 1. Apply Database Migration
 ```bash
 cd services/api-gateway
-psql dalasmart_db < migrations/008_add_features.sql
+psql safiriharaka_db < migrations/008_add_features.sql
 ```
 
 ### 2. Start API Server

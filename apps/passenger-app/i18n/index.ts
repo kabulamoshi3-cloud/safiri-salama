@@ -20,12 +20,12 @@ export const i18n = {
 
   async setLanguage(lang: Language) {
     currentLanguage = lang;
-    await AsyncStorage.setItem('@dalasmart:language', lang);
+    await AsyncStorage.setItem('@safiriharaka:language', lang);
     listeners.forEach(fn => fn());
   },
 
   async loadSavedLanguage() {
-    const saved = await AsyncStorage.getItem('@dalasmart:language');
+    const saved = await AsyncStorage.getItem('@safiriharaka:language');
     if (saved === 'sw' || saved === 'en') {
       currentLanguage = saved;
     }

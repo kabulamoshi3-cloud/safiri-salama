@@ -15,8 +15,8 @@ try {
   /* expo-notifications not installed — notification features disabled */
 }
 
-const PUSH_TOKEN_KEY = '@dalasmart:push_token';
-const PENDING_NAV_KEY = '@dalasmart:pending_nav';
+const PUSH_TOKEN_KEY = '@safiriharaka:push_token';
+const PENDING_NAV_KEY = '@safiriharaka:pending_nav';
 
 const PROJECT_ID = '7956fd4b-f540-47d0-90ad-6904eceaaef7';
 

@@ -49,8 +49,8 @@ export default function CountryLanguageScreen({ navigation }: any) {
     try {
       await i18n.setLanguage(lang);
       const country = countries.find(c => c.code === selectedCountry);
-      await AsyncStorage.setItem('@dalasmart:country', selectedCountry);
-      await AsyncStorage.setItem('@dalasmart:phone_prefix', country?.prefix || '+255');
+      await AsyncStorage.setItem('@safiriharaka:country', selectedCountry);
+      await AsyncStorage.setItem('@safiriharaka:phone_prefix', country?.prefix || '+255');
     } catch (e) {
       console.log('Language save error:', e);
     }

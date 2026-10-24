@@ -1,6 +1,6 @@
 {
   "task_id": "task-platform-completion",
-  "task_description": "Complete the DalaSmart ride-hailing platform: driver document upload UI, admin verification modal, passenger PaymentsScreen with real API, TripDetailScreen, missing backend endpoints, admin analytics/audit/finance pages, support ticket wiring, operator dashboard live data via HTTP polling, and supporting DB migration.",
+  "task_description": "Complete the Safiri Haraka ride-hailing platform: driver document upload UI, admin verification modal, passenger PaymentsScreen with real API, TripDetailScreen, missing backend endpoints, admin analytics/audit/finance pages, support ticket wiring, operator dashboard live data via HTTP polling, and supporting DB migration.",
   "status": "pending",
   "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
   "blocked_reason": null

@@ -82,7 +82,7 @@ const RegisterPage: React.FC = () => {
       <div className="max-w-lg mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
-          <p className="text-gray-600">Join DalaSmart today</p>
+          <p className="text-gray-600">Join Safiri Haraka today</p>
         </div>
 
         <Card>

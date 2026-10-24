@@ -1,5 +1,5 @@
 /**
- * DalaSmart Web Platform Main App
+ * Safiri Haraka Web Platform Main App
  * Responsive web app for booking rides, food delivery, and account management
  */
 

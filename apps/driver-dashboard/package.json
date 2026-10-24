@@ -1,7 +1,7 @@
 {
   "name": "driver-dashboard",
   "version": "1.0.0",
-  "description": "Advanced driver dashboard for DalaSmart",
+  "description": "Advanced driver dashboard for Safiri Haraka",
   "private": true,
   "dependencies": {
     "react": "^18.2.0",

@@ -73,13 +73,13 @@ export default function MainScreen({ navigation }: any) {
   }, [isPolling]);
 
   const loadUser = async () => {
-    const data = await AsyncStorage.getItem('@dalasmart:user');
+    const data = await AsyncStorage.getItem('@safiriharaka:user');
     if (data) setUser(JSON.parse(data));
   };
 
   const fetchNearbyDrivers = async () => {
     try {
-      const token = await AsyncStorage.getItem('@dalasmart:token');
+      const token = await AsyncStorage.getItem('@safiriharaka:token');
       const { latitude, longitude } = regionRef.current;
       const res = await axios.get(
         `${API}/tracking/nearby-drivers?lat=${latitude}&lng=${longitude}&radius=3`,
@@ -145,7 +145,7 @@ export default function MainScreen({ navigation }: any) {
 
   const logout = async () => {
     closeDrawer();
-    await AsyncStorage.multiRemove(['@dalasmart:token', '@dalasmart:role', '@dalasmart:user']);
+    await AsyncStorage.multiRemove(['@safiriharaka:token', '@safiriharaka:role', '@safiriharaka:user']);
     navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
   };
 

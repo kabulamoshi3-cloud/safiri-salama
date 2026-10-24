@@ -68,7 +68,7 @@ const BecomeDriverPage: React.FC = () => {
     {
       question: 'How does payment work?',
       answer:
-        'You receive weekly payouts directly to your mobile money account (M-Pesa or Tigopesa). DalaSmart takes a 20% commission, and you keep the rest. All earnings are tracked transparently in the app.',
+        'You receive weekly payouts directly to your mobile money account (M-Pesa or Tigopesa). Safiri Haraka takes a 20% commission, and you keep the rest. All earnings are tracked transparently in the app.',
     },
     {
       question: 'Can I drive part-time?',
@@ -99,7 +99,7 @@ const BecomeDriverPage: React.FC = () => {
       <section className="bg-gradient-to-br from-primary to-blue-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-            Drive with DalaSmart
+            Drive with Safiri Haraka
           </h1>
           <p className="text-xl md:text-2xl mb-8">
             Earn money on your schedule. Be your own boss.

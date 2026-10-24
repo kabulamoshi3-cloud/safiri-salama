@@ -1,4 +1,4 @@
-// Local type definitions (replaces @dalasmart/shared-types)
+// Local type definitions (replaces @safiriharaka/shared-types)
 
 export interface GeoPoint {
   lat: number;

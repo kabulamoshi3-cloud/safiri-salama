@@ -22,7 +22,7 @@ export default function OrdersScreen({ navigation }: any) {
 
   const fetchTrips = async () => {
     try {
-      const token = await AsyncStorage.getItem('@dalasmart:token');
+      const token = await AsyncStorage.getItem('@safiriharaka:token');
       const res = await axios.get(`${API}/trips`, { headers: { Authorization: `Bearer ${token}` } });
       setTrips(res.data.trips || []);
     } catch {} finally { setLoading(false); setRefreshing(false); }

@@ -1,5 +1,5 @@
 /**
- * DalaSmart — Complete Payment Service
+ * Safiri Haraka — Complete Payment Service
  * ─────────────────────────────────────────────────────────────────────────────
  * Supports:
  *  • Auto-fill phone from registration  (default)
@@ -8,7 +8,7 @@
  *  • Airtel Money STK push
  *  • Tigo Pesa STK push
  *  • Halotel push
- *  • DalaSmart Wallet (instant)
+ *  • Safiri Haraka Wallet (instant)
  *  • QR Code (bus fare, wallet-backed)
  *  • Cash (driver confirms)
  *  • Webhooks for all providers
@@ -31,13 +31,13 @@ export const paymentsRouter = express.Router();
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const PLATFORM_FEE_RATES: Record<string, number> = {
-  ride:        0.20,   // DalaSmart keeps 20% of ride fare
+  ride:        0.20,   // Safiri Haraka keeps 20% of ride fare
   food:        0.10,   // 10% on food orders
   shop:        0.15,   // 15% on shop orders
   market:      0.05,   // 5% on university marketplace
   topup:       0.00,   // no fee on top-ups
-  transfer:    0.00,   // no DalaSmart fee on P2P transfers
-  bill:        0.00,   // no DalaSmart fee on bill payments
+  transfer:    0.00,   // no Safiri Haraka fee on P2P transfers
+  bill:        0.00,   // no Safiri Haraka fee on bill payments
 };
 
 const FARE_CONFIG: Record<string, { base: number; per_km: number }> = {
@@ -90,7 +90,7 @@ const PROVIDER_NAMES: Record<string, string> = {
   airtel_money: 'Airtel Money',
   tigo_pesa:    'Tigo Pesa',
   halotel:      'Halotel',
-  wallet:       'DalaSmart Wallet',
+  wallet:       'Safiri Haraka Wallet',
   qr_code:      'QR Code',
   cash:         'Cash',
 };
@@ -188,7 +188,7 @@ paymentsRouter.get('/info', async (req: Request, res: Response) => {
         },
         {
           method:    'wallet',
-          label:     `DalaSmart Wallet (Sh${Number(wallet_balance).toLocaleString()})`,
+          label:     `Safiri Haraka Wallet (Sh${Number(wallet_balance).toLocaleString()})`,
           icon:      'wallet',
           available: true,
           balance:   wallet_balance,
@@ -329,7 +329,7 @@ paymentsRouter.post('/pay', async (req: Request, res: Response) => {
     }
 
     const reference  = makeRef(method.toUpperCase().slice(0, 3));
-    const txDesc     = description ?? `DalaSmart ${context} payment`;
+    const txDesc     = description ?? `Safiri Haraka ${context} payment`;
 
     // ══════════════════════════════════════════════════════════════════════
     //  TRANSFER — P2P wallet to wallet
@@ -1150,7 +1150,7 @@ paymentsRouter.post('/qr/generate', async (req: Request, res: Response) => {
 
     // This JSON is what gets encoded into the QR image on the frontend
     const qrData = JSON.stringify({
-      type:      'dalasmart_payment',
+      type:      'safiriharaka_payment',
       version:   1,
       token,
       amount:    fareAmount,
@@ -1332,7 +1332,7 @@ paymentsRouter.post('/wallet/topup', async (req: Request, res: Response) => {
     );
     db.release();
 
-    await fireStkPush({ method: provider, phone: phoneToUse, amount, reference, description: 'DalaSmart Wallet Top-up' });
+    await fireStkPush({ method: provider, phone: phoneToUse, amount, reference, description: 'Safiri Haraka Wallet Top-up' });
 
     return res.json({
       reference,

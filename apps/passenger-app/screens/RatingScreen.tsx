@@ -32,7 +32,7 @@ export default function RatingScreen({ route, navigation }: any) {
     setFetching(true);
     (async () => {
       try {
-        const token = await AsyncStorage.getItem('@dalasmart:token');
+        const token = await AsyncStorage.getItem('@safiriharaka:token');
         const resp = await axios.get(`${API_BASE}/trips/${tripId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -59,7 +59,7 @@ export default function RatingScreen({ route, navigation }: any) {
 
   const submitRating = async () => {
     try {
-      const token = await AsyncStorage.getItem('@dalasmart:token');
+      const token = await AsyncStorage.getItem('@safiriharaka:token');
       if (tripId) {
         await axios.post(
           `${API_BASE}/ratings`,

@@ -43,7 +43,7 @@ const LoginPage: React.FC = () => {
       <div className="max-w-md mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-600">Sign in to your DalaSmart account</p>
+          <p className="text-gray-600">Sign in to your Safiri Haraka account</p>
         </div>
 
         {registered === 'true' && (

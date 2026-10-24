@@ -61,13 +61,13 @@ export default function HomeScreen({ navigation }: any) {
   }, [isPolling]);
 
   const loadUser = async () => {
-    const data = await AsyncStorage.getItem('@dalasmart:user');
+    const data = await AsyncStorage.getItem('@safiriharaka:user');
     if (data) setUser(JSON.parse(data));
   };
 
   const fetchNearbyDrivers = async () => {
     try {
-      const token = await AsyncStorage.getItem('@dalasmart:token');
+      const token = await AsyncStorage.getItem('@safiriharaka:token');
       const { latitude, longitude } = regionRef.current;
       const res = await axios.get(
         `${API}/tracking/nearby-drivers?lat=${latitude}&lng=${longitude}&radius=3`,

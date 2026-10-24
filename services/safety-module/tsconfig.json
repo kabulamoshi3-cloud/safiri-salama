@@ -8,7 +8,7 @@
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "baseUrl": ".",
     "paths": {
-      "@dalasmart/shared-types": ["../../packages/shared-types/src/index.ts"]
+      "@safiriharaka/shared-types": ["../../packages/shared-types/src/index.ts"]
     }
   },
   "include": ["src/**/*"],

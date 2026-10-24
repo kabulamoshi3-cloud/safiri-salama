@@ -53,7 +53,7 @@ referralRouter.post('/generate-link', auth, async (req: Request, res: Response) 
       const link = existingResult.rows[0];
       return res.status(200).json({
         referral_code: link.referral_code,
-        referral_link: `https://app.dalasmart.com/join?ref=${link.referral_code}`,
+        referral_link: `https://app.safiriharaka.com/join?ref=${link.referral_code}`,
         total_referrals: link.total_referrals,
         total_bonus_earned: link.total_bonus_earned
       });
@@ -75,8 +75,8 @@ referralRouter.post('/generate-link', auth, async (req: Request, res: Response) 
     return res.status(201).json({
       success: true,
       referral_code: link.referral_code,
-      referral_link: `https://app.dalasmart.com/join?ref=${link.referral_code}`,
-      sharing_message: `Join DalaSmart with my referral code ${link.referral_code} and get Sh5,000 on your first ride! Use code: ${link.referral_code}`
+      referral_link: `https://app.safiriharaka.com/join?ref=${link.referral_code}`,
+      sharing_message: `Join Safiri Haraka with my referral code ${link.referral_code} and get Sh5,000 on your first ride! Use code: ${link.referral_code}`
     });
 
   } catch (error) {

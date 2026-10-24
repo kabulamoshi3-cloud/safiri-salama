@@ -329,7 +329,7 @@ foodDeliveryRouter.get('/orders/:order_id/track', auth, async (req: Request, res
       total: order.total,
       delivery_address: order.delivery_address,
       estimated_delivery: '20-30 minutes',
-      tracking_url: `https://app.dalasmart.com/track/food/${order_id}`,
+      tracking_url: `https://app.safiriharaka.com/track/food/${order_id}`,
       message: `Your order is ${order.status}. Driver will arrive soon.`
     });
 

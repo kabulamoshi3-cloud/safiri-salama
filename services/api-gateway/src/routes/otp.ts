@@ -12,7 +12,7 @@ const router = Router();
 const AT_USERNAME = process.env.AT_USERNAME || 'sandbox';
 const AT_API_KEY = process.env.AT_API_KEY;
 const AT_SMS_URL = 'https://api.africastalking.com/version1/messaging';
-const AT_SENDER = 'DalaSmart';
+const AT_SENDER = 'Safiri Haraka';
 
 // Store OTPs in memory (in production use Redis)
 const otpStore: Map<string, { code: string; expiresAt: number }> = new Map();
@@ -43,7 +43,7 @@ router.post('/send', async (req: Request, res: Response) => {
     // Store OTP
     otpStore.set(phone, { code, expiresAt });
 
-    const message = `Your DalaSmart verification code is: ${code}. Valid for 5 minutes.`;
+    const message = `Your Safiri Haraka verification code is: ${code}. Valid for 5 minutes.`;
 
     // Send SMS only when Africa's Talking credentials are configured.
     let smsSent = false;
@@ -161,7 +161,7 @@ router.post('/resend', async (req: Request, res: Response) => {
     otpStore.set(phone, { code, expiresAt });
 
     // Send SMS
-    const message = `Your DalaSmart code: ${code}. Valid 5 min.`;
+    const message = `Your Safiri Haraka code: ${code}. Valid 5 min.`;
     const params = new URLSearchParams({ username: AT_USERNAME, to: phone, message, from: AT_SENDER });
 
     await fetch(AT_SMS_URL, {

@@ -64,7 +64,7 @@ const OperatorSidebar: React.FC<OperatorSidebarProps> = ({ userProfile, onLogout
     <div className="w-64 bg-gray-900 text-white h-screen fixed left-0 top-0 shadow-lg overflow-y-auto flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-gray-800">
-        <h1 className="text-2xl font-bold">DalaSmart</h1>
+        <h1 className="text-2xl font-bold">Safiri Haraka</h1>
         <p className="text-sm text-gray-400 mt-1">Operations Console</p>
       </div>
 

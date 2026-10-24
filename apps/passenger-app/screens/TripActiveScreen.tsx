@@ -142,7 +142,7 @@ export default function TripActiveScreen({ route, navigation }: any) {
       let unsubETA: () => void = () => {};
       let cancelled = false; // guards against a resolved promise after cleanup
 
-      AsyncStorage.getItem('@dalasmart:token').then((token) => {
+      AsyncStorage.getItem('@safiriharaka:token').then((token) => {
         if (cancelled) return; // effect was already cleaned up
         if (token) {
           TrackingSocket.connect(token);

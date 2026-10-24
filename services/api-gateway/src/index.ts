@@ -39,7 +39,7 @@ app.use(rateLimiter);
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
-    name: 'DalaSmart API',
+    name: 'Safiri Haraka API',
     version: '1.0.0',
     status: 'running',
     endpoints: {

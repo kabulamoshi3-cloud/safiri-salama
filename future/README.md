@@ -1,4 +1,4 @@
-# DalaSmart — Future Deployments
+# Safiri Haraka — Future Deployments
 
 This folder documents apps and services that are **not part of the initial deployment**.
 They will be developed and deployed independently in future phases.

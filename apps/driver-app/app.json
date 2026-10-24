@@ -14,13 +14,13 @@
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.dalasmart.driver"
+      "bundleIdentifier": "com.safiriharaka.driver"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#2e7d32"
       },
-      "package": "com.dalasmart.driver",
+      "package": "com.safiriharaka.driver",
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
@@ -34,7 +34,7 @@
         "expo-location",
         {
           "isAndroidBackgroundLocationEnabled": true,
-          "locationAlwaysAndWhenInUsePermission": "DalaSmart inahitaji mahali pako ili kukusaidia na safari."
+          "locationAlwaysAndWhenInUsePermission": "Safiri Haraka inahitaji mahali pako ili kukusaidia na safari."
         }
       ],
       [

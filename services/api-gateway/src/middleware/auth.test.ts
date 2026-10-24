@@ -13,7 +13,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { generateKeyPairSync } from 'crypto';
-import { UserType } from '@dalasmart/shared-types';
+import { UserType } from '@safiriharaka/shared-types';
 
 import { authenticate, JwtPayload } from './auth';
 

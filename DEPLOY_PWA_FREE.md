@@ -1,4 +1,4 @@
-# 🚀 Deploy DalaSmart as PWAs on Vercel (100% FREE)
+# 🚀 Deploy Safiri Haraka as PWAs on Vercel (100% FREE)
 
 Complete guide to deploy all 3 apps for **$0/month forever**.
 
@@ -40,7 +40,7 @@ cd apps/public-website
 vercel --prod
 ```
 
-**Result:** `https://dalasmart.vercel.app` or your custom domain
+**Result:** `https://safiriharaka.vercel.app` or your custom domain
 
 ---
 
@@ -51,7 +51,7 @@ cd apps/web-platform
 vercel --prod
 ```
 
-**Result:** `https://dalasmart-app.vercel.app`
+**Result:** `https://safiriharaka-app.vercel.app`
 
 This single deployment serves BOTH passengers and drivers with different routes:
 - `/passenger/*` - Passenger features
@@ -71,7 +71,7 @@ If `vercel login` doesn't work, use the dashboard:
    - Select: `kabulamoshi3-cloud/safiri-salama`
 4. **Configure Project**:
    ```
-   Project Name: dalasmart-public
+   Project Name: safiriharaka-public
    Framework Preset: Vite
    Root Directory: apps/public-website
    Build Command: npm run build
@@ -95,7 +95,7 @@ If `vercel login` doesn't work, use the dashboard:
    - Select: `kabulamoshi3-cloud/safiri-salama`
 4. **Configure Project**:
    ```
-   Project Name: dalasmart-app
+   Project Name: safiriharaka-app
    Framework Preset: Vite
    Root Directory: apps/web-platform
    Build Command: npm run build
@@ -138,9 +138,9 @@ After deployment, you'll have:
 
 | App | URL | Purpose |
 |-----|-----|---------|
-| **Public Website** | `https://dalasmart.vercel.app` | Marketing, sign up |
-| **Passenger App** | `https://dalasmart-app.vercel.app/passenger` | Book rides |
-| **Driver App** | `https://dalasmart-app.vercel.app/driver` | Accept rides |
+| **Public Website** | `https://safiriharaka.vercel.app` | Marketing, sign up |
+| **Passenger App** | `https://safiriharaka-app.vercel.app/passenger` | Book rides |
+| **Driver App** | `https://safiriharaka-app.vercel.app/driver` | Accept rides |
 
 ---
 
@@ -148,13 +148,13 @@ After deployment, you'll have:
 
 ### **For Passengers:**
 ```
-Visit: https://dalasmart-app.vercel.app/passenger
+Visit: https://safiriharaka-app.vercel.app/passenger
 Then tap "Add to Home Screen"
 ```
 
 ### **For Drivers:**
 ```
-Visit: https://dalasmart-app.vercel.app/driver
+Visit: https://safiriharaka-app.vercel.app/driver
 Then tap "Add to Home Screen"
 ```
 
@@ -162,7 +162,7 @@ Then tap "Add to Home Screen"
 
 ## 🎨 Custom Domains (Optional - Still FREE):
 
-Want `app.dalasmart.com` instead of `.vercel.app`?
+Want `app.safiriharaka.com` instead of `.vercel.app`?
 
 1. Buy domain from Namecheap/GoDaddy (~$10/year)
 2. In Vercel dashboard → Settings → Domains
@@ -266,12 +266,12 @@ After deployment, update these files with real PWA URLs:
 
 Replace:
 ```javascript
-href="https://play.google.com/store/apps/details?id=com.dalasmart.passenger"
+href="https://play.google.com/store/apps/details?id=com.safiriharaka.passenger"
 ```
 
 With:
 ```javascript
-href="https://dalasmart-app.vercel.app/passenger"
+href="https://safiriharaka-app.vercel.app/passenger"
 ```
 
 ---

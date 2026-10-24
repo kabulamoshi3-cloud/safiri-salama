@@ -41,7 +41,7 @@ export default function DriverMainScreen({ navigation }: any) {
   }, [isOnline]);
 
   const loadUser = async () => {
-    const data = await AsyncStorage.getItem('@dalasmart:user');
+    const data = await AsyncStorage.getItem('@safiriharaka:user');
     if (data) setUser(JSON.parse(data));
   };
 
@@ -70,7 +70,7 @@ export default function DriverMainScreen({ navigation }: any) {
 
   const logout = async () => {
     closeDrawer();
-    await AsyncStorage.multiRemove(['@dalasmart:token', '@dalasmart:role', '@dalasmart:user']);
+    await AsyncStorage.multiRemove(['@safiriharaka:token', '@safiriharaka:role', '@safiriharaka:user']);
     navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
   };
 

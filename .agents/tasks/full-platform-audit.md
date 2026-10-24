@@ -1,4 +1,4 @@
-# DalaSmart Full Platform Audit Report
+# Safiri Haraka Full Platform Audit Report
 
 **Date:** 2025  
 **Scope:** Complete navigation/spec audit of all 8 sections  
@@ -33,7 +33,7 @@ Additionally, the **HelpPage has no interactive contact form** (spec requires on
 
 - ✅ **AboutPage.tsx** — Mission section, vision section, story section (3 paragraphs), values grid, contact section with email/phone/address.
 
-- ⚠️ **HelpPage.tsx** — FAQ sections present for Passengers/Drivers/Safety/Payments (4 accordion sections), emergency numbers (Police 112, Ambulance 114, DalaSmart Emergency), contact info (phone/email/WhatsApp). **PARTIAL: No interactive contact form** — spec requires a contact form but only static contact info is shown.
+- ⚠️ **HelpPage.tsx** — FAQ sections present for Passengers/Drivers/Safety/Payments (4 accordion sections), emergency numbers (Police 112, Ambulance 114, Safiri Haraka Emergency), contact info (phone/email/WhatsApp). **PARTIAL: No interactive contact form** — spec requires a contact form but only static contact info is shown.
 
 - ✅ **LoginPage.tsx** — Role toggle (Passenger/Driver buttons), form submission to `/auth/login` via `login()` service, role-based redirect (driver → `/driver`, passenger → `/`).
 
@@ -41,7 +41,7 @@ Additionally, the **HelpPage has no interactive contact form** (spec requires on
 
 ### Components
 
-- ✅ **Navbar** — Logo ("DalaSmart"), all 6 nav links (Home, Services, Traffic, Become a Driver, About, Help), "Book a Ride" CTA button, "Sign In" button, mobile hamburger menu with `FaBars`/`FaTimes` toggle.
+- ✅ **Navbar** — Logo ("Safiri Haraka"), all 6 nav links (Home, Services, Traffic, Become a Driver, About, Help), "Book a Ride" CTA button, "Sign In" button, mobile hamburger menu with `FaBars`/`FaTimes` toggle.
 
 - ✅ **Footer** — Company info + tagline, quick links column (5 links), legal column (Terms/Privacy), download app column (App Store/Google Play placeholders), social links (Facebook/Twitter/Instagram).
 

@@ -1,6 +1,6 @@
 # i18n Implementation — All 17 Passenger-App Screens Complete
 
-Commit 613c718 closes the loop on the i18n effort across the DalaSmart passenger app. All three findings from the previous pass are resolved: DriverActiveTripScreen is now fully translated, DriverMainScreen has its subscribe hook, and TrafficScreen stores a key in state rather than a translated string so confidence labels re-translate correctly on language switch. The locale files maintain perfect key symmetry — both en.json and sw.json contain exactly 356 keys, and every key referenced by `i18n.t()` across all 24 screens resolves in both locales.
+Commit 613c718 closes the loop on the i18n effort across the Safiri Haraka passenger app. All three findings from the previous pass are resolved: DriverActiveTripScreen is now fully translated, DriverMainScreen has its subscribe hook, and TrafficScreen stores a key in state rather than a translated string so confidence labels re-translate correctly on language switch. The locale files maintain perfect key symmetry — both en.json and sw.json contain exactly 356 keys, and every key referenced by `i18n.t()` across all 24 screens resolves in both locales.
 
 Watch for: **"English" and "Kiswahili" remain hardcoded in SettingsScreen** (confirmed — lines 33 and 38, no locale keys for these language name labels). Minor but technically incomplete. No new issues introduced.
 

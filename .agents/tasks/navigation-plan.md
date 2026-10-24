@@ -1,4 +1,4 @@
-# Implementation Plan — DalaSmart Navigation + Routing + Live Tracking
+# Implementation Plan — Safiri Haraka Navigation + Routing + Live Tracking
 
 ## Codebase facts discovered
 

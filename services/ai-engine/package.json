@@ -1,7 +1,7 @@
 {
-  "name": "@dalasmart/ai-engine",
+  "name": "@safiriharaka/ai-engine",
   "version": "1.0.0",
-  "description": "DalaSmart AI/ML Engine — Python / FastAPI (crowding, NLP, fraud, fatigue, route analysis, maintenance)",
+  "description": "Safiri Haraka AI/ML Engine — Python / FastAPI (crowding, NLP, fraud, fatigue, route analysis, maintenance)",
   "private": true,
   "scripts": {
     "install:python": "pip install -r requirements.txt",

@@ -1,4 +1,4 @@
-# Build4 Retry Plan — DalaSmart Admin Panel
+# Build4 Retry Plan — Safiri Haraka Admin Panel
 
 ## What Was Investigated
 
@@ -32,7 +32,7 @@ All steps must be implemented in the original order. A summary with path correct
 - `src/routes/auth.ts` signs JWTs as `{ userId, userType }`.
 - `src/middleware/auth.ts` decodes the token and assigns `req.user = decoded` — but it casts the decoded payload as `{ id: string; type: ...; phone: string }`.
 - Result: `req.user.id` is undefined (JWT uses `userId`), `req.user.type` is undefined (JWT uses `userType`). **Neither `.type` nor `.userType` on `req.user` will reliably hold the user type when passing through `authMiddleware`.**
-- `rbac.ts`'s `requireRole` checks `req.user.role` (not `.type`). It imports from `@dalasmart/shared-types` `UserType`.
+- `rbac.ts`'s `requireRole` checks `req.user.role` (not `.type`). It imports from `@safiriharaka/shared-types` `UserType`.
 
 **Decision for `admin.ts`:** Do **not** use `requireRole` from either `auth.ts` or `rbac.ts`. Instead, import `authMiddleware` from `../middleware/auth` to validate the token (it handles missing/invalid token with 401), then manually guard with:
 
@@ -122,7 +122,7 @@ Confirmed — only `package.json` and `tsconfig.json` are present at the admin-p
       Verify: `cd apps/admin-panel && npm run typecheck` — 0 errors.
 
 - [ ] 7. **Create shared components: Layout, StatusBadge, Table, Modal.**
-      - `Layout.tsx`: dark sidebar (`#1a1f2e`) with DalaSmart logo text, `NavLink` items (orange active highlight), `<Outlet />`, top bar with page title and Logout button.
+      - `Layout.tsx`: dark sidebar (`#1a1f2e`) with Safiri Haraka logo text, `NavLink` items (orange active highlight), `<Outlet />`, top bar with page title and Logout button.
       - `StatusBadge.tsx`: pill badge — green (`active`/`approved`/`online`/`available`), orange (`pending`), red (`banned`/`cancelled`/`rejected`), gray (`offline`/`inactive`).
       - `Table.tsx`: generic `<Table<T>>` with `columns: { key: keyof T | string; label: string; render?: (row: T) => React.ReactNode }[]` and `rows: T[]`.
       - `Modal.tsx`: overlay modal with close button, `title` + `children` props.

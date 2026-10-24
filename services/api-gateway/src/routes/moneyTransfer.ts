@@ -1,7 +1,7 @@
 /**
  * Money Transfer API Routes
  * Peer-to-peer transfers, mobile money top-up/withdrawal,
- * and bill payments via DalaSmart wallet.
+ * and bill payments via Safiri Haraka wallet.
  */
 
 import express, { Request, Response } from 'express';
@@ -79,7 +79,7 @@ moneyTransferRouter.post('/send', async (req: Request, res: Response) => {
 
     if (recipientResult.rowCount === 0) {
       db.release();
-      return res.status(404).json({ error: 'Recipient not found on DalaSmart' });
+      return res.status(404).json({ error: 'Recipient not found on Safiri Haraka' });
     }
 
     const recipient = recipientResult.rows[0];

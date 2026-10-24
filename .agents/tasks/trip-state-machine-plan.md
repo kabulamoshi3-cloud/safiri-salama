@@ -61,7 +61,7 @@
 *Depends on FEAT-001 being complete (endpoints must exist on the server).*
 
 - [ ] 10. Update `RideRequestScreen.tsx` — wire up trip creation.
-      `confirmRide()`: read JWT from `AsyncStorage.getItem('@dalasmart:token')`, call `POST /api/v1/trips` with all coordinate + fare fields, receive the `trip.id` from the response, then `navigation.navigate('TripActive', { …existingParams, tripId: trip.id })`. Show `ActivityIndicator` during the request; show `Alert` on error.
+      `confirmRide()`: read JWT from `AsyncStorage.getItem('@safiriharaka:token')`, call `POST /api/v1/trips` with all coordinate + fare fields, receive the `trip.id` from the response, then `navigation.navigate('TripActive', { …existingParams, tripId: trip.id })`. Show `ActivityIndicator` during the request; show `Alert` on error.
       Files: `apps/passenger-app/screens/RideRequestScreen.tsx`
       Verify: `cd apps/passenger-app && npx tsc --noEmit` — zero errors.
 

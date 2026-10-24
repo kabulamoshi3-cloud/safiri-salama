@@ -1,6 +1,6 @@
-# DalaSmart — Setup Guide
+# Safiri Haraka — Setup Guide
 
-Complete step-by-step instructions for setting up the DalaSmart platform on your local machine.
+Complete step-by-step instructions for setting up the Safiri Haraka platform on your local machine.
 
 ---
 
@@ -53,7 +53,7 @@ Before you begin, ensure you have the following installed:
 
    - **`DATABASE_URL`** — Your PostgreSQL connection string:
      ```
-     DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/dalasmart
+     DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/safiriharaka
      ```
 
    - **`JWT_SECRET`** — Generate a secure 64-character random string:
@@ -71,13 +71,13 @@ Before you begin, ensure you have the following installed:
 1. **Create the database:**
 
    ```bash
-   createdb dalasmart
+   createdb safiriharaka
    ```
 
    If the `createdb` command is not found, use `psql`:
    ```bash
    psql -U postgres
-   CREATE DATABASE dalasmart;
+   CREATE DATABASE safiriharaka;
    \q
    ```
 
@@ -173,7 +173,7 @@ npm test -- --watch
 
 ## Deployment (Vercel)
 
-DalaSmart is designed for **Vercel serverless** deployment. The API exports `default app` without calling `app.listen()` — Vercel handles the HTTP server automatically.
+Safiri Haraka is designed for **Vercel serverless** deployment. The API exports `default app` without calling `app.listen()` — Vercel handles the HTTP server automatically.
 
 ### Steps:
 
@@ -241,7 +241,7 @@ The connection pool automatically enables SSL when `NODE_ENV=production`.
    - Default PostgreSQL port is `5432`
    - Try connecting with `psql` to verify credentials:
      ```bash
-     psql postgresql://postgres:yourpassword@localhost:5432/dalasmart
+     psql postgresql://postgres:yourpassword@localhost:5432/safiriharaka
      ```
 
 ### JWT authentication errors
@@ -290,11 +290,11 @@ The straight-line fallback is intentional and allows the app to work without ext
 1. Ensure your PostgreSQL user has `CREATE TABLE` permissions
 2. Try running migrations as a superuser:
    ```bash
-   psql -U postgres dalasmart < migrations/001_initial.sql
+   psql -U postgres safiriharaka < migrations/001_initial.sql
    ```
 3. Check that the database exists:
    ```bash
-   psql -U postgres -c "\l" | grep dalasmart
+   psql -U postgres -c "\l" | grep safiriharaka
    ```
 
 ### Tests fail with "Cannot find module"
@@ -327,4 +327,4 @@ The straight-line fallback is intentional and allows the app to work without ext
 
 - **Issues:** [GitHub Issues](https://github.com/yourusername/daladala/issues)
 - **Discussions:** [GitHub Discussions](https://github.com/yourusername/daladala/discussions)
-- **Email:** support@dalasmart.co.tz
+- **Email:** support@safiriharaka.co.tz

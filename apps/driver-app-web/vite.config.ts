@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'DalaSmart Driver',
-        short_name: 'DalaSmart Driver',
-        description: 'Drive with DalaSmart - Earn money on your schedule',
+        name: 'Safiri Haraka Driver',
+        short_name: 'Safiri Haraka Driver',
+        description: 'Drive with Safiri Haraka - Earn money on your schedule',
         theme_color: '#2e7d32',
         background_color: '#ffffff',
         display: 'standalone',

@@ -14,7 +14,7 @@ apps/admin-panel/
 ├── package.json                     # React 18.3.1, react-router-dom 6.26.1, react-i18next
 ├── vite.config.ts                   # @ alias -> ./src
 ├── tsconfig.json                    # baseUrl: ".", strict: false
-├── index.html                       # title: "DalaSmart Admin"
+├── index.html                       # title: "Safiri Haraka Admin"
 ├── src/
 │   ├── main.tsx                     # Entry: imports './i18n', renders <App />
 │   ├── i18n.ts                      # Single file with embedded en/sw translations
@@ -56,7 +56,7 @@ apps/operator-dashboard/
 │                                    # tailwindcss, autoprefixer, postcss
 ├── vite.config.ts                   # No path alias, server port 5175
 ├── tsconfig.json                    # baseUrl: ".", strict: false
-├── index.html                       # title: "DalaSmart Operator Dashboard"
+├── index.html                       # title: "Safiri Haraka Operator Dashboard"
 ├── tailwind.config.js               # (assumed to exist for Tailwind)
 ├── postcss.config.js                # (assumed to exist for Tailwind)
 ├── src/
@@ -113,7 +113,7 @@ apps/operator-dashboard/
 - vite: ^5.4.2
 - vitest: ^2.0.5
 - @vitejs/plugin-react: ^4.3.1
-- @dalasmart/shared-types: file:../../packages/shared-types
+- @safiriharaka/shared-types: file:../../packages/shared-types
 
 **operator-dashboard-specific dependencies (must add to staff-portal):**
 - axios: ^1.7.7
@@ -205,7 +205,7 @@ Both apps have pages with the same name but different content:
 
 - [ ] 2. **Update package.json metadata**
 
-      Update name to `@dalasmart/staff-portal`, description to "DalaSmart Staff Portal — Unified admin and operations console"
+      Update name to `@safiriharaka/staff-portal`, description to "Safiri Haraka Staff Portal — Unified admin and operations console"
       
       Files: `apps/staff-portal/package.json`
       
@@ -231,7 +231,7 @@ Both apps have pages with the same name but different content:
 
 - [ ] 5. **Update index.html title**
 
-      Change title from "DalaSmart Admin" to "DalaSmart Staff Portal"
+      Change title from "Safiri Haraka Admin" to "Safiri Haraka Staff Portal"
       
       Files: `apps/staff-portal/index.html`
       
