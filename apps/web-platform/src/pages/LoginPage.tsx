@@ -31,6 +31,14 @@ const T = {
     hasAccount: 'Already have an account?',
     register: 'Register',
     login: 'Login',
+    welcomeBack: 'Welcome\nback 👋',
+    createAccount: 'Create\naccount 🚗',
+    signInSubtitle: 'Sign in to book your ride',
+    joinSubtitle: 'Join riders across Morogoro',
+    fullName: 'Full Name',
+    phoneNumber: 'Phone number',
+    password: 'Password',
+    confirmPassword: 'Confirm Password',
   },
   sw: {
     skip: 'Ruka →',
@@ -52,6 +60,14 @@ const T = {
     hasAccount: 'Una akaunti tayari?',
     register: 'Jisajili',
     login: 'Ingia',
+    welcomeBack: 'Karibu\ntena 👋',
+    createAccount: 'Fungua\nakaunti 🚗',
+    signInSubtitle: 'Ingia ili kupiga nauli',
+    joinSubtitle: 'Jiunge na abiria wengine Morogoro',
+    fullName: 'Jina Kamili',
+    phoneNumber: 'Nambari ya Simu',
+    password: 'Nenosiri',
+    confirmPassword: 'Thibitisha Nenosiri',
   },
 } as const;
 
@@ -257,10 +273,10 @@ const LoginPage: React.FC = () => {
           <span className="text-white font-black text-xl">Safiri Haraka</span>
         </div>
         <h1 className="text-3xl font-black text-white leading-tight">
-          {mode === 'login' ? 'Welcome\nback 👋' : 'Create\naccount 🚗'}
+          {mode === 'login' ? t.welcomeBack : t.createAccount}
         </h1>
         <p className="text-white/60 text-sm mt-2">
-          {mode === 'login' ? 'Sign in to book your ride' : 'Join riders across Morogoro'}
+          {mode === 'login' ? t.signInSubtitle : t.joinSubtitle}
         </p>
       </div>
 
@@ -274,7 +290,7 @@ const LoginPage: React.FC = () => {
               className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${
                 mode === m ? 'bg-primary-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-700'
               }`}>
-              {m === 'login' ? 'Sign In' : 'Register'}
+              {m === 'login' ? t.login : t.register}
             </button>
           ))}
         </div>
@@ -282,7 +298,7 @@ const LoginPage: React.FC = () => {
         {/* Name — register only */}
         {mode === 'register' && (
           <div className="mb-4">
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Full Name</label>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t.fullName}</label>
             <div className="flex items-center gap-3 border-2 border-gray-100 bg-gray-50 rounded-2xl px-4 py-3.5 focus-within:border-secondary-400 transition-all">
               <User size={18} className="text-secondary-500 flex-shrink-0" />
               <input type="text" placeholder="e.g. Amina Juma" value={name}
@@ -310,7 +326,7 @@ const LoginPage: React.FC = () => {
 
         {/* Password */}
         <div className="mb-4">
-          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Password</label>
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t.password}</label>
           <div className="flex items-center gap-3 border-2 border-gray-100 bg-gray-50 rounded-2xl px-4 py-3.5 focus-within:border-primary-500 transition-all">
             <Lock size={18} className="text-primary-400 flex-shrink-0" />
             <input type={showPass ? 'text' : 'password'} placeholder="Min. 6 characters" value={password}
