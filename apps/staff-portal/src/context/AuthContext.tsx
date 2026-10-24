@@ -8,7 +8,7 @@ import React, {
 
 const TOKEN_KEY = 'staff_token';
 
-export type UserRole = 'admin' | 'operator';
+export type UserRole = 'admin' | 'operator' | 'super_admin';
 
 export interface UserProfile {
   name: string;
@@ -66,7 +66,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error('Login response missing user type field');
     }
     
-    const detectedRole: UserRole = userType === 'operator' ? 'operator' : 'admin';
+    const detectedRole: UserRole =
+      userType === 'operator'
+        ? 'operator'
+        : userType === 'super_admin' || userType === 'superadmin'
+        ? 'super_admin'
+        : 'admin';
 
     localStorage.setItem(TOKEN_KEY, newToken);
     localStorage.setItem('staff_role', detectedRole);

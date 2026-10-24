@@ -15,7 +15,7 @@ export default function RoleBasedRoute({ children, allowedRoles }: RoleBasedRout
     return <Navigate to="/login" replace />;
   }
 
-  if (role && !allowedRoles.includes(role)) {
+  if (role && !allowedRoles.includes(role) && role !== 'super_admin') {
     const correctDashboard = role === 'admin' ? '/admin' : '/ops';
     
     return (

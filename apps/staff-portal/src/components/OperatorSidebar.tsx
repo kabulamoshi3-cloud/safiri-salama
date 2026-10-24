@@ -22,11 +22,12 @@ import {
   Bell,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { UserProfile } from '../context/AuthContext';
+import { UserProfile, UserRole } from '../context/AuthContext';
 
 interface OperatorSidebarProps {
   userProfile: UserProfile | null;
   onLogout: () => void;
+  role?: UserRole;
 }
 
 const OperatorSidebar: React.FC<OperatorSidebarProps> = ({ userProfile, onLogout }) => {

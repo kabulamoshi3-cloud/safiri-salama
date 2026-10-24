@@ -20,6 +20,7 @@ import Analytics from './pages/Analytics';
 import Support from './pages/Support';
 import StaffRoles from './pages/StaffRoles';
 import Settings from './pages/Settings';
+import Passengers from './pages/Passengers';
 
 const router = createBrowserRouter([
   {
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
       { path: 'analytics',  element: <Analytics /> },
       { path: 'support',    element: <Support /> },
       { path: 'staff',      element: <StaffRoles /> },
+      { path: 'passengers', element: <Passengers /> },
       { path: 'settings',   element: <Settings /> },
       { path: '*',          element: <Navigate to="/" replace /> },
     ],

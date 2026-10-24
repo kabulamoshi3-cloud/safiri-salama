@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaCar, FaMotorcycle, FaCheckCircle } from 'react-icons/fa';
+import { FaCar, FaMotorcycle, FaCheckCircle, FaGooglePlay, FaApple } from 'react-icons/fa';
 import Button from '../components/Button';
 import Card from '../components/Card';
 
@@ -122,16 +122,73 @@ const ServicesPage: React.FC = () => {
           <p className="text-xl mb-8">
             Download the DalaSmart app today and enjoy hassle-free rides
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <div className="bg-white/20 backdrop-blur px-8 py-4 rounded-lg cursor-not-allowed">
-              <p className="font-semibold">App Store</p>
-              <p className="text-sm">Coming Soon</p>
-            </div>
-            <div className="bg-white/20 backdrop-blur px-8 py-4 rounded-lg cursor-not-allowed">
-              <p className="font-semibold">Google Play</p>
-              <p className="text-sm">Coming Soon</p>
+
+          {/* Passenger App */}
+          <div className="mb-8">
+            <p className="text-lg font-semibold mb-4">Download DalaSmart for Passengers</p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <a
+                href="https://play.google.com/store/apps/details?id=com.dalasmart.passenger"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-3 bg-white text-gray-900 px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors font-semibold"
+              >
+                <FaGooglePlay className="text-xl" />
+                <div className="text-left">
+                  <div className="text-xs opacity-70">GET IT ON</div>
+                  <div className="text-sm font-bold">Google Play</div>
+                </div>
+              </a>
+              <a
+                href="https://apps.apple.com/app/dalasmart-passenger/id000000001"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-3 bg-white text-gray-900 px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors font-semibold"
+              >
+                <FaApple className="text-xl" />
+                <div className="text-left">
+                  <div className="text-xs opacity-70">Download on the</div>
+                  <div className="text-sm font-bold">App Store</div>
+                </div>
+              </a>
             </div>
           </div>
+
+          {/* Driver App */}
+          <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+            <p className="text-sm font-semibold mb-1 opacity-80">Are you a driver?</p>
+            <p className="text-lg font-semibold mb-4">Download DalaSmart for Drivers</p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <a
+                href="https://play.google.com/store/apps/details?id=com.dalasmart.driver"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-3 bg-white text-gray-900 px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors font-semibold"
+              >
+                <FaGooglePlay className="text-xl" />
+                <div className="text-left">
+                  <div className="text-xs opacity-70">GET IT ON</div>
+                  <div className="text-sm font-bold">Google Play</div>
+                </div>
+              </a>
+              <a
+                href="https://apps.apple.com/app/dalasmart-driver/id000000002"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-3 bg-white text-gray-900 px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors font-semibold"
+              >
+                <FaApple className="text-xl" />
+                <div className="text-left">
+                  <div className="text-xs opacity-70">Download on the</div>
+                  <div className="text-sm font-bold">App Store</div>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <p className="text-xs mt-6 opacity-60">
+            Links will be updated when apps are published on the stores.
+          </p>
         </div>
       </section>
     </div>

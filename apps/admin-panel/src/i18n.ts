@@ -16,6 +16,7 @@ const resources = {
       nav_analytics: 'Analytics',
       nav_support: 'Support',
       nav_staff: 'Staff & Roles',
+      nav_passengers: 'Passengers',
       nav_settings: 'Settings',
       nav_logout: 'Logout',
       // New page titles
@@ -171,6 +172,7 @@ const resources = {
       nav_analytics: 'Takwimu',
       nav_support: 'Msaada',
       nav_staff: 'Wafanyakazi na Majukumu',
+      nav_passengers: 'Abiria',
       nav_settings: 'Mipangilio',
       nav_logout: 'Toka',
       // New page titles

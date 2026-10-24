@@ -47,7 +47,7 @@ function RootRedirect() {
     return <Navigate to="/login" replace />;
   }
 
-  if (role === 'admin') {
+  if (role === 'admin' || role === 'super_admin') {
     return <Navigate to="/admin" replace />;
   }
 
@@ -70,7 +70,7 @@ const router = createBrowserRouter([
   {
     path: '/admin',
     element: (
-      <RoleBasedRoute allowedRoles={['admin']}>
+      <RoleBasedRoute allowedRoles={['admin', 'super_admin']}>
         <Layout role="admin" />
       </RoleBasedRoute>
     ),
@@ -92,7 +92,7 @@ const router = createBrowserRouter([
   {
     path: '/ops',
     element: (
-      <RoleBasedRoute allowedRoles={['operator']}>
+      <RoleBasedRoute allowedRoles={['operator', 'super_admin']}>
         <Layout role="operator" />
       </RoleBasedRoute>
     ),

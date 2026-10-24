@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaFacebook, FaTwitter, FaInstagram } from 'react-icons/fa';
+import { FaFacebook, FaTwitter, FaInstagram, FaGooglePlay, FaApple } from 'react-icons/fa';
 
 const Footer: React.FC = () => {
   return (
@@ -77,12 +77,30 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-white text-lg font-semibold mb-4">Download App</h3>
             <div className="space-y-3">
-              <div className="bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer">
-                <p className="text-sm font-semibold">App Store</p>
-              </div>
-              <div className="bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer">
-                <p className="text-sm font-semibold">Google Play</p>
-              </div>
+              <a
+                href="https://play.google.com/store/apps/details?id=com.dalasmart.passenger"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                <FaGooglePlay size={18} />
+                <div>
+                  <p className="text-xs opacity-70">GET IT ON</p>
+                  <p className="text-sm font-semibold">Google Play</p>
+                </div>
+              </a>
+              <a
+                href="https://apps.apple.com/app/dalasmart-passenger/id000000001"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 bg-gray-800 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                <FaApple size={18} />
+                <div>
+                  <p className="text-xs opacity-70">Download on the</p>
+                  <p className="text-sm font-semibold">App Store</p>
+                </div>
+              </a>
             </div>
           </div>
         </div>

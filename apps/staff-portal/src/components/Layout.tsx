@@ -18,13 +18,13 @@ export default function Layout({ role }: LayoutProps) {
     navigate('/login', { replace: true });
   }
 
-  const Sidebar = role === 'admin' ? AdminSidebar : OperatorSidebar;
+  const Sidebar = role === 'operator' ? OperatorSidebar : AdminSidebar;
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       {/* Role-based Sidebar with lazy loading */}
       <Suspense fallback={<div style={{ width: '240px', background: 'var(--color-sidebar-bg)' }} />}>
-        <Sidebar userProfile={userProfile} onLogout={handleLogout} />
+        <Sidebar userProfile={userProfile} onLogout={handleLogout} role={role} />
       </Suspense>
 
       {/* Main content */}

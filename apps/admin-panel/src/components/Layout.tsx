@@ -21,6 +21,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/analytics',   labelKey: 'nav_analytics',   icon: '📈' },
   { to: '/support',     labelKey: 'nav_support',     icon: '💬' },
   { to: '/staff',       labelKey: 'nav_staff',       icon: '👥' },
+  { to: '/passengers',  labelKey: 'nav_passengers',  icon: '🧑‍🤝‍🧑' },
   { to: '/settings',    labelKey: 'nav_settings',    icon: '⚙️' },
 ];
 
