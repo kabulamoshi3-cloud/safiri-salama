@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, Circle } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import iconUrl from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+L.Marker.prototype.options.icon = L.icon({ iconUrl, shadowUrl: iconShadow, iconSize: [25,41], iconAnchor: [12,41] });
 import { login } from '../services/auth';
 import { pubI18n } from '../i18n';
 import api from '../services/api';
@@ -86,10 +92,56 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  // Morogoro nearby driver dots (fake but realistic)
+  const driverDots: [number, number][] = [
+    [-6.8200, 37.6600], [-6.8050, 37.6750], [-6.8300, 37.6800],
+    [-6.8100, 37.6550], [-6.8250, 37.6700], [-6.7950, 37.6650],
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-md mx-auto">
+    <div className="min-h-screen flex flex-col md:flex-row">
+      {/* Left: Live Map */}
+      <div className="hidden md:block md:w-1/2 relative">
+        <MapContainer
+          center={[-6.8160, 37.6677]}
+          zoom={13}
+          style={{ height: '100%', width: '100%', minHeight: '100vh' }}
+          zoomControl={false}
+          dragging={false}
+          scrollWheelZoom={false}
+          doubleClickZoom={false}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          {/* City center marker */}
+          <Marker position={[-6.8160, 37.6677]} />
+          {/* Nearby drivers (green dots) */}
+          {driverDots.map(([lat, lng], i) => (
+            <Circle key={i} center={[lat, lng]} radius={80} pathOptions={{ color: '#128901', fillColor: '#128901', fillOpacity: 0.8 }} />
+          ))}
+        </MapContainer>
+        {/* Overlay text on map */}
+        <div className="absolute bottom-8 left-8 right-8 bg-[#0F172A]/80 backdrop-blur rounded-2xl p-4 text-white">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-3 h-3 bg-[#128901] rounded-full animate-pulse" />
+            <span className="text-sm font-semibold">6 drivers nearby in Morogoro</span>
+          </div>
+          <p className="text-xs text-white/60">Sign in to book your ride now</p>
+        </div>
+      </div>
+
+      {/* Right: Login Form */}
+      <div className="w-full md:w-1/2 flex items-center justify-center py-12 px-6 bg-[#F3F5F9]">
+      <div className="w-full max-w-md">
         <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="w-10 h-10 bg-[#2563EB] rounded-xl flex items-center justify-center">
+              <span className="text-white font-black">SH</span>
+            </div>
+            <span className="text-2xl font-black text-[#0F172A]">Safiri Haraka</span>
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">{pubI18n.t('welcome_back')}</h1>
           <p className="text-gray-600">{pubI18n.t('sign_in_subtitle')}</p>
         </div>
@@ -194,6 +246,7 @@ const LoginPage: React.FC = () => {
             </Link>
           </p>
         </div>
+      </div>
       </div>
     </div>
   );

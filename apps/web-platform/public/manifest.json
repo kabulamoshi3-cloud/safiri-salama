@@ -1,12 +1,15 @@
 {
-  "name": "Safiri Haraka - Passenger & Driver",
+  "name": "Safiri Haraka",
   "short_name": "Safiri Haraka",
-  "description": "Smart ride-hailing in Tanzania - Book rides, track drivers, earn money",
+  "description": "Smart ride-hailing in Morogoro, Tanzania",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
-  "orientation": "portrait",
+  "background_color": "#0F172A",
+  "theme_color": "#2563EB",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "sw",
+  "dir": "ltr",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -22,11 +25,5 @@
     }
   ],
   "categories": ["travel", "transportation"],
-  "screenshots": [
-    {
-      "src": "/screenshot1.png",
-      "sizes": "540x720",
-      "type": "image/png"
-    }
-  ]
+  "prefer_related_applications": false
 }

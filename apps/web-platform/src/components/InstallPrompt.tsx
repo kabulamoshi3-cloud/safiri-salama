@@ -1,20 +1,15 @@
+/**
+ * PWA Install Prompt
+ * Works on Android (beforeinstallprompt) and shows instructions for iPhone
+ */
 import React, { useEffect, useState } from 'react';
-import { i18n } from '../i18n';
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
+import { Download, X, Share } from 'lucide-react';
 
 const InstallPrompt: React.FC = () => {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showInstallButton, setShowInstallButton] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showBanner, setShowBanner] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
-
-  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
-  React.useEffect(() => {
-    return i18n.subscribe(() => forceUpdate());
-  }, []);
 
   useEffect(() => {
     // Check if already installed
@@ -23,82 +18,79 @@ const InstallPrompt: React.FC = () => {
       return;
     }
 
-    // Listen for beforeinstallprompt event
-    const handleBeforeInstallPrompt = (e: Event) => {
+    // Check iOS
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIOS(ios);
+
+    // Android: listen for install prompt
+    const handler = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setShowInstallButton(true);
+      setDeferredPrompt(e);
+      setShowBanner(true);
     };
+    window.addEventListener('beforeinstallprompt', handler as any);
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    // Check if app was installed
-    window.addEventListener('appinstalled', () => {
-      setIsInstalled(true);
-      setShowInstallButton(false);
-    });
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-
-    // Show the install prompt
-    await deferredPrompt.prompt();
-
-    // Wait for the user's response
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      console.log('User accepted the install prompt');
-    } else {
-      console.log('User dismissed the install prompt');
+    // iOS: show banner after 3 seconds if not dismissed
+    if (ios) {
+      const dismissed = localStorage.getItem('pwa_install_dismissed');
+      if (!dismissed) {
+        setTimeout(() => setShowBanner(true), 3000);
+      }
     }
 
-    // Clear the deferred prompt
-    setDeferredPrompt(null);
-    setShowInstallButton(false);
+    return () => window.removeEventListener('beforeinstallprompt', handler as any);
+  }, []);
+
+  const handleInstall = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') setIsInstalled(true);
+      setDeferredPrompt(null);
+      setShowBanner(false);
+    }
   };
 
-  if (isInstalled) {
-    return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-        <div className="flex items-center gap-3">
-          <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-          <div>
-            <p className="font-semibold text-green-900">{i18n.t('install.installed_title')}</p>
-            <p className="text-sm text-green-700">{i18n.t('install.installed_desc')}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handleDismiss = () => {
+    setShowBanner(false);
+    localStorage.setItem('pwa_install_dismissed', '1');
+  };
 
-  if (!showInstallButton) return null;
+  if (isInstalled || !showBanner) return null;
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 animate-fade-in">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-          </svg>
-          <div>
-            <p className="font-semibold text-blue-900">{i18n.t('install.install_app_title')}</p>
-            <p className="text-sm text-blue-700">{i18n.t('install.quick_access')}</p>
+    <div className="fixed bottom-24 left-4 right-4 z-50 animate-slide-up">
+      <div className="bg-[#0F172A] text-white rounded-2xl p-4 shadow-2xl border border-white/10">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 bg-[#2563EB] rounded-xl flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-black text-sm">SH</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-sm mb-1">Install Safiri Haraka</p>
+            {isIOS ? (
+              <p className="text-white/60 text-xs">
+                Tap <Share size={12} className="inline" /> Share → "Add to Home Screen"
+              </p>
+            ) : (
+              <p className="text-white/60 text-xs">
+                Add to home screen for the best experience
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {!isIOS && (
+              <button
+                onClick={handleInstall}
+                className="bg-[#2563EB] hover:bg-[#1d4ed8] text-white font-bold text-xs px-3 py-2 rounded-lg flex items-center gap-1 transition"
+              >
+                <Download size={14} /> Install
+              </button>
+            )}
+            <button onClick={handleDismiss} className="text-white/40 hover:text-white/70 transition">
+              <X size={18} />
+            </button>
           </div>
         </div>
-        <button
-          onClick={handleInstallClick}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors whitespace-nowrap"
-        >
-          {i18n.t('install.install_btn')}
-        </button>
       </div>
     </div>
   );
