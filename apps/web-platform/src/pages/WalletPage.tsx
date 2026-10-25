@@ -5,6 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { Wallet, Plus, TrendingUp, TrendingDown, Gift } from 'lucide-react';
 import api from '../services/api';
+import { i18n } from '../i18n';
 
 interface Transaction {
   id: string;
@@ -28,6 +29,11 @@ const WalletPage: React.FC = () => {
   const [topupAmt,   setTopupAmt]   = useState<number | ''>('');
   const [topping,    setTopping]    = useState(false);
   const [topupDone,  setTopupDone]  = useState(false);
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate());
+  }, []);
 
   useEffect(() => { fetchWallet(); }, []);
 
@@ -37,7 +43,6 @@ const WalletPage: React.FC = () => {
       const res = await api.get('/wallet');
       setWallet(res.data);
     } catch {
-      // use empty state
       setWallet({ balance: 0, pending_credits: 0, transactions: [] });
     } finally {
       setLoading(false);
@@ -54,7 +59,7 @@ const WalletPage: React.FC = () => {
       await fetchWallet();
       setTimeout(() => setTopupDone(false), 3000);
     } catch {
-      alert('Top-up failed. Please try again.');
+      alert(i18n.t('wallet.topup_failed'));
     } finally {
       setTopping(false);
     }
@@ -68,19 +73,19 @@ const WalletPage: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">My Wallet</h1>
+      <h1 className="text-3xl font-bold text-gray-900">{i18n.t('wallet.title')}</h1>
 
       {/* Balance Card */}
       <div className="bg-gradient-to-br from-blue-600 to-purple-700 rounded-2xl p-6 text-white">
         <div className="flex items-center gap-2 mb-2">
           <Wallet size={20} />
-          <span className="text-blue-100 text-sm font-semibold">Available Balance</span>
+          <span className="text-blue-100 text-sm font-semibold">{i18n.t('wallet.available_balance')}</span>
         </div>
         <p className="text-4xl font-black mb-4">Sh{wallet?.balance ?? 0}</p>
         {wallet?.pending_credits ? (
           <div className="flex items-center gap-2 bg-white bg-opacity-20 rounded-lg px-3 py-2 w-fit">
             <Gift size={14} />
-            <span className="text-sm font-semibold">Sh{wallet.pending_credits} in rewards pending</span>
+            <span className="text-sm font-semibold">Sh{wallet.pending_credits} {i18n.t('wallet.rewards_pending')}</span>
           </div>
         ) : null}
       </div>
@@ -88,7 +93,7 @@ const WalletPage: React.FC = () => {
       {/* Top-Up */}
       <div className="bg-white rounded-xl shadow border border-gray-100 p-5">
         <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <Plus size={18} className="text-blue-600" /> Top Up Wallet
+          <Plus size={18} className="text-blue-600" /> {i18n.t('wallet.top_up')}
         </h2>
 
         {/* Quick amounts */}
@@ -111,7 +116,7 @@ const WalletPage: React.FC = () => {
         <div className="flex gap-3">
           <input
             type="number"
-            placeholder="Custom amount"
+            placeholder={i18n.t('wallet.custom_amount')}
             value={topupAmt}
             onChange={(e) => setTopupAmt(e.target.value === '' ? '' : Number(e.target.value))}
             className="flex-1 border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500"
@@ -121,21 +126,21 @@ const WalletPage: React.FC = () => {
             disabled={topping || !topupAmt}
             className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold px-6 py-2 rounded-lg transition"
           >
-            {topping ? '...' : 'Pay'}
+            {topping ? '...' : i18n.t('wallet.pay')}
           </button>
         </div>
 
         {topupDone && (
-          <p className="text-green-600 text-sm font-semibold mt-3">✓ Wallet topped up successfully!</p>
+          <p className="text-green-600 text-sm font-semibold mt-3">{i18n.t('wallet.topup_success')}</p>
         )}
       </div>
 
       {/* Transaction History */}
       <div className="bg-white rounded-xl shadow border border-gray-100 p-5">
-        <h2 className="font-bold text-gray-900 mb-4">Transaction History</h2>
+        <h2 className="font-bold text-gray-900 mb-4">{i18n.t('wallet.transaction_history') || i18n.t('transaction_history')}</h2>
 
         {wallet?.transactions?.length === 0 ? (
-          <p className="text-gray-500 text-sm text-center py-8">No transactions yet</p>
+          <p className="text-gray-500 text-sm text-center py-8">{i18n.t('wallet.no_transactions')}</p>
         ) : (
           <div className="divide-y divide-gray-100">
             {(wallet?.transactions ?? []).map((tx) => (

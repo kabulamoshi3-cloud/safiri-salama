@@ -8,72 +8,9 @@ import {
   ChevronRight, User, Lock, Eye, EyeOff, Zap, CheckCircle, Globe,
 } from 'lucide-react';
 import { useAuthStore } from '../store/auth';
+import { i18n } from '../i18n';
 
-/* ─── Translations ──────────────────────────────────────────────── */
-const T = {
-  en: {
-    skip: 'Skip →',
-    getStarted: 'Get Started Free',
-    signIn: 'Sign In to My Account',
-    slides: [
-      { badge: '🚀 Lightning Fast', title: 'Your Ride in\n60 Seconds', subtitle: 'Tap, book, ride. The fastest way to get anywhere in Morogoro. No waiting, no hassle.' },
-      { badge: '📍 Live Tracking', title: 'Watch Your Driver\nCome to You', subtitle: 'See exactly where your driver is every second. Share your trip with loved ones for peace of mind.' },
-      { badge: '⭐ 5-Star Service', title: 'Safe, Trusted\nProfessional Drivers', subtitle: 'Every driver is verified, rated, and background-checked. Your safety is our priority.' },
-      { badge: '💰 Best Prices', title: 'Affordable Rides\nEvery Day', subtitle: 'Fair, transparent pricing. No surge fees, no surprises. Get where you need to go without breaking the bank.' },
-    ],
-    namePlaceholder: 'Full Name',
-    phonePlaceholder: 'Phone number (e.g. 0712 345 678)',
-    passwordPlaceholder: 'Password',
-    confirmPlaceholder: 'Confirm Password',
-    registerBtn: 'Create Account',
-    loginBtn: 'Sign In',
-    noAccount: "Don't have an account?",
-    hasAccount: 'Already have an account?',
-    register: 'Register',
-    login: 'Login',
-    welcomeBack: 'Welcome\nback 👋',
-    createAccount: 'Create\naccount 🚗',
-    signInSubtitle: 'Sign in to book your ride',
-    joinSubtitle: 'Join riders across Morogoro',
-    fullName: 'Full Name',
-    phoneNumber: 'Phone number',
-    password: 'Password',
-    confirmPassword: 'Confirm Password',
-  },
-  sw: {
-    skip: 'Ruka →',
-    getStarted: 'Anza Bure',
-    signIn: 'Ingia Akaunti Yangu',
-    slides: [
-      { badge: '🚀 Haraka Sana', title: 'Safari Yako\nNdani ya Sekunde 60', subtitle: 'Bonyeza, weka agizo, safiri. Njia ya haraka zaidi kufika popote Morogoro.' },
-      { badge: '📍 Ufuatiliaji wa Moja kwa Moja', title: 'Angalia Dereva\nAnakuja Kwako', subtitle: 'Ona dereva wako kila sekunde. Shiriki safari yako na wapendwa kwa usalama zaidi.' },
-      { badge: '⭐ Huduma ya Daraja la 5', title: 'Madereva Salama\nWaliothibitishwa', subtitle: 'Kila dereva amechunguzwa, amepewa alama, na amepita ukaguzi. Usalama wako ni kipaumbele.' },
-      { badge: '💰 Bei Nafuu', title: 'Safari za Gharama\nNafuu Kila Siku', subtitle: 'Bei ya haki na wazi. Hakuna ada za ziada, hakuna mshangao. Fika unakotaka bila wasiwasi.' },
-    ],
-    namePlaceholder: 'Jina Kamili',
-    phonePlaceholder: 'Nambari ya simu (mfano 0712 345 678)',
-    passwordPlaceholder: 'Nenosiri',
-    confirmPlaceholder: 'Thibitisha Nenosiri',
-    registerBtn: 'Fungua Akaunti',
-    loginBtn: 'Ingia',
-    noAccount: 'Huna akaunti?',
-    hasAccount: 'Una akaunti tayari?',
-    register: 'Jisajili',
-    login: 'Ingia',
-    welcomeBack: 'Karibu\ntena 👋',
-    createAccount: 'Fungua\nakaunti 🚗',
-    signInSubtitle: 'Ingia ili kupiga nauli',
-    joinSubtitle: 'Jiunge na abiria wengine Morogoro',
-    fullName: 'Jina Kamili',
-    phoneNumber: 'Nambari ya Simu',
-    password: 'Nenosiri',
-    confirmPassword: 'Thibitisha Nenosiri',
-  },
-} as const;
-
-type Lang = 'en' | 'sw';
-
-/* ─── Slide visuals (icons + colors only, text comes from T) ──── */
+/* ─── Slide visuals (icons + colors only, text comes from i18n) ──── */
 const SLIDE_VISUALS = [
   { icon: <Zap size={64} strokeWidth={1.5} className="text-white drop-shadow-lg" />, bg: 'from-blue-600 via-purple-600 to-pink-500', dot: 'bg-yellow-400' },
   { icon: <MapPin size={64} strokeWidth={1.5} className="text-white drop-shadow-lg" />, bg: 'from-green-600 via-teal-600 to-cyan-500', dot: 'bg-lime-400' },
@@ -81,13 +18,15 @@ const SLIDE_VISUALS = [
   { icon: <Car size={64} strokeWidth={1.5} className="text-white drop-shadow-lg" />, bg: 'from-indigo-600 via-blue-700 to-purple-700', dot: 'bg-green-400' },
 ];
 
+const SLIDES = SLIDE_VISUALS;
+
 type Mode = 'slides' | 'login' | 'register';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { register, login, loginGoogle, loading } = useAuthStore();
 
-  const [lang,        setLang]        = useState<Lang>('en');
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
   const [mode,        setMode]        = useState<Mode>('slides');
   const [slide,       setSlide]       = useState(0);
   const [exiting,     setExiting]     = useState(false);
@@ -101,16 +40,18 @@ const LoginPage: React.FC = () => {
   const [success,     setSuccess]     = useState('');
   const [showLangMenu, setShowLangMenu] = useState(false);
 
-  const t = T[lang];
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate());
+  }, []);
 
   /* auto-advance slides */
   useEffect(() => {
     if (mode !== 'slides') return;
-    const t = setInterval(() => {
+    const timer = setInterval(() => {
       setExiting(true);
       setTimeout(() => { setSlide(s => (s + 1) % SLIDES.length); setExiting(false); }, 350);
     }, 4500);
-    return () => clearInterval(t);
+    return () => clearInterval(timer);
   }, [slide, mode]);
 
   const goSlide = (i: number) => {
@@ -124,22 +65,27 @@ const LoginPage: React.FC = () => {
     setMode(m);
   };
 
+  const switchLanguage = (lang: string) => {
+    i18n.setLanguage(lang as 'en' | 'sw');
+    setShowLangMenu(false);
+  };
+
   /* password strength */
   const strength = password.length === 0 ? 0
     : password.length < 6 ? 1
     : password.length < 10 ? 2
     : password.match(/[A-Z]/) && password.match(/[0-9]/) ? 4
     : 3;
-  const strengthLabel = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+  const strengthLabel = ['', i18n.t('login.strength_weak'), i18n.t('login.strength_fair'), i18n.t('login.strength_good'), i18n.t('login.strength_strong')];
   const strengthColor = ['', 'bg-red-400', 'bg-yellow-400', 'bg-accent-500', 'bg-accent-600'];
 
   /* register handler */
   const handleRegister = async () => {
     setError(''); setSuccess('');
-    if (!name.trim())        return setError('Please enter your full name');
-    if (phone.length < 9)    return setError('Enter a valid phone number (9 digits)');
-    if (password.length < 6) return setError('Password must be at least 6 characters');
-    if (password !== confirm) return setError('Passwords do not match');
+    if (!name.trim())        return setError(i18n.t('login.err_name'));
+    if (phone.length < 9)    return setError(i18n.t('login.err_phone'));
+    if (password.length < 6) return setError(i18n.t('login.err_password_short'));
+    if (password !== confirm) return setError(i18n.t('login.err_password_match'));
     try {
       await register(`+255${phone}`, password, name.trim());
       navigate('/');
@@ -149,8 +95,8 @@ const LoginPage: React.FC = () => {
   /* login handler */
   const handleLogin = async () => {
     setError(''); setSuccess('');
-    if (phone.length < 9)  return setError('Enter a valid phone number (9 digits)');
-    if (!password)         return setError('Enter your password');
+    if (phone.length < 9)  return setError(i18n.t('login.err_phone'));
+    if (!password)         return setError(i18n.t('login.err_password_required'));
     try {
       await login(`+255${phone}`, password);
       navigate('/');
@@ -164,13 +110,21 @@ const LoginPage: React.FC = () => {
       await loginGoogle();
       navigate('/');
     } catch (err: any) {
-      if (err?.message === '__CANCELLED__') return; // user closed popup - silent
-      setError(err?.message || 'Google sign-in failed. Please try again.');
+      if (err?.message === '__CANCELLED__') return;
+      setError(err?.message || i18n.t('login.google_failed'));
     }
   };
 
+  const slideTexts = [
+    { badge: i18n.t('login.slide1_badge'), title: i18n.t('login.slide1_title'), subtitle: i18n.t('login.slide1_subtitle') },
+    { badge: i18n.t('login.slide2_badge'), title: i18n.t('login.slide2_title'), subtitle: i18n.t('login.slide2_subtitle') },
+    { badge: i18n.t('login.slide3_badge'), title: i18n.t('login.slide3_title'), subtitle: i18n.t('login.slide3_subtitle') },
+    { badge: i18n.t('login.slide4_badge'), title: i18n.t('login.slide4_title'), subtitle: i18n.t('login.slide4_subtitle') },
+  ];
+
   const cur = SLIDE_VISUALS[slide];
-  const curText = t.slides[slide];
+  const curText = slideTexts[slide];
+  const currentLang = i18n.getLanguage();
 
   /* ═══════════════════════════ SLIDES ═══════════════════════════ */
   if (mode === 'slides') return (
@@ -184,7 +138,7 @@ const LoginPage: React.FC = () => {
           <div className="w-8 h-8 bg-secondary-500 rounded-lg flex items-center justify-center">
             <Zap size={16} className="text-white" />
           </div>
-          <span className="text-white font-black text-lg">Safiri Haraka</span>
+          <span className="text-white font-black text-lg">{i18n.t('app_name')}</span>
         </div>
         <div className="flex items-center gap-2">
           {/* Language Switcher */}
@@ -192,22 +146,22 @@ const LoginPage: React.FC = () => {
             <button
               onClick={() => setShowLangMenu(!showLangMenu)}
               className="text-white/70 hover:text-white p-2 rounded-full border border-white/20 transition-all flex items-center gap-1"
-              aria-label="Change language"
+              aria-label={i18n.t('login.change_language')}
             >
               <Globe size={18} />
             </button>
             {showLangMenu && (
               <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50">
                 <button
-                  onClick={() => { setLang('en'); setShowLangMenu(false); }}
-                  className={`w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors flex items-center gap-2 ${lang === 'en' ? 'bg-gray-50 font-semibold' : ''}`}
+                  onClick={() => switchLanguage('en')}
+                  className={`w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors flex items-center gap-2 ${currentLang === 'en' ? 'bg-gray-50 font-semibold' : ''}`}
                 >
                   <span className="text-lg">🇬🇧</span>
                   <span className="text-sm text-gray-700">English</span>
                 </button>
                 <button
-                  onClick={() => { setLang('sw'); setShowLangMenu(false); }}
-                  className={`w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors flex items-center gap-2 ${lang === 'sw' ? 'bg-gray-50 font-semibold' : ''}`}
+                  onClick={() => switchLanguage('sw')}
+                  className={`w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors flex items-center gap-2 ${currentLang === 'sw' ? 'bg-gray-50 font-semibold' : ''}`}
                 >
                   <span className="text-lg">🇹🇿</span>
                   <span className="text-sm text-gray-700">Kiswahili</span>
@@ -217,7 +171,7 @@ const LoginPage: React.FC = () => {
           </div>
           <button onClick={() => switchMode('login')}
             className="text-white/70 hover:text-white text-sm font-semibold px-4 py-2 rounded-full border border-white/20 transition-all">
-            {t.skip}
+            {i18n.t('login.skip')}
           </button>
         </div>
       </div>
@@ -250,11 +204,11 @@ const LoginPage: React.FC = () => {
       <div className="relative z-10 px-6 pb-12 space-y-3">
         <button onClick={() => switchMode('register')}
           className="w-full bg-secondary-500 hover:bg-secondary-400 active:scale-95 text-white font-black py-4 rounded-2xl text-base shadow-xl flex items-center justify-center gap-2 transition-all">
-          {t.getStarted} <ChevronRight size={20} />
+          {i18n.t('login.get_started_free')} <ChevronRight size={20} />
         </button>
         <button onClick={() => switchMode('login')}
           className="w-full bg-white/15 hover:bg-white/25 active:scale-95 text-white font-semibold py-4 rounded-2xl border border-white/25 transition-all">
-          {t.signIn}
+          {i18n.t('login.sign_in_account')}
         </button>
       </div>
     </div>
@@ -270,13 +224,13 @@ const LoginPage: React.FC = () => {
           <div className="w-10 h-10 bg-secondary-500 rounded-xl flex items-center justify-center shadow-lg">
             <Zap size={20} className="text-white" />
           </div>
-          <span className="text-white font-black text-xl">Safiri Haraka</span>
+          <span className="text-white font-black text-xl">{i18n.t('app_name')}</span>
         </div>
-        <h1 className="text-3xl font-black text-white leading-tight">
-          {mode === 'login' ? t.welcomeBack : t.createAccount}
+        <h1 className="text-3xl font-black text-white leading-tight whitespace-pre-line">
+          {mode === 'login' ? i18n.t('login.welcome_back') : i18n.t('login.create_account')}
         </h1>
         <p className="text-white/60 text-sm mt-2">
-          {mode === 'login' ? t.signInSubtitle : t.joinSubtitle}
+          {mode === 'login' ? i18n.t('login.sign_in_subtitle') : i18n.t('login.join_subtitle')}
         </p>
       </div>
 
@@ -290,7 +244,7 @@ const LoginPage: React.FC = () => {
               className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${
                 mode === m ? 'bg-primary-600 text-white shadow-md' : 'text-gray-500 hover:text-gray-700'
               }`}>
-              {m === 'login' ? t.login : t.register}
+              {m === 'login' ? i18n.t('login') : i18n.t('sign_up')}
             </button>
           ))}
         </div>
@@ -298,10 +252,10 @@ const LoginPage: React.FC = () => {
         {/* Name — register only */}
         {mode === 'register' && (
           <div className="mb-4">
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t.fullName}</label>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{i18n.t('full_name')}</label>
             <div className="flex items-center gap-3 border-2 border-gray-100 bg-gray-50 rounded-2xl px-4 py-3.5 focus-within:border-secondary-400 transition-all">
               <User size={18} className="text-secondary-500 flex-shrink-0" />
-              <input type="text" placeholder="e.g. Amina Juma" value={name}
+              <input type="text" placeholder={i18n.t('login.name_example')} value={name}
                 onChange={e => setName(e.target.value)}
                 className="flex-1 outline-none bg-transparent text-gray-900 text-base" />
             </div>
@@ -310,7 +264,7 @@ const LoginPage: React.FC = () => {
 
         {/* Phone */}
         <div className="mb-4">
-          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Phone Number</label>
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{i18n.t('phone_number')}</label>
           <div className="flex items-center gap-3 border-2 border-gray-100 bg-gray-50 rounded-2xl px-4 py-3.5 focus-within:border-primary-500 transition-all">
             <div className="flex items-center gap-2 pr-3 border-r border-gray-200">
               <span className="text-xl">🇹🇿</span>
@@ -326,10 +280,10 @@ const LoginPage: React.FC = () => {
 
         {/* Password */}
         <div className="mb-4">
-          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t.password}</label>
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{i18n.t('password')}</label>
           <div className="flex items-center gap-3 border-2 border-gray-100 bg-gray-50 rounded-2xl px-4 py-3.5 focus-within:border-primary-500 transition-all">
             <Lock size={18} className="text-primary-400 flex-shrink-0" />
-            <input type={showPass ? 'text' : 'password'} placeholder="Min. 6 characters" value={password}
+            <input type={showPass ? 'text' : 'password'} placeholder={i18n.t('login.min_chars')} value={password}
               onChange={e => setPassword(e.target.value)}
               className="flex-1 outline-none bg-transparent text-gray-900 text-base" />
             <button type="button" onClick={() => setShowPass(v => !v)} className="text-gray-400 hover:text-gray-600">
@@ -354,12 +308,12 @@ const LoginPage: React.FC = () => {
         {/* Confirm Password — register only */}
         {mode === 'register' && (
           <div className="mb-5">
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Confirm Password</label>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{i18n.t('login.confirm_password')}</label>
             <div className={`flex items-center gap-3 border-2 bg-gray-50 rounded-2xl px-4 py-3.5 focus-within:border-primary-500 transition-all ${
               confirm && password !== confirm ? 'border-red-300' : 'border-gray-100'
             }`}>
               <Lock size={18} className="text-primary-400 flex-shrink-0" />
-              <input type={showConfirm ? 'text' : 'password'} placeholder="Re-enter password" value={confirm}
+              <input type={showConfirm ? 'text' : 'password'} placeholder={i18n.t('login.reenter_password')} value={confirm}
                 onChange={e => setConfirm(e.target.value)}
                 className="flex-1 outline-none bg-transparent text-gray-900 text-base" />
               <button type="button" onClick={() => setShowConfirm(v => !v)} className="text-gray-400 hover:text-gray-600">
@@ -367,7 +321,7 @@ const LoginPage: React.FC = () => {
               </button>
             </div>
             {confirm && password === confirm && (
-              <p className="text-accent-600 text-xs mt-1 flex items-center gap-1"><CheckCircle size={12} /> Passwords match</p>
+              <p className="text-accent-600 text-xs mt-1 flex items-center gap-1"><CheckCircle size={12} /> {i18n.t('login.passwords_match')}</p>
             )}
           </div>
         )}
@@ -396,16 +350,16 @@ const LoginPage: React.FC = () => {
         >
           {loading
             ? <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-            : <>{mode === 'login' ? 'Sign In' : 'Create Account'} <ArrowRight size={18} /></>
+            : <>{mode === 'login' ? i18n.t('login.sign_in') : i18n.t('create_account')} <ArrowRight size={18} /></>
           }
         </button>
 
         {/* Feature chips */}
         <div className="grid grid-cols-3 gap-2 mt-6">
           {[
-            { icon: '🔒', label: 'Encrypted', color: 'bg-primary-50 text-primary-700' },
-            { icon: '🚗', label: 'Verified',  color: 'bg-secondary-50 text-secondary-700' },
-            { icon: '📍', label: 'Live GPS',  color: 'bg-accent-50 text-accent-700' },
+            { icon: '🔒', label: i18n.t('login.encrypted'), color: 'bg-primary-50 text-primary-700' },
+            { icon: '🚗', label: i18n.t('login.verified'),  color: 'bg-secondary-50 text-secondary-700' },
+            { icon: '📍', label: i18n.t('login.live_gps'),  color: 'bg-accent-50 text-accent-700' },
           ].map(f => (
             <div key={f.label} className={`${f.color} rounded-xl py-2.5 px-2 text-center`}>
               <span className="text-base block mb-0.5">{f.icon}</span>
@@ -415,10 +369,10 @@ const LoginPage: React.FC = () => {
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-5">
-          By continuing you agree to our{' '}
-          <a href="/terms" className="text-primary-600 font-semibold">Terms</a>
+          {i18n.t('login.terms_intro')}{' '}
+          <a href="/terms" className="text-primary-600 font-semibold">{i18n.t('login.terms')}</a>
           {' & '}
-          <a href="/privacy" className="text-primary-600 font-semibold">Privacy Policy</a>
+          <a href="/privacy" className="text-primary-600 font-semibold">{i18n.t('login.privacy_policy')}</a>
         </p>
       </div>
     </div>

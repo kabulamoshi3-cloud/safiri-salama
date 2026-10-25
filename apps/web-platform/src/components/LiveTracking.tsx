@@ -6,6 +6,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import api from '../services/api';
+import { i18n } from '../i18n';
 
 interface Location {
   latitude: number;
@@ -45,6 +46,11 @@ const LiveTracking: React.FC<LiveTrackingProps> = ({
   const routePolylineRef = useRef<google.maps.Polyline | null>(null);
   const pickupMarkerRef = useRef<google.maps.Marker | null>(null);
   const destinationMarkerRef = useRef<google.maps.Marker | null>(null);
+
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  React.useEffect(() => {
+    return i18n.subscribe(() => forceUpdate());
+  }, []);
 
   // Initialize map
   useEffect(() => {
@@ -329,17 +335,17 @@ const LiveTracking: React.FC<LiveTrackingProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
-                {tripStatus === 'awaiting_pickup' ? 'Driver on the way' : 'Trip in progress'}
+                {tripStatus === 'awaiting_pickup' ? i18n.t('tracking.driver_on_way_title') : i18n.t('trip_in_progress')}
               </h3>
               <p className="text-sm text-gray-600">
-                {tripStatus === 'awaiting_pickup' 
-                  ? 'Your driver is heading to your pickup location'
-                  : 'You are on your way to destination'}
+                {tripStatus === 'awaiting_pickup'
+                  ? i18n.t('tracking.driver_heading_pickup')
+                  : i18n.t('tracking.on_way_destination')}
               </p>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-sm text-gray-600">Live</span>
+              <span className="text-sm text-gray-600">{i18n.t('tracking.live')}</span>
             </div>
           </div>
 
@@ -347,7 +353,7 @@ const LiveTracking: React.FC<LiveTrackingProps> = ({
           {tripStatus === 'in_progress' && currentRoute && (
             <div className="mt-4">
               <div className="flex justify-between text-xs text-gray-600 mb-1">
-                <span>Progress</span>
+                <span>{i18n.t('tracking.progress')}</span>
                 <span>
                   {driverLocation.distance && currentRoute.distance 
                     ? Math.round(((currentRoute.distance - driverLocation.distance) / currentRoute.distance) * 100)
@@ -369,11 +375,11 @@ const LiveTracking: React.FC<LiveTrackingProps> = ({
 
           <div className="mt-4 grid grid-cols-2 gap-4">
             <div className="bg-blue-50 rounded-lg p-3">
-              <p className="text-xs text-blue-600 font-medium">ETA</p>
+              <p className="text-xs text-blue-600 font-medium">{i18n.t('tracking.eta')}</p>
               <p className="text-2xl font-bold text-blue-900">{formatETA(driverLocation.eta)}</p>
             </div>
             <div className="bg-green-50 rounded-lg p-3">
-              <p className="text-xs text-green-600 font-medium">Distance</p>
+              <p className="text-xs text-green-600 font-medium">{i18n.t('distance')}</p>
               <p className="text-2xl font-bold text-green-900">{formatDistance(driverLocation.distance)}</p>
             </div>
           </div>
@@ -384,7 +390,7 @@ const LiveTracking: React.FC<LiveTrackingProps> = ({
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                Speed: {Math.round(driverLocation.speed)} km/h
+                {i18n.t('tracking.speed')} {Math.round(driverLocation.speed)} km/h
               </div>
               
               {/* Traffic Condition Indicator */}
@@ -394,8 +400,8 @@ const LiveTracking: React.FC<LiveTrackingProps> = ({
                   currentRoute.trafficCondition === 'moderate' ? 'bg-yellow-100 text-yellow-700' :
                   'bg-red-100 text-red-700'
                 }`}>
-                  🚦 {currentRoute.trafficCondition === 'light' ? 'Light' : 
-                      currentRoute.trafficCondition === 'moderate' ? 'Moderate' : 'Heavy'} Traffic
+                  🚦 {currentRoute.trafficCondition === 'light' ? i18n.t('tracking.light_traffic') :
+                      currentRoute.trafficCondition === 'moderate' ? i18n.t('tracking.moderate_traffic') : i18n.t('tracking.heavy_traffic')}
                 </div>
               )}
             </div>

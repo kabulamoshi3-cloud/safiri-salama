@@ -9,6 +9,7 @@ import api from '../services/api';
 import LiveTracking from '../components/LiveTracking';
 import SOSButton from '../components/SOSButton';
 import TripSharing from '../components/TripSharing';
+import { i18n } from '../i18n';
 
 interface TripDetails {
   id: number;
@@ -47,6 +48,11 @@ const ActiveTripPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState('');
 
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  React.useEffect(() => {
+    return i18n.subscribe(() => forceUpdate());
+  }, []);
+
   useEffect(() => {
     // Get auth token from localStorage
     const authToken = localStorage.getItem('safiri_token') || '';
@@ -83,7 +89,7 @@ const ActiveTripPage: React.FC = () => {
     } catch (error) {
       console.error('Failed to fetch trip details:', error);
       if (loading) {
-        alert('Failed to load trip details');
+        alert(i18n.t('trip.load_failed'));
         navigate('/trips');
       }
     }
@@ -109,14 +115,14 @@ const ActiveTripPage: React.FC = () => {
   };
 
   const handleCancelTrip = async () => {
-    if (!window.confirm('Are you sure you want to cancel this trip?')) return;
+    if (!window.confirm(i18n.t('trip.cancel_confirm'))) return;
 
     try {
       await api.patch(`/trips/${tripId}/cancel`);
-      alert('Trip cancelled');
+      alert(i18n.t('trip_cancelled'));
       navigate('/trip-history');
     } catch (error) {
-      alert('Failed to cancel trip');
+      alert(i18n.t('trip.cancel_failed'));
     }
   };
 
@@ -131,7 +137,7 @@ const ActiveTripPage: React.FC = () => {
   if (!trip) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Trip not found</p>
+        <p className="text-gray-600">{i18n.t('trip.not_found')}</p>
       </div>
     );
   }
@@ -139,17 +145,17 @@ const ActiveTripPage: React.FC = () => {
   const getStatusText = (status: string): { text: string; color: string } => {
     switch (status) {
       case 'pending':
-        return { text: 'Finding driver...', color: 'text-yellow-600' };
+        return { text: i18n.t('trip.status_finding'), color: 'text-yellow-600' };
       case 'driver_assigned':
-        return { text: 'Driver assigned', color: 'text-blue-600' };
+        return { text: i18n.t('trip.driver_assigned'), color: 'text-blue-600' };
       case 'driver_arriving':
-        return { text: 'Driver on the way', color: 'text-blue-600' };
+        return { text: i18n.t('tracking.driver_on_way_title'), color: 'text-blue-600' };
       case 'in_progress':
-        return { text: 'Trip in progress', color: 'text-green-600' };
+        return { text: i18n.t('trip_in_progress'), color: 'text-green-600' };
       case 'completed':
-        return { text: 'Trip completed', color: 'text-gray-600' };
+        return { text: i18n.t('trip.status_completed'), color: 'text-gray-600' };
       case 'cancelled':
-        return { text: 'Trip cancelled', color: 'text-red-600' };
+        return { text: i18n.t('trip_cancelled'), color: 'text-red-600' };
       default:
         return { text: status, color: 'text-gray-600' };
     }
@@ -168,10 +174,10 @@ const ActiveTripPage: React.FC = () => {
               onClick={() => navigate('/trip-history')}
               className="text-blue-600 hover:text-blue-700"
             >
-              ← Back
+              ← {i18n.t('back')}
             </button>
             <div className="text-center">
-              <h1 className="text-xl font-bold text-gray-900">Trip #{trip.id}</h1>
+              <h1 className="text-xl font-bold text-gray-900">{i18n.t('trip.trip_label')} #{trip.id}</h1>
               <p className={`text-sm font-medium ${statusInfo.color}`}>{statusInfo.text}</p>
             </div>
             <div className="w-16" /> {/* Spacer */}
@@ -202,8 +208,8 @@ const ActiveTripPage: React.FC = () => {
             {/* Driver Info Card */}
             {trip.driver && (
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Driver Details</h3>
-                
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">{i18n.t('trip.driver_details')}</h3>
+
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center text-2xl">
                     👤
@@ -212,34 +218,34 @@ const ActiveTripPage: React.FC = () => {
                     <h4 className="font-semibold text-gray-900">{trip.driver.name}</h4>
                     <div className="flex items-center text-sm text-gray-600">
                       <span className="text-yellow-500 mr-1">⭐</span>
-                      {trip.driver.rating.toFixed(1)} rating
+                      {trip.driver.rating.toFixed(1)} {i18n.t('trip.rating_word')}
                     </div>
                   </div>
                   <a
                     href={`tel:${trip.driver.phone}`}
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
                   >
-                    📞 Call
+                    📞 {i18n.t('common.call')}
                   </a>
                 </div>
 
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Vehicle:</span>
+                    <span className="text-gray-600">{i18n.t('trip.vehicle_label')}</span>
                     <span className="font-medium text-gray-900">
                       {trip.driver.vehicle.make} {trip.driver.vehicle.model}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Color:</span>
+                    <span className="text-gray-600">{i18n.t('trip.color_label')}</span>
                     <span className="font-medium text-gray-900">{trip.driver.vehicle.color}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Plate:</span>
+                    <span className="text-gray-600">{i18n.t('trip.plate_label')}</span>
                     <span className="font-medium text-gray-900">{trip.driver.vehicle.plate}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Type:</span>
+                    <span className="text-gray-600">{i18n.t('trip.type_label')}</span>
                     <span className="font-medium text-gray-900 capitalize">{trip.driver.vehicle.type}</span>
                   </div>
                 </div>
@@ -251,22 +257,22 @@ const ActiveTripPage: React.FC = () => {
           <div className="space-y-6">
             {/* Trip Summary */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Trip Details</h3>
-              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{i18n.t('trip.details')}</h3>
+
               <div className="space-y-4">
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">From</p>
+                  <p className="text-xs text-gray-500 mb-1">{i18n.t('common.from')}</p>
                   <p className="text-sm font-medium text-gray-900">{trip.pickup_location.address}</p>
                 </div>
-                
+
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">To</p>
+                  <p className="text-xs text-gray-500 mb-1">{i18n.t('common.to')}</p>
                   <p className="text-sm font-medium text-gray-900">{trip.dropoff_location.address}</p>
                 </div>
 
                 <div className="border-t pt-4">
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Estimated Fare</span>
+                    <span className="text-sm text-gray-600">{i18n.t('trip.estimated_fare')}</span>
                     <span className="text-lg font-bold text-gray-900">
                       TZS {trip.estimated_fare.toLocaleString()}
                     </span>
@@ -305,7 +311,7 @@ const ActiveTripPage: React.FC = () => {
                 onClick={handleCancelTrip}
                 className="w-full bg-red-100 text-red-600 py-3 px-4 rounded-lg hover:bg-red-200 font-medium"
               >
-                Cancel Trip
+                {i18n.t('cancel_trip')}
               </button>
             )}
           </div>

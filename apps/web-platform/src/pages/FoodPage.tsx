@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { Search, Star, Clock, MapPin, ShoppingCart, Plus, Minus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { i18n } from '../i18n';
 
 interface Restaurant {
   id: string;
@@ -32,6 +33,11 @@ const FoodPage: React.FC = () => {
   const [loading,     setLoading]     = useState(true);
   const [cart,        setCart]        = useState<CartItem[]>([]);
   const [showCart,    setShowCart]    = useState(false);
+
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  React.useEffect(() => {
+    return i18n.subscribe(() => forceUpdate());
+  }, []);
 
   useEffect(() => {
     // Use a default Nairobi location; real app uses navigator.geolocation
@@ -72,15 +78,15 @@ const FoodPage: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">Food Delivery</h1>
-      <p className="text-gray-500 mb-6">Order from restaurants near you</p>
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">{i18n.t('food.delivery_title')}</h1>
+      <p className="text-gray-500 mb-6">{i18n.t('food.order_desc')}</p>
 
       {/* Search */}
       <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-xl px-4 py-3 mb-6 focus-within:border-blue-500">
         <Search size={18} className="text-gray-400" />
         <input
           type="text"
-          placeholder="Search restaurants..."
+          placeholder={i18n.t('food.search_restaurants')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 outline-none text-gray-900 bg-transparent"
@@ -95,8 +101,8 @@ const FoodPage: React.FC = () => {
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-gray-500">
           <MapPin size={48} className="mx-auto mb-4 opacity-30" />
-          <p className="text-lg font-semibold">No restaurants found</p>
-          <p className="text-sm mt-1">Try a different search or check your location</p>
+          <p className="text-lg font-semibold">{i18n.t('food.no_restaurants')}</p>
+          <p className="text-sm mt-1">{i18n.t('food.try_different')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -117,7 +123,7 @@ const FoodPage: React.FC = () => {
                 <div className="flex items-start justify-between mb-1">
                   <p className="font-bold text-gray-900 text-base">{r.name}</p>
                   {!r.is_open && (
-                    <span className="text-xs bg-red-100 text-red-600 font-semibold px-2 py-0.5 rounded">Closed</span>
+                    <span className="text-xs bg-red-100 text-red-600 font-semibold px-2 py-0.5 rounded">{i18n.t('food.closed')}</span>
                   )}
                 </div>
                 <p className="text-xs text-gray-500 mb-3 line-clamp-1">{r.description}</p>
@@ -130,7 +136,7 @@ const FoodPage: React.FC = () => {
                     <Clock size={13} /> {r.delivery_time}
                   </span>
                   <span className="text-gray-400">
-                    {r.delivery_fee === 0 ? 'Free delivery' : `Sh${r.delivery_fee} delivery`}
+                    {r.delivery_fee === 0 ? i18n.t('food.free_delivery') : `Sh${r.delivery_fee} ${i18n.t('food.delivery_word')}`}
                   </span>
                 </div>
               </div>
@@ -151,7 +157,7 @@ const FoodPage: React.FC = () => {
               {cartCount}
             </span>
           </div>
-          <span>View Cart · Sh{cartTotal}</span>
+          <span>{i18n.t('food.view_cart')} · Sh{cartTotal}</span>
         </button>
       )}
 
@@ -160,7 +166,7 @@ const FoodPage: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-t-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b">
-              <h2 className="text-xl font-bold text-gray-900">Your Cart</h2>
+              <h2 className="text-xl font-bold text-gray-900">{i18n.t('food.your_cart')}</h2>
               <button onClick={() => setShowCart(false)}>
                 <X size={22} className="text-gray-500" />
               </button>
@@ -170,7 +176,7 @@ const FoodPage: React.FC = () => {
                 <div key={item.id} className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-gray-900">{item.name}</p>
-                    <p className="text-sm text-gray-500">Sh{item.price} each</p>
+                    <p className="text-sm text-gray-500">Sh{item.price} {i18n.t('food.each')}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <button onClick={() => removeFromCart(item.id)} className="w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100">
@@ -186,13 +192,13 @@ const FoodPage: React.FC = () => {
             </div>
             <div className="border-t p-5">
               <div className="flex justify-between font-bold text-lg mb-4">
-                <span>Total</span><span>Sh{cartTotal}</span>
+                <span>{i18n.t('common.total')}</span><span>Sh{cartTotal}</span>
               </div>
               <button
                 onClick={() => { setShowCart(false); navigate('/food/checkout', { state: { cart } }); }}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition"
               >
-                Proceed to Checkout
+                {i18n.t('food.checkout')}
               </button>
             </div>
           </div>

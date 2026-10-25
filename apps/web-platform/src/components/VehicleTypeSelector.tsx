@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { i18n } from '../i18n';
 
 interface Location {
   latitude: number;
@@ -34,6 +35,11 @@ const VehicleTypeSelector: React.FC<VehicleTypeSelectorProps> = ({
   const [estimates, setEstimates] = useState<VehicleEstimate[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<string>('car');
   const [loading, setLoading] = useState(true);
+
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  React.useEffect(() => {
+    return i18n.subscribe(() => forceUpdate());
+  }, []);
 
   useEffect(() => {
     fetchEstimates();
@@ -68,30 +74,30 @@ const VehicleTypeSelector: React.FC<VehicleTypeSelectorProps> = ({
     switch (type) {
       case 'car':
         return {
-          name: 'Car',
+          nameKey: 'car',
           icon: '🚗',
-          description: 'Comfortable sedan, 4 passengers',
+          descKey: 'vehicle.car_desc',
           color: 'blue'
         };
       case 'bajaji':
         return {
-          name: 'Bajaji',
+          nameKey: 'bajaji',
           icon: '🛺',
-          description: '3-wheeler, 3 passengers, budget-friendly',
+          descKey: 'vehicle.bajaji_desc',
           color: 'green'
         };
       case 'boda-boda':
         return {
-          name: 'Boda-Boda',
+          nameKey: 'boda',
           icon: '🏍️',
-          description: 'Motorcycle, 1 passenger, fastest in traffic',
+          descKey: 'vehicle.boda_desc',
           color: 'orange'
         };
       default:
         return {
-          name: 'Vehicle',
+          nameKey: 'vehicle.vehicle_default',
           icon: '🚙',
-          description: '',
+          descKey: '',
           color: 'gray'
         };
     }
@@ -118,7 +124,7 @@ const VehicleTypeSelector: React.FC<VehicleTypeSelectorProps> = ({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900">Select Vehicle Type</h3>
+      <h3 className="text-lg font-semibold text-gray-900">{i18n.t('vehicle.select_type')}</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {estimates.map((estimate) => {
@@ -139,7 +145,7 @@ const VehicleTypeSelector: React.FC<VehicleTypeSelectorProps> = ({
               {/* Best Value Badge */}
               {isCheapest && (
                 <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
-                  BEST VALUE
+                  {i18n.t('vehicle.best_value')}
                 </div>
               )}
 
@@ -147,29 +153,29 @@ const VehicleTypeSelector: React.FC<VehicleTypeSelectorProps> = ({
               <div className="flex items-center space-x-3 mb-3">
                 <span className="text-4xl">{vehicleInfo.icon}</span>
                 <div>
-                  <h4 className="font-semibold text-gray-900">{vehicleInfo.name}</h4>
-                  <p className="text-xs text-gray-600">{vehicleInfo.description}</p>
+                  <h4 className="font-semibold text-gray-900">{i18n.t(vehicleInfo.nameKey)}</h4>
+                  <p className="text-xs text-gray-600">{vehicleInfo.descKey ? i18n.t(vehicleInfo.descKey) : ''}</p>
                 </div>
               </div>
 
               {/* Pricing */}
               <div className="space-y-2">
                 <div className="flex justify-between items-baseline">
-                  <span className="text-sm text-gray-600">Estimated fare</span>
+                  <span className="text-sm text-gray-600">{i18n.t('estimated_fare')}</span>
                   <span className="text-xl font-bold text-gray-900">
                     {formatCost(estimate.estimatedCost)}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Time</span>
+                  <span className="text-gray-600">{i18n.t('common.time')}</span>
                   <span className="font-medium text-gray-900">
                     {formatDuration(estimate.estimatedDuration)}
                   </span>
                 </div>
 
                 <div className="text-xs text-gray-500 mt-2">
-                  Base rate: {formatCost(estimate.baseRate)}/km
+                  {i18n.t('vehicle.base_rate')} {formatCost(estimate.baseRate)}/km
                 </div>
               </div>
 
@@ -189,8 +195,7 @@ const VehicleTypeSelector: React.FC<VehicleTypeSelectorProps> = ({
       {/* Additional Info */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
         <p className="text-blue-800">
-          💡 <span className="font-semibold">Tip:</span> Boda-bodas are fastest in heavy traffic. 
-          Bajajis offer the best value for short trips.
+          💡 <span className="font-semibold">{i18n.t('vehicle.tip_label')}</span> {i18n.t('vehicle.tip_text')}
         </p>
       </div>
     </div>

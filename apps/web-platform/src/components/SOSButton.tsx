@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
+import { i18n } from '../i18n';
 
 interface Location {
   latitude: number;
@@ -30,6 +31,11 @@ const SOSButton: React.FC<SOSButtonProps> = ({
   const [loading, setLoading] = useState(false);
   const [alertTriggered, setAlertTriggered] = useState(false);
 
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  React.useEffect(() => {
+    return i18n.subscribe(() => forceUpdate());
+  }, []);
+
   const handleSOSTrigger = async () => {
     try {
       setLoading(true);
@@ -52,11 +58,11 @@ const SOSButton: React.FC<SOSButtonProps> = ({
       setShowConfirm(false);
 
       // Show success message
-      alert('🚨 Emergency alert sent! Help is on the way. Your emergency contacts have been notified.');
+      alert(i18n.t('sos.alert_sent'));
 
     } catch (error: any) {
       console.error('Failed to trigger SOS:', error);
-      alert('Failed to send emergency alert. Please call emergency services directly: 112');
+      alert(i18n.t('sos.alert_failed'));
     } finally {
       setLoading(false);
     }
@@ -68,8 +74,8 @@ const SOSButton: React.FC<SOSButtonProps> = ({
         <div className="flex items-center space-x-3">
           <div className="w-4 h-4 bg-white rounded-full animate-pulse" />
           <div>
-            <p className="font-bold">Emergency Alert Active</p>
-            <p className="text-sm">Help is on the way</p>
+            <p className="font-bold">{i18n.t('sos.alert_active')}</p>
+            <p className="text-sm">{i18n.t('sos.help_on_way')}</p>
           </div>
         </div>
       </div>
@@ -80,7 +86,7 @@ const SOSButton: React.FC<SOSButtonProps> = ({
     return (
       <div className={`bg-white border-2 border-red-500 rounded-lg p-4 ${className}`}>
         <div className="flex items-center justify-between mb-3">
-          <h4 className="font-bold text-red-600">⚠️ Emergency SOS</h4>
+          <h4 className="font-bold text-red-600">⚠️ {i18n.t('emergency_sos')}</h4>
           <button
             onClick={() => setShowConfirm(false)}
             className="text-gray-500 hover:text-gray-700"
@@ -91,17 +97,17 @@ const SOSButton: React.FC<SOSButtonProps> = ({
         </div>
 
         <p className="text-sm text-gray-700 mb-4">
-          This will immediately alert:
+          {i18n.t('sos.alert_notify')}
         </p>
 
         <ul className="text-sm text-gray-700 mb-4 space-y-1">
-          <li>• Your emergency contacts</li>
-          <li>• SafiriSalama support team</li>
-          <li>• Share your live location</li>
+          <li>{i18n.t('sos.notify_contacts')}</li>
+          <li>{i18n.t('sos.notify_support')}</li>
+          <li>{i18n.t('sos.notify_location')}</li>
         </ul>
 
         <p className="text-xs text-gray-600 mb-4">
-          For life-threatening emergencies, call 112 immediately.
+          {i18n.t('sos.life_threatening')}
         </p>
 
         <div className="flex space-x-2">
@@ -110,14 +116,14 @@ const SOSButton: React.FC<SOSButtonProps> = ({
             disabled={loading}
             className="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg font-bold hover:bg-red-700 disabled:opacity-50"
           >
-            {loading ? 'Sending Alert...' : '🚨 Confirm Emergency'}
+            {loading ? i18n.t('sos.sending') : `🚨 ${i18n.t('sos.confirm_emergency')}`}
           </button>
           <button
             onClick={() => setShowConfirm(false)}
             disabled={loading}
             className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
           >
-            Cancel
+            {i18n.t('cancel')}
           </button>
         </div>
       </div>
@@ -131,7 +137,7 @@ const SOSButton: React.FC<SOSButtonProps> = ({
     >
       <span className="flex items-center space-x-2">
         <span>🚨</span>
-        <span>SOS Emergency</span>
+        <span>{i18n.t('sos.emergency_btn')}</span>
       </span>
     </button>
   );

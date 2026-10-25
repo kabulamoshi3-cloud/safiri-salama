@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
+import { i18n } from '../i18n';
 
 interface Location {
   latitude: number;
@@ -34,6 +35,11 @@ const TripSharing: React.FC<TripSharingProps> = ({
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  React.useEffect(() => {
+    return i18n.subscribe(() => forceUpdate());
+  }, []);
+
   const generateShareLink = async () => {
     try {
       setLoading(true);
@@ -56,7 +62,7 @@ const TripSharing: React.FC<TripSharingProps> = ({
 
     } catch (error) {
       console.error('Failed to generate share link:', error);
-      alert('Failed to generate share link. Please try again.');
+      alert(i18n.t('share.link_failed'));
     } finally {
       setLoading(false);
     }
@@ -78,7 +84,7 @@ const TripSharing: React.FC<TripSharingProps> = ({
     if (!shareLink) return;
 
     const message = encodeURIComponent(
-      `🚗 I'm on a SafiriSalama trip. Track my journey live:\n${shareLink}\n\nDriver: ${driverName}\nVehicle: ${vehicleInfo}`
+      `${i18n.t('share.whatsapp_prefix')}\n${shareLink}\n\n${i18n.t('share.driver_label')}: ${driverName}\n${i18n.t('share.vehicle_label')}: ${vehicleInfo}`
     );
 
     window.open(`https://wa.me/?text=${message}`, '_blank');
@@ -88,7 +94,7 @@ const TripSharing: React.FC<TripSharingProps> = ({
     if (!shareLink) return;
 
     const message = encodeURIComponent(
-      `I'm on a SafiriSalama trip. Track me: ${shareLink}`
+      `${i18n.t('share.sms_prefix')} ${shareLink}`
     );
 
     window.location.href = `sms:?body=${message}`;
@@ -97,12 +103,12 @@ const TripSharing: React.FC<TripSharingProps> = ({
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
       <div className="flex items-center justify-between mb-3">
-        <h4 className="font-semibold text-gray-900">🔗 Share Trip</h4>
-        <span className="text-xs text-gray-500">For your safety</span>
+        <h4 className="font-semibold text-gray-900">🔗 {i18n.t('share_trip')}</h4>
+        <span className="text-xs text-gray-500">{i18n.t('share.for_safety')}</span>
       </div>
 
       <p className="text-sm text-gray-600 mb-4">
-        Share your live trip with friends or family so they can track your journey in real-time.
+        {i18n.t('share.desc')}
       </p>
 
       {!shareLink ? (
@@ -111,7 +117,7 @@ const TripSharing: React.FC<TripSharingProps> = ({
           disabled={loading}
           className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? 'Generating Link...' : 'Generate Share Link'}
+          {loading ? i18n.t('share.generating') : i18n.t('share.generate')}
         </button>
       ) : (
         <div className="space-y-3">
@@ -127,7 +133,7 @@ const TripSharing: React.FC<TripSharingProps> = ({
               onClick={copyToClipboard}
               className="text-blue-600 hover:text-blue-700 text-sm font-medium"
             >
-              {copied ? '✓ Copied!' : 'Copy'}
+              {copied ? i18n.t('share.copied') : i18n.t('share.copy')}
             </button>
           </div>
 
@@ -138,7 +144,7 @@ const TripSharing: React.FC<TripSharingProps> = ({
               className="flex items-center justify-center space-x-2 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700"
             >
               <span>💬</span>
-              <span>WhatsApp</span>
+              <span>{i18n.t('whatsapp')}</span>
             </button>
 
             <button
@@ -146,12 +152,12 @@ const TripSharing: React.FC<TripSharingProps> = ({
               className="flex items-center justify-center space-x-2 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
             >
               <span>📱</span>
-              <span>SMS</span>
+              <span>{i18n.t('share.sms')}</span>
             </button>
           </div>
 
           <p className="text-xs text-gray-500 text-center">
-            Link expires in 24 hours or when trip ends
+            {i18n.t('share.expires')}
           </p>
         </div>
       )}

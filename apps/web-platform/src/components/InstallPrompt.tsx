@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { i18n } from '../i18n';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -9,6 +10,11 @@ const InstallPrompt: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallButton, setShowInstallButton] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  React.useEffect(() => {
+    return i18n.subscribe(() => forceUpdate());
+  }, []);
 
   useEffect(() => {
     // Check if already installed
@@ -65,8 +71,8 @@ const InstallPrompt: React.FC = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
           <div>
-            <p className="font-semibold text-green-900">App Installed</p>
-            <p className="text-sm text-green-700">Safiri Haraka is installed on your device</p>
+            <p className="font-semibold text-green-900">{i18n.t('install.installed_title')}</p>
+            <p className="text-sm text-green-700">{i18n.t('install.installed_desc')}</p>
           </div>
         </div>
       </div>
@@ -83,15 +89,15 @@ const InstallPrompt: React.FC = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
           </svg>
           <div>
-            <p className="font-semibold text-blue-900">Install Safiri Haraka App</p>
-            <p className="text-sm text-blue-700">Quick access from your home screen</p>
+            <p className="font-semibold text-blue-900">{i18n.t('install.install_app_title')}</p>
+            <p className="text-sm text-blue-700">{i18n.t('install.quick_access')}</p>
           </div>
         </div>
         <button
           onClick={handleInstallClick}
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors whitespace-nowrap"
         >
-          Install
+          {i18n.t('install.install_btn')}
         </button>
       </div>
     </div>

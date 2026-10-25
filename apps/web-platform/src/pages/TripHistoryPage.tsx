@@ -5,6 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { MapPin, Star, Download, ChevronDown } from 'lucide-react';
 import api from '../services/api';
+import { i18n } from '../i18n';
 
 interface Trip {
   id: string;
@@ -28,6 +29,11 @@ const TripHistoryPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [page,    setPage]    = useState(1);
   const [hasMore, setHasMore] = useState(true);
+
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  React.useEffect(() => {
+    return i18n.subscribe(() => forceUpdate());
+  }, []);
 
   useEffect(() => { fetchTrips(1); }, []);
 
@@ -53,7 +59,7 @@ const TripHistoryPage: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Trip History</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">{i18n.t('trips.history_title')}</h1>
 
       {loading && trips.length === 0 ? (
         <div className="flex justify-center py-20">
@@ -62,8 +68,8 @@ const TripHistoryPage: React.FC = () => {
       ) : trips.length === 0 ? (
         <div className="text-center py-20 text-gray-500">
           <MapPin size={48} className="mx-auto mb-4 opacity-30" />
-          <p className="text-lg font-semibold">No trips yet</p>
-          <p className="text-sm">Your completed rides will appear here</p>
+          <p className="text-lg font-semibold">{i18n.t('no_trips_yet')}</p>
+          <p className="text-sm">{i18n.t('trips.empty_desc')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -77,7 +83,7 @@ const TripHistoryPage: React.FC = () => {
                       day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
                     })}
                   </p>
-                  <p className="text-sm text-gray-600 mt-0.5">Driver: {trip.driver_name}</p>
+                  <p className="text-sm text-gray-600 mt-0.5">{i18n.t('trips.driver_label')} {trip.driver_name}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {trip.rating && (
@@ -108,7 +114,7 @@ const TripHistoryPage: React.FC = () => {
               <div className="flex items-center justify-between border-t border-gray-100 pt-3">
                 <p className="font-bold text-gray-900 text-lg">Sh{trip.final_price}</p>
                 <button className="flex items-center gap-1 text-blue-600 text-sm font-semibold hover:underline">
-                  <Download size={14} /> Receipt
+                  <Download size={14} /> {i18n.t('receipt')}
                 </button>
               </div>
             </div>
@@ -122,7 +128,7 @@ const TripHistoryPage: React.FC = () => {
             >
               {loading
                 ? <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500" />
-                : <><ChevronDown size={18} /> Load more</>
+                : <><ChevronDown size={18} /> {i18n.t('common.load_more')}</>
               }
             </button>
           )}

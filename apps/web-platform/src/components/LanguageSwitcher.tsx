@@ -1,20 +1,25 @@
 import React, { useState } from 'react';
 import { Globe } from 'lucide-react';
+import { i18n, Language } from '../i18n';
 
 const languages = [
-  { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'sw', name: 'Kiswahili', flag: '🇹🇿' },
+  { code: 'en' as Language, name: 'English', flag: '🇬🇧' },
+  { code: 'sw' as Language, name: 'Kiswahili', flag: '🇹🇿' },
 ];
 
 const LanguageSwitcher: React.FC = () => {
-  const [currentLang, setCurrentLang] = useState('en');
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleLanguageChange = (langCode: string) => {
-    setCurrentLang(langCode);
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  React.useEffect(() => {
+    return i18n.subscribe(() => forceUpdate());
+  }, []);
+
+  const currentLang = i18n.getLanguage();
+
+  const handleLanguageChange = (langCode: Language) => {
+    i18n.setLanguage(langCode);
     setIsOpen(false);
-    // TODO: Implement actual i18n language change
-    localStorage.setItem('language', langCode);
   };
 
   const current = languages.find(l => l.code === currentLang) || languages[0];

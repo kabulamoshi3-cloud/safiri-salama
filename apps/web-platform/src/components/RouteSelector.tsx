@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { i18n } from '../i18n';
 
 interface Location {
   latitude: number;
@@ -39,6 +40,11 @@ const RouteSelector: React.FC<RouteSelectorProps> = ({
   const [selectedRoute, setSelectedRoute] = useState<RouteOption | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  React.useEffect(() => {
+    return i18n.subscribe(() => forceUpdate());
+  }, []);
 
   useEffect(() => {
     fetchRoutes();
@@ -100,16 +106,25 @@ const RouteSelector: React.FC<RouteSelectorProps> = ({
     }
   };
 
-  const getRouteLabel = (type: string): { label: string; icon: string; color: string } => {
+  const getRouteLabel = (type: string): { labelKey: string; icon: string; color: string } => {
     switch (type) {
       case 'fastest':
-        return { label: 'Fastest', icon: '⚡', color: 'bg-blue-500' };
+        return { labelKey: 'route.fastest', icon: '⚡', color: 'bg-blue-500' };
       case 'shortest':
-        return { label: 'Shortest', icon: '📏', color: 'bg-green-500' };
+        return { labelKey: 'route.shortest', icon: '📏', color: 'bg-green-500' };
       case 'cheapest':
-        return { label: 'Cheapest', icon: '💰', color: 'bg-purple-500' };
+        return { labelKey: 'route.cheapest', icon: '💰', color: 'bg-purple-500' };
       default:
-        return { label: 'Alternative', icon: '🔀', color: 'bg-gray-500' };
+        return { labelKey: 'route.alternative', icon: '🔀', color: 'bg-gray-500' };
+    }
+  };
+
+  const getTrafficLabel = (condition: string): string => {
+    switch (condition) {
+      case 'light': return i18n.t('route.light_traffic');
+      case 'moderate': return i18n.t('route.moderate_traffic');
+      case 'heavy': return i18n.t('route.heavy_traffic');
+      default: return condition;
     }
   };
 
@@ -117,7 +132,7 @@ const RouteSelector: React.FC<RouteSelectorProps> = ({
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">Calculating routes...</span>
+        <span className="ml-3 text-gray-600">{i18n.t('route.calculating')}</span>
       </div>
     );
   }
@@ -130,7 +145,7 @@ const RouteSelector: React.FC<RouteSelectorProps> = ({
           onClick={fetchRoutes}
           className="mt-2 text-sm text-red-700 underline hover:text-red-800"
         >
-          Try again
+          {i18n.t('route.try_again')}
         </button>
       </div>
     );
@@ -139,8 +154,8 @@ const RouteSelector: React.FC<RouteSelectorProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">Choose Your Route</h3>
-        <span className="text-sm text-gray-600">{routes.length} options available</span>
+        <h3 className="text-lg font-semibold text-gray-900">{i18n.t('route.choose_your_route')}</h3>
+        <span className="text-sm text-gray-600">{routes.length} {i18n.t('route.options_available')}</span>
       </div>
 
       <div className="space-y-3">
@@ -162,10 +177,10 @@ const RouteSelector: React.FC<RouteSelectorProps> = ({
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
                   <span className={`px-2 py-1 rounded text-white text-xs font-medium ${routeInfo.color}`}>
-                    {routeInfo.icon} {routeInfo.label}
+                    {routeInfo.icon} {i18n.t(routeInfo.labelKey)}
                   </span>
                   <span className={`px-2 py-1 rounded text-xs font-medium ${getTrafficColor(route.trafficCondition)}`}>
-                    {route.trafficCondition} traffic
+                    {getTrafficLabel(route.trafficCondition)}
                   </span>
                 </div>
                 {isSelected && (
@@ -178,19 +193,19 @@ const RouteSelector: React.FC<RouteSelectorProps> = ({
               {/* Route Details */}
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500">Time</p>
+                  <p className="text-xs text-gray-500">{i18n.t('common.time')}</p>
                   <p className="text-lg font-semibold text-gray-900">
                     {formatDuration(route.durationInTraffic || route.duration)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Distance</p>
+                  <p className="text-xs text-gray-500">{i18n.t('distance')}</p>
                   <p className="text-lg font-semibold text-gray-900">
                     {formatDistance(route.distance)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Cost</p>
+                  <p className="text-xs text-gray-500">{i18n.t('route.cost')}</p>
                   <p className="text-lg font-semibold text-gray-900">
                     {formatCost(route.cost)}
                   </p>
@@ -203,7 +218,7 @@ const RouteSelector: React.FC<RouteSelectorProps> = ({
                   <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                   </svg>
-                  +{formatDuration(route.durationInTraffic - route.duration)} delay due to traffic
+                  +{formatDuration(route.durationInTraffic - route.duration)} {i18n.t('route.delay_due_traffic')}
                 </div>
               )}
 
@@ -222,9 +237,9 @@ const RouteSelector: React.FC<RouteSelectorProps> = ({
       {selectedRoute && (
         <div className="bg-gray-50 rounded-lg p-4">
           <p className="text-sm text-gray-700">
-            <span className="font-semibold">Selected:</span> {getRouteLabel(selectedRoute.type).label} route
-            - {formatDuration(selectedRoute.durationInTraffic || selectedRoute.duration)} trip
-            for {formatCost(selectedRoute.cost)}
+            <span className="font-semibold">{i18n.t('route.selected')}</span> {i18n.t(getRouteLabel(selectedRoute.type).labelKey)} {i18n.t('route.route_word')}
+            - {formatDuration(selectedRoute.durationInTraffic || selectedRoute.duration)} {i18n.t('route.trip_word')}
+            {i18n.t('route.for_word')} {formatCost(selectedRoute.cost)}
           </p>
         </div>
       )}

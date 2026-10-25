@@ -2,11 +2,12 @@
  * Profile Page — account info, subscription badge, referral, logout
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Phone, Mail, Star, Gift, Crown, LogOut, ChevronRight, Copy, Check } from 'lucide-react';
 import { useAuthStore } from '../store/auth';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { i18n } from '../i18n';
 
 const ProfilePage: React.FC = () => {
   const { user, subscription, logout } = useAuthStore();
@@ -14,6 +15,11 @@ const ProfilePage: React.FC = () => {
   const [referralCode, setReferralCode]   = useState<string | null>(null);
   const [copied,       setCopied]         = useState(false);
   const [loadingRef,   setLoadingRef]     = useState(false);
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate());
+  }, []);
 
   const fetchReferralCode = async () => {
     setLoadingRef(true);
@@ -21,7 +27,7 @@ const ProfilePage: React.FC = () => {
       const res = await api.post('/referral/generate-link');
       setReferralCode(res.data.referral_code);
     } catch {
-      alert('Could not generate referral link');
+      alert(i18n.t('profile.referral_failed'));
     } finally {
       setLoadingRef(false);
     }
@@ -40,15 +46,15 @@ const ProfilePage: React.FC = () => {
   };
 
   const menuItems = [
-    { label: 'My Trips',     path: '/trips'    },
-    { label: 'My Wallet',    path: '/wallet'   },
-    { label: 'Subscription', path: '/subscribe'},
-    { label: 'Support',      path: '/support'  },
+    { label: i18n.t('profile.my_trips'),     path: '/trips'    },
+    { label: i18n.t('profile.my_wallet'),    path: '/wallet'   },
+    { label: i18n.t('profile.subscription'), path: '/subscribe'},
+    { label: i18n.t('profile.support'),      path: '/support'  },
   ];
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
+      <h1 className="text-3xl font-bold text-gray-900">{i18n.t('profile.title')}</h1>
 
       {/* User Card */}
       <div className="bg-white rounded-xl shadow border border-gray-100 p-6 flex items-center gap-5">
@@ -56,7 +62,7 @@ const ProfilePage: React.FC = () => {
           {user?.name?.charAt(0).toUpperCase() ?? 'U'}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xl font-bold text-gray-900">{user?.name ?? 'User'}</p>
+          <p className="text-xl font-bold text-gray-900">{user?.name ?? i18n.t('profile.user')}</p>
           <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
             <Phone size={13} /> +255{user?.phone_number}
           </p>
@@ -80,7 +86,7 @@ const ProfilePage: React.FC = () => {
           <Crown size={28} />
           <div>
             <p className="font-bold text-lg">{subscription.plan_name}</p>
-            <p className="text-yellow-100 text-sm">{subscription.discount_percentage}% off all rides · renews {new Date(subscription.renews_at).toLocaleDateString()}</p>
+            <p className="text-yellow-100 text-sm">{subscription.discount_percentage}% {i18n.t('profile.off_all_rides')} {new Date(subscription.renews_at).toLocaleDateString()}</p>
           </div>
         </div>
       ) : (
@@ -91,8 +97,8 @@ const ProfilePage: React.FC = () => {
           <div className="flex items-center gap-3">
             <Crown size={24} className="text-yellow-500" />
             <div className="text-left">
-              <p className="font-bold text-gray-900">Upgrade to SafiriSalama Plus</p>
-              <p className="text-sm text-gray-500">Get 10% off every ride</p>
+              <p className="font-bold text-gray-900">{i18n.t('profile.upgrade_plus')}</p>
+              <p className="text-sm text-gray-500">{i18n.t('profile.upgrade_desc')}</p>
             </div>
           </div>
           <ChevronRight size={18} className="text-gray-400" />
@@ -102,11 +108,9 @@ const ProfilePage: React.FC = () => {
       {/* Referral */}
       <div className="bg-white rounded-xl shadow border border-gray-100 p-5">
         <h2 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-          <Gift size={18} className="text-blue-600" /> Refer & Earn
+          <Gift size={18} className="text-blue-600" /> {i18n.t('profile.refer_earn')}
         </h2>
-        <p className="text-sm text-gray-600 mb-4">
-          Invite a friend. They get <strong>Sh5,000</strong> off their first ride, you get <strong>Sh2,500</strong> credit.
-        </p>
+        <p className="text-sm text-gray-600 mb-4">{i18n.t('profile.refer_desc')}</p>
         {referralCode ? (
           <div className="flex items-center gap-2">
             <div className="flex-1 bg-gray-100 rounded-lg px-4 py-2 font-mono font-bold text-gray-900 text-sm tracking-widest">
@@ -125,7 +129,7 @@ const ProfilePage: React.FC = () => {
             disabled={loadingRef}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold py-2 rounded-lg transition"
           >
-            {loadingRef ? 'Generating...' : 'Get My Referral Code'}
+            {loadingRef ? i18n.t('profile.generating') : i18n.t('profile.get_referral')}
           </button>
         )}
       </div>
@@ -149,7 +153,7 @@ const ProfilePage: React.FC = () => {
         onClick={handleLogout}
         className="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-3 rounded-xl transition"
       >
-        <LogOut size={18} /> Log Out
+        <LogOut size={18} /> {i18n.t('profile.log_out')}
       </button>
     </div>
   );

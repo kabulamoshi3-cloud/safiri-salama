@@ -6,20 +6,21 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MapPin, Tag, ChevronRight, Car, Zap } from 'lucide-react';
 import api from '../services/api';
+import { i18n } from '../i18n';
 
 interface RideOption {
   id: string;
-  name: string;
-  description: string;
+  nameKey: string;
+  descKey: string;
   base_fare: number;
   estimated_time: string;
   icon: React.ReactNode;
 }
 
 const rideOptions: RideOption[] = [
-  { id: 'economy',  name: 'Economy',  description: 'Affordable everyday rides',    base_fare: 1500, estimated_time: '3-5 min',  icon: <Car size={24} />  },
-  { id: 'comfort',  name: 'Comfort',  description: 'Roomier cars, top-rated drivers', base_fare: 2500, estimated_time: '5-8 min',  icon: <Car size={24} />  },
-  { id: 'express',  name: 'Express',  description: 'Fastest route, priority pickup', base_fare: 3000, estimated_time: '2-4 min',  icon: <Zap size={24} />  },
+  { id: 'economy',  nameKey: 'booking.economy',  descKey: 'booking.economy_desc', base_fare: 1500, estimated_time: '3-5', icon: <Car size={24} /> },
+  { id: 'comfort',  nameKey: 'booking.comfort',  descKey: 'booking.comfort_desc', base_fare: 2500, estimated_time: '5-8', icon: <Car size={24} /> },
+  { id: 'express',  nameKey: 'booking.express',  descKey: 'booking.express_desc', base_fare: 3000, estimated_time: '2-4', icon: <Zap size={24} /> },
 ];
 
 const BookingPage: React.FC = () => {
@@ -32,6 +33,11 @@ const BookingPage: React.FC = () => {
   const [discount,   setDiscount]   = useState(0);
   const [validating, setValidating] = useState(false);
   const [booking,    setBooking]    = useState(false);
+
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  React.useEffect(() => {
+    return i18n.subscribe(() => forceUpdate());
+  }, []);
 
   const currentOption = rideOptions.find((r) => r.id === selected)!;
   const finalFare     = Math.max(0, currentOption.base_fare - discount);
@@ -47,11 +53,11 @@ const BookingPage: React.FC = () => {
       });
       if (res.data.valid) {
         setDiscount(res.data.discount_amount);
-        setPromoMsg({ text: `✓ Saved Sh${res.data.discount_amount}!`, ok: true });
+        setPromoMsg({ text: `✓ ${i18n.t('booking.saved')} Sh${res.data.discount_amount}!`, ok: true });
       }
     } catch {
       setDiscount(0);
-      setPromoMsg({ text: 'Invalid or expired promo code', ok: false });
+      setPromoMsg({ text: i18n.t('booking.promo_invalid'), ok: false });
     } finally {
       setValidating(false);
     }
@@ -68,7 +74,7 @@ const BookingPage: React.FC = () => {
       });
       navigate(`/trip/${res.data.trip_id}`);
     } catch {
-      alert('Booking failed. Please try again.');
+      alert(i18n.t('booking.failed'));
     } finally {
       setBooking(false);
     }
@@ -86,12 +92,12 @@ const BookingPage: React.FC = () => {
           </div>
           <div className="space-y-3 flex-1">
             <div>
-              <p className="text-xs text-gray-500">From</p>
-              <p className="font-semibold text-gray-900">{state?.pickup || 'Pickup location'}</p>
+              <p className="text-xs text-gray-500">{i18n.t('common.from')}</p>
+              <p className="font-semibold text-gray-900">{state?.pickup || i18n.t('pickup_location')}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">To</p>
-              <p className="font-semibold text-gray-900">{state?.dropoff || 'Destination'}</p>
+              <p className="text-xs text-gray-500">{i18n.t('common.to')}</p>
+              <p className="font-semibold text-gray-900">{state?.dropoff || i18n.t('destination')}</p>
             </div>
           </div>
         </div>
@@ -100,7 +106,7 @@ const BookingPage: React.FC = () => {
       <div className="max-w-2xl mx-auto px-4 mt-6 space-y-6 pb-32">
         {/* Ride Options */}
         <div>
-          <h2 className="text-lg font-bold text-gray-900 mb-3">Choose ride type</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-3">{i18n.t('booking.choose_ride_type')}</h2>
           <div className="space-y-3">
             {rideOptions.map((opt) => (
               <button
@@ -117,13 +123,13 @@ const BookingPage: React.FC = () => {
                     {opt.icon}
                   </div>
                   <div className="text-left">
-                    <p className="font-bold text-gray-900">{opt.name}</p>
-                    <p className="text-sm text-gray-500">{opt.description}</p>
+                    <p className="font-bold text-gray-900">{i18n.t(opt.nameKey)}</p>
+                    <p className="text-sm text-gray-500">{i18n.t(opt.descKey)}</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-gray-900">Sh{opt.base_fare}</p>
-                  <p className="text-xs text-gray-500">{opt.estimated_time}</p>
+                  <p className="text-xs text-gray-500">{opt.estimated_time} {i18n.t('minutes')}</p>
                 </div>
               </button>
             ))}
@@ -133,12 +139,12 @@ const BookingPage: React.FC = () => {
         {/* Promo Code */}
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <Tag size={16} className="text-blue-600" /> Promo Code
+            <Tag size={16} className="text-blue-600" /> {i18n.t('booking.promo_code')}
           </h3>
           <div className="flex gap-2">
             <input
               type="text"
-              placeholder="Enter promo code"
+              placeholder={i18n.t('booking.enter_promo')}
               value={promoCode}
               onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoMsg(null); setDiscount(0); }}
               className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 uppercase"
@@ -148,7 +154,7 @@ const BookingPage: React.FC = () => {
               disabled={validating || !promoCode}
               className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
             >
-              {validating ? '...' : 'Apply'}
+              {validating ? '...' : i18n.t('apply')}
             </button>
           </div>
           {promoMsg && (
@@ -160,19 +166,19 @@ const BookingPage: React.FC = () => {
 
         {/* Fare Summary */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-2">
-          <h3 className="font-semibold text-gray-900 mb-2">Fare summary</h3>
+          <h3 className="font-semibold text-gray-900 mb-2">{i18n.t('booking.fare_summary')}</h3>
           <div className="flex justify-between text-sm text-gray-600">
-            <span>Base fare ({currentOption.name})</span>
+            <span>{i18n.t('booking.base_fare')} ({i18n.t(currentOption.nameKey)})</span>
             <span>Sh{currentOption.base_fare}</span>
           </div>
           {discount > 0 && (
             <div className="flex justify-between text-sm text-green-600 font-semibold">
-              <span>Promo discount</span>
+              <span>{i18n.t('booking.promo_discount')}</span>
               <span>-Sh{discount}</span>
             </div>
           )}
           <div className="border-t border-gray-100 pt-2 flex justify-between font-bold text-gray-900">
-            <span>Total</span>
+            <span>{i18n.t('common.total')}</span>
             <span>Sh{finalFare}</span>
           </div>
         </div>
@@ -188,7 +194,7 @@ const BookingPage: React.FC = () => {
           >
             {booking
               ? <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-              : <><span>Book {currentOption.name} · Sh{finalFare}</span><ChevronRight size={20} /></>
+              : <><span>{i18n.t('booking.book')} {i18n.t(currentOption.nameKey)} · Sh{finalFare}</span><ChevronRight size={20} /></>
             }
           </button>
         </div>
