@@ -10,8 +10,7 @@ import InstallPrompt from './components/InstallPrompt';
 import { useAuthStore } from './store/auth';
 import { useAppInit } from './hooks/useAppInit';
 
-// Import Leaflet CSS
-import 'leaflet/dist/leaflet.css';
+// Leaflet CSS is imported in individual map components
 
 // New SIMNOVA screens
 import SplashScreen from './pages/SplashScreen';

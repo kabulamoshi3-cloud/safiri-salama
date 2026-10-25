@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import { Phone, MessageCircle, Share2, X } from 'lucide-react';
 import { useTripStore } from '../store/tripStore';
-import { trackingSocket } from '../services/trackingSocket';
+import * as trackingSocket from '../services/trackingSocket';
 import 'leaflet/dist/leaflet.css';
 
 const ActiveTripScreenNew: React.FC = () => {
