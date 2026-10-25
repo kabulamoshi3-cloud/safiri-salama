@@ -5,10 +5,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import { MapPin, Navigation, Home as HomeIcon, Briefcase, Bookmark } from 'lucide-react';
+import { MapPin, Navigation, Home as HomeIcon, Briefcase, Bookmark, Globe } from 'lucide-react';
 import { useAuthStore } from '../store/auth';
 import { useTripStore } from '../store/tripStore';
 import { geocode, MOROGORO_CENTER, reverseGeocode } from '../services/mapService';
+import { i18n } from '../i18n';
 import 'leaflet/dist/leaflet.css';
 
 // Fix Leaflet default marker icon
@@ -41,6 +42,12 @@ const HomeScreenNew: React.FC = () => {
   const [destination, setDestination] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [showLangMenu, setShowLangMenu] = useState(false);
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+
+  useEffect(() => {
+    return i18n.subscribe(() => forceUpdate());
+  }, []);
 
   // Get user's GPS location
   useEffect(() => {
@@ -116,10 +123,38 @@ const HomeScreenNew: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-gray-600 text-sm">{greeting()},</p>
-            <h1 className="text-[#0F172A] font-black text-2xl">{user?.name || 'Guest'}</h1>
+            <h1 className="text-[#0F172A] font-black text-2xl">{user?.name || i18n.t('profile.user')}</h1>
           </div>
-          <div className="w-12 h-12 bg-[#2563EB] rounded-full flex items-center justify-center text-white text-xl font-bold">
-            {user?.name?.charAt(0).toUpperCase() || 'G'}
+          <div className="flex items-center gap-2">
+            {/* Language Switcher */}
+            <div className="relative">
+              <button
+                onClick={() => setShowLangMenu(!showLangMenu)}
+                className="p-2 rounded-full border border-gray-200 flex items-center gap-1 text-gray-600 hover:bg-gray-50 transition"
+              >
+                <Globe size={18} />
+                <span className="text-xs font-bold">{i18n.getLanguage() === 'en' ? 'EN' : 'SW'}</span>
+              </button>
+              {showLangMenu && (
+                <div className="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50">
+                  <button
+                    onClick={() => { i18n.setLanguage('en'); setShowLangMenu(false); }}
+                    className={`w-full px-4 py-2 text-left flex items-center gap-2 hover:bg-gray-50 transition text-sm ${i18n.getLanguage() === 'en' ? 'font-bold text-[#2563EB]' : 'text-gray-700'}`}
+                  >
+                    <span>🇬🇧</span> English
+                  </button>
+                  <button
+                    onClick={() => { i18n.setLanguage('sw'); setShowLangMenu(false); }}
+                    className={`w-full px-4 py-2 text-left flex items-center gap-2 hover:bg-gray-50 transition text-sm ${i18n.getLanguage() === 'sw' ? 'font-bold text-[#2563EB]' : 'text-gray-700'}`}
+                  >
+                    <span>🇹🇿</span> Kiswahili
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="w-12 h-12 bg-[#2563EB] rounded-full flex items-center justify-center text-white text-xl font-bold">
+              {user?.name?.charAt(0).toUpperCase() || 'G'}
+            </div>
           </div>
         </div>
 
@@ -139,7 +174,7 @@ const HomeScreenNew: React.FC = () => {
             <MapPin size={16} className="text-red-500 flex-shrink-0 mt-1" />
             <input
               type="text"
-              placeholder="Where are you going?"
+              placeholder={i18n.t('where_to')}
               value={destination}
               onChange={(e) => handleSearch(e.target.value)}
               onFocus={() => searchResults.length > 0 && setShowResults(true)}

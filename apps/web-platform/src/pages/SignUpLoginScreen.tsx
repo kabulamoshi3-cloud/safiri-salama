@@ -1,10 +1,10 @@
 /**
  * Screen 2: Sign Up / Log In
- * Google/Apple social auth + manual form
+ * Google/Apple social auth + manual form + language switcher
  */
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { User, Phone, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { User, Phone, Mail, Lock, Eye, EyeOff, ArrowRight, Globe } from 'lucide-react';
 import { useAuthStore } from '../store/auth';
 import { i18n } from '../i18n';
 
@@ -22,18 +22,21 @@ const SignUpLoginScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
+  const [showLangMenu, setShowLangMenu] = useState(false);
   const [, forceUpdate] = React.useReducer(x => x + 1, 0);
 
   useEffect(() => {
     return i18n.subscribe(() => forceUpdate());
   }, []);
 
+  const currentLang = i18n.getLanguage();
+
   const handleSubmit = async () => {
     setError('');
     if (mode === 'register') {
-      if (!name.trim()) return setError('Please enter your full name');
-      if (phone.length < 9) return setError('Enter a valid phone number');
-      if (password.length < 6) return setError('Password must be at least 6 characters');
+      if (!name.trim()) return setError(i18n.t('login.err_name'));
+      if (phone.length < 9) return setError(i18n.t('login.err_phone'));
+      if (password.length < 6) return setError(i18n.t('login.err_password_short'));
       try {
         await register(`+255${phone}`, password, name.trim());
         navigate('/');
@@ -41,8 +44,8 @@ const SignUpLoginScreen: React.FC = () => {
         setError(err.message);
       }
     } else {
-      if (phone.length < 9) return setError('Enter a valid phone number');
-      if (!password) return setError('Enter your password');
+      if (phone.length < 9) return setError(i18n.t('login.err_phone'));
+      if (!password) return setError(i18n.t('login.err_password_required'));
       try {
         await login(`+255${phone}`, password);
         navigate('/');
@@ -59,22 +62,52 @@ const SignUpLoginScreen: React.FC = () => {
       navigate('/');
     } catch (err: any) {
       if (err?.message === '__CANCELLED__') return;
-      setError(err?.message || 'Google sign-in failed');
+      setError(err?.message || i18n.t('login.google_failed'));
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#2563EB] to-[#1e40af] flex flex-col">
       {/* Header */}
-      <div className="flex-shrink-0 pt-16 pb-8 px-6">
-        <h1 className="text-white font-black text-3xl mb-2">
-          {mode === 'register' ? 'Create Account' : 'Welcome Back'}
-        </h1>
-        <p className="text-white/70 text-sm">
-          {mode === 'register'
-            ? 'Join Safiri Haraka and enjoy fast, secure and reliable rides'
-            : 'Sign in to book your ride'}
-        </p>
+      <div className="flex-shrink-0 pt-14 pb-6 px-6">
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h1 className="text-white font-black text-3xl mb-1">
+              {mode === 'register' ? i18n.t('create_account') : i18n.t('welcome_back')}
+            </h1>
+            <p className="text-white/70 text-sm">
+              {mode === 'register'
+                ? i18n.t('login.join_subtitle')
+                : i18n.t('login.sign_in_subtitle')}
+            </p>
+          </div>
+          {/* Language Switcher */}
+          <div className="relative">
+            <button
+              onClick={() => setShowLangMenu(!showLangMenu)}
+              className="text-white/80 hover:text-white p-2 rounded-full border border-white/30 flex items-center gap-1 transition"
+            >
+              <Globe size={18} />
+              <span className="text-xs font-bold">{currentLang === 'en' ? 'EN' : 'SW'}</span>
+            </button>
+            {showLangMenu && (
+              <div className="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50">
+                <button
+                  onClick={() => { i18n.setLanguage('en'); setShowLangMenu(false); }}
+                  className={`w-full px-4 py-2 text-left flex items-center gap-2 hover:bg-gray-50 transition ${currentLang === 'en' ? 'font-bold text-[#2563EB]' : 'text-gray-700'}`}
+                >
+                  <span>🇬🇧</span> English
+                </button>
+                <button
+                  onClick={() => { i18n.setLanguage('sw'); setShowLangMenu(false); }}
+                  className={`w-full px-4 py-2 text-left flex items-center gap-2 hover:bg-gray-50 transition ${currentLang === 'sw' ? 'font-bold text-[#2563EB]' : 'text-gray-700'}`}
+                >
+                  <span>🇹🇿</span> Kiswahili
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Form Card */}
@@ -91,19 +124,19 @@ const SignUpLoginScreen: React.FC = () => {
               <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            Continue with Google
+            {i18n.t('login.continue_google') || 'Continue with Google'}
           </button>
           <button className="w-full bg-black hover:bg-gray-900 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
             </svg>
-            Continue with Apple
+            {i18n.t('login.continue_apple') || 'Continue with Apple'}
           </button>
         </div>
 
         <div className="flex items-center gap-3 mb-6">
           <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-gray-400 text-sm font-medium">or</span>
+          <span className="text-gray-400 text-sm font-medium">{i18n.t('or') || 'or'}</span>
           <div className="flex-1 h-px bg-gray-200" />
         </div>
 
@@ -112,12 +145,12 @@ const SignUpLoginScreen: React.FC = () => {
           {(['login', 'register'] as const).map((m) => (
             <button
               key={m}
-              onClick={() => setMode(m)}
+              onClick={() => { setMode(m); setError(''); }}
               className={`flex-1 py-3 rounded-xl font-bold text-sm transition ${
                 mode === m ? 'bg-[#2563EB] text-white shadow' : 'text-gray-500'
               }`}
             >
-              {m === 'login' ? 'Log In' : 'Sign Up'}
+              {m === 'login' ? i18n.t('login') : i18n.t('sign_up')}
             </button>
           ))}
         </div>
@@ -126,12 +159,12 @@ const SignUpLoginScreen: React.FC = () => {
         <div className="space-y-4">
           {mode === 'register' && (
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Full Name</label>
+              <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{i18n.t('full_name')}</label>
               <div className="flex items-center gap-3 border-2 border-gray-200 bg-gray-50 rounded-xl px-4 py-3 focus-within:border-[#2563EB]">
                 <User size={18} className="text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Enter your name"
+                  placeholder={i18n.t('enter_your_name')}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="flex-1 outline-none bg-transparent text-gray-900"
@@ -141,7 +174,7 @@ const SignUpLoginScreen: React.FC = () => {
           )}
 
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Phone Number</label>
+            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{i18n.t('phone_number')}</label>
             <div className="flex items-center gap-3 border-2 border-gray-200 bg-gray-50 rounded-xl px-4 py-3 focus-within:border-[#2563EB]">
               <div className="flex items-center gap-2 pr-3 border-r border-gray-300">
                 <span className="text-xl">🇹🇿</span>
@@ -161,7 +194,7 @@ const SignUpLoginScreen: React.FC = () => {
 
           {mode === 'register' && (
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Email (optional)</label>
+              <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{i18n.t('email')} ({i18n.t('optional') || 'optional'})</label>
               <div className="flex items-center gap-3 border-2 border-gray-200 bg-gray-50 rounded-xl px-4 py-3 focus-within:border-[#2563EB]">
                 <Mail size={18} className="text-gray-400" />
                 <input
@@ -176,12 +209,12 @@ const SignUpLoginScreen: React.FC = () => {
           )}
 
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Password</label>
+            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{i18n.t('password')}</label>
             <div className="flex items-center gap-3 border-2 border-gray-200 bg-gray-50 rounded-xl px-4 py-3 focus-within:border-[#2563EB]">
               <Lock size={18} className="text-gray-400" />
               <input
                 type={showPass ? 'text' : 'password'}
-                placeholder="Min. 6 characters"
+                placeholder={i18n.t('login.min_chars')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="flex-1 outline-none bg-transparent text-gray-900"
@@ -195,7 +228,7 @@ const SignUpLoginScreen: React.FC = () => {
 
         {error && (
           <div className="mt-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-center gap-2">
-            <div className="w-2 h-2 bg-red-500 rounded-full" />
+            <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0" />
             <p className="text-red-600 text-sm">{error}</p>
           </div>
         )}
@@ -203,25 +236,25 @@ const SignUpLoginScreen: React.FC = () => {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full mt-6 bg-[#2563EB] hover:bg-[#1d4ed8] disabled:opacity-50 text-white font-black py-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg"
+          className="w-full mt-6 bg-[#2563EB] hover:bg-[#1d4ed8] disabled:opacity-50 text-white font-black py-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg active:scale-95"
         >
           {loading ? (
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
           ) : (
             <>
-              {mode === 'register' ? 'Sign Up' : 'Log In'}
+              {mode === 'register' ? i18n.t('sign_up') : i18n.t('login')}
               <ArrowRight size={18} />
             </>
           )}
         </button>
 
         <p className="text-center text-sm text-gray-500 mt-4">
-          {mode === 'register' ? 'Already have an account?' : "Don't have an account?"}{' '}
+          {mode === 'register' ? i18n.t('have_account') : i18n.t('no_account')}{' '}
           <button
-            onClick={() => setMode(mode === 'register' ? 'login' : 'register')}
+            onClick={() => { setMode(mode === 'register' ? 'login' : 'register'); setError(''); }}
             className="text-[#2563EB] font-semibold"
           >
-            {mode === 'register' ? 'Log In' : 'Sign Up'}
+            {mode === 'register' ? i18n.t('login') : i18n.t('sign_up')}
           </button>
         </p>
       </div>

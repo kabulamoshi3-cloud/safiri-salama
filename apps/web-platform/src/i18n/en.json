@@ -1,12 +1,10 @@
 {
   "app_name": "Safiri Haraka",
   "tagline": "Smart, safe & affordable transport",
-
   "country_select": "Select your country",
   "language_select": "Choose your language",
   "search_country": "Search country...",
   "continue": "Continue",
-
   "onboarding_1_title": "Book a Ride\nInstantly",
   "onboarding_1_desc": "Choose from Car, Bajaji, or Boda-Boda.\nGet picked up in minutes.",
   "onboarding_2_title": "Real-Time\nTracking",
@@ -18,14 +16,12 @@
   "skip": "Skip",
   "next": "Next",
   "get_started": "Get Started",
-
   "i_am_a": "I am a...",
   "passenger": "Passenger",
   "passenger_desc": "Book rides, track trips, pay easily",
   "driver": "Driver",
   "driver_desc": "Accept trips, earn money, grow",
   "dar_es_salaam": "🇹🇿 Dar es Salaam, Tanzania",
-
   "welcome_back": "Welcome Back",
   "create_account": "Create Account",
   "full_name": "Full Name",
@@ -42,13 +38,12 @@
   "invalid_phone": "Enter a valid phone number",
   "password_too_short": "Password must be at least 6 characters",
   "auth_failed": "Authentication failed",
-
   "good_morning": "Good morning",
   "good_afternoon": "Good afternoon",
   "good_evening": "Good evening",
   "where_to": "Where to?",
   "schedule": "Schedule",
-  "saved_places": "Saved places",
+  "saved_places": "Saved Places",
   "home": "Home",
   "work": "Work",
   "add_new": "Add new",
@@ -57,12 +52,10 @@
   "refer_earn": "🎉 Refer & Earn",
   "bonus_amount": "Sh 5,000 bonus",
   "share_with_friends": "Share with friends",
-
   "services": "Services",
   "delivery": "Delivery",
   "food": "Food",
   "rewards": "Rewards",
-
   "choose_ride": "Choose a ride",
   "car": "Car",
   "bajaji": "Bajaji",
@@ -78,7 +71,6 @@
   "get_fare": "Get Fare Estimate",
   "confirm_ride": "Confirm Ride",
   "choose_vehicle": "Choose vehicle",
-
   "payment_method": "Payment Method",
   "cash": "Cash",
   "mpesa": "M-Pesa",
@@ -89,7 +81,6 @@
   "vodacom_mobile": "Vodacom mobile money",
   "tigo_mobile": "Tigo mobile money",
   "airtel_mobile": "Airtel mobile money",
-
   "finding_driver": "Finding your driver...",
   "driver_found": "Driver found!",
   "driver_coming": "Driver is coming...",
@@ -118,7 +109,6 @@
   "mobile": "Mobile Money",
   "cash_payment": "💵 Cash",
   "mobile_payment": "📱 Mobile",
-
   "rate_driver": "Rate your driver",
   "excellent": "Excellent!",
   "good": "Good",
@@ -137,7 +127,6 @@
   "rating_error": "Failed to submit rating. Please try again.",
   "you_gave_stars": "You gave {name} {rating} stars",
   "stars": "stars",
-
   "activity": "Activity",
   "all": "All",
   "completed": "Completed",
@@ -148,7 +137,6 @@
   "trip_history_desc": "Your ride history will appear here",
   "receipt": "Receipt",
   "report": "Report",
-
   "tab_home": "Home",
   "tab_activity": "Activity",
   "tab_payments": "Payments",
@@ -162,8 +150,7 @@
   "mark_all_read": "Mark all read",
   "add_payment_method": "Add payment method",
   "transaction_history": "Transaction History",
-  "saved_places": "Saved Places",
-  "refer_friends": "Refer Friends",
+  "refer_friends": "Refer friends",
   "legal_terms": "Legal",
   "about_app": "About Safiri Haraka",
   "logout_confirm": "Are you sure you want to logout?",
@@ -172,7 +159,6 @@
   "today": "Today",
   "yesterday": "Yesterday",
   "tomorrow": "Tomorrow",
-
   "account": "Account",
   "edit_profile": "Edit profile",
   "payments": "Payments",
@@ -182,7 +168,6 @@
   "wallet_desc": "Cash, M-Pesa, Tigo",
   "saved_places_desc": "Home, Work, Favorites",
   "promo_codes": "Promo codes",
-  "refer_friends": "Refer friends",
   "earn_per_referral": "Earn Sh 5,000 per referral",
   "promotions": "Promotions",
   "promotions_desc": "Promo codes & discounts",
@@ -207,13 +192,11 @@
   "terms_privacy": "Terms, Privacy Policy",
   "about": "About Safiri Haraka",
   "logout": "Logout",
-  "logout_confirm": "Are you sure you want to logout?",
   "cancel": "Cancel",
   "version": "Version",
   "rating_label": "Rating",
   "trips_label": "Trips",
   "member_label": "Member",
-
   "driver_home": "Driver Mode",
   "go_online": "Go Online",
   "go_offline": "Go Offline",
@@ -226,14 +209,12 @@
   "rating": "Rating",
   "online": "Online",
   "offline": "Offline",
-
   "new_trip_request": "New Trip Request!",
   "accept": "Accept",
   "reject": "Reject",
   "distance": "Distance",
   "est_time": "Est. Time",
   "fare": "Fare",
-
   "going_pickup": "Driving to pickup...",
   "arrived_pickup": "I've Arrived at Pickup",
   "waiting_passenger": "Waiting for passenger...",
@@ -243,7 +224,6 @@
   "you_earned": "You earned",
   "done": "Done",
   "emergency_sos": "Emergency SOS",
-
   "earnings": "Earnings",
   "this_week": "This Week",
   "this_month": "This Month",
@@ -261,7 +241,6 @@
   "net_earnings": "Net Earnings",
   "recent_payouts": "Recent Payouts",
   "no_payouts": "No payouts yet",
-
   "help": "Help & Support",
   "we_help_247": "We're here to help 24/7",
   "call_us": "Call Us",
@@ -279,13 +258,11 @@
   "faq_a4": "Yes, all trips are covered by our safety policy.",
   "faq_q5": "How do I contact support?",
   "faq_a5": "Call us, message us on WhatsApp, or send an email anytime.",
-
   "enter_code": "Enter code",
   "apply": "Apply",
   "active_promotions": "Active Promotions",
   "promo_enter_code": "Enter a promo code",
   "promo_applied": "Code \"{code}\" applied!",
-
   "road_conditions": "Road Conditions",
   "traffic_clear": "Clear",
   "traffic_slow": "Slow",
@@ -308,7 +285,6 @@
   "medium_confidence": "Medium accuracy prediction",
   "baseline_prediction": "Using baseline model — collecting real data",
   "updated_ago": "Updated {n} hours ago",
-
   "pay_now": "Pay Now",
   "wallet_balance": "Wallet Balance",
   "mobile_money": "Mobile Money",
@@ -330,7 +306,6 @@
   "drivers_nearby": "{n} drivers nearby",
   "enter_pickup_destination": "Enter both pickup and destination",
   "arriving_min": "Arriving in {minutes} min",
-
   "loading": "Loading...",
   "error": "Error",
   "back": "Back",
@@ -360,14 +335,12 @@
   "support": "Support",
   "countdown_label": "Accepting in {n}s",
   "sos_sent": "Emergency alert sent!",
-
   "schedule_ride": "Schedule a Ride",
   "pick_date": "Pick a date",
   "pick_time": "Pick a time",
   "schedule_confirm": "Schedule Ride",
   "scheduled_success": "Ride scheduled successfully!",
   "future_time_error": "Please select a future time",
-
   "where_to_input": "Where to?",
   "route_unavailable": "Route unavailable",
   "confirm_ride_btn": "Confirm Ride",
@@ -399,25 +372,21 @@
   "trip_done_alert": "Trip Completed!",
   "you_earned_alert": "You earned",
   "emergency_sos_btn": "Emergency SOS",
-
   "common.from": "From",
   "common.to": "To",
   "common.total": "Total",
   "common.time": "Time",
   "common.call": "Call",
   "common.load_more": "Load more",
-
   "nav.home": "Home",
   "nav.my_trips": "My Trips",
   "nav.wallet": "Wallet",
   "nav.profile": "Profile",
-
   "install.installed_title": "App Installed",
   "install.installed_desc": "Safiri Haraka is installed on your device",
   "install.install_app_title": "Install Safiri Haraka App",
   "install.quick_access": "Quick access from your home screen",
   "install.install_btn": "Install",
-
   "tracking.driver_on_way_title": "Driver on the way",
   "tracking.driver_heading_pickup": "Your driver is heading to your pickup location",
   "tracking.on_way_destination": "You are on your way to destination",
@@ -428,7 +397,6 @@
   "tracking.light_traffic": "Light Traffic",
   "tracking.moderate_traffic": "Moderate Traffic",
   "tracking.heavy_traffic": "Heavy Traffic",
-
   "route.calculating": "Calculating routes...",
   "route.choose_your_route": "Choose Your Route",
   "route.options_available": "options available",
@@ -446,7 +414,6 @@
   "route.trip_word": "trip",
   "route.for_word": "for",
   "route.try_again": "Try again",
-
   "vehicle.select_type": "Select Vehicle Type",
   "vehicle.vehicle_default": "Vehicle",
   "vehicle.car_desc": "Comfortable sedan, 4 passengers",
@@ -456,7 +423,6 @@
   "vehicle.base_rate": "Base rate:",
   "vehicle.tip_label": "Tip:",
   "vehicle.tip_text": "Boda-bodas are fastest in heavy traffic. Bajajis offer the best value for short trips.",
-
   "sos.alert_sent": "🚨 Emergency alert sent! Help is on the way. Your emergency contacts have been notified.",
   "sos.alert_failed": "Failed to send emergency alert. Please call emergency services directly: 112",
   "sos.alert_active": "Emergency Alert Active",
@@ -469,7 +435,6 @@
   "sos.sending": "Sending Alert...",
   "sos.confirm_emergency": "🚨 Confirm Emergency",
   "sos.emergency_btn": "SOS Emergency",
-
   "share.link_failed": "Failed to generate share link. Please try again.",
   "share.for_safety": "For your safety",
   "share.desc": "Share your live trip with friends or family so they can track your journey in real-time.",
@@ -483,7 +448,6 @@
   "share.sms_prefix": "I'm on a SafiriSalama trip. Track me:",
   "share.driver_label": "Driver",
   "share.vehicle_label": "Vehicle",
-
   "trip.load_failed": "Failed to load trip details",
   "trip.cancel_confirm": "Are you sure you want to cancel this trip?",
   "trip.cancel_failed": "Failed to cancel trip",
@@ -500,7 +464,6 @@
   "trip.details": "Trip Details",
   "trip.estimated_fare": "Estimated Fare",
   "trip.not_found": "Trip not found",
-
   "booking.choose_ride_type": "Choose ride type",
   "booking.economy": "Economy",
   "booking.comfort": "Comfort",
@@ -517,7 +480,6 @@
   "booking.promo_discount": "Promo discount",
   "booking.failed": "Booking failed. Please try again.",
   "booking.book": "Book",
-
   "food.delivery_title": "Food Delivery",
   "food.order_desc": "Order from restaurants near you",
   "food.search_restaurants": "Search restaurants...",
@@ -530,7 +492,6 @@
   "food.your_cart": "Your Cart",
   "food.each": "each",
   "food.checkout": "Proceed to Checkout",
-
   "home.hero_title": "Get a ride in minutes",
   "home.hero_subtitle": "Reliable, affordable transportation at your fingertips",
   "home.enter_pickup": "Enter pickup location",
@@ -555,7 +516,6 @@
   "home.expires_5days": "5 days",
   "home.expires_2days": "2 days",
   "home.off": "OFF",
-
   "profile.referral_failed": "Could not generate referral link",
   "profile.title": "Profile",
   "profile.user": "User",
@@ -571,11 +531,9 @@
   "profile.support": "Support",
   "profile.log_out": "Log Out",
   "profile.off_all_rides": "off all rides · renews",
-
   "trips.history_title": "Trip History",
   "trips.empty_desc": "Your completed rides will appear here",
   "trips.driver_label": "Driver:",
-
   "wallet.topup_failed": "Top-up failed. Please try again.",
   "wallet.title": "My Wallet",
   "wallet.available_balance": "Available Balance",
@@ -585,7 +543,6 @@
   "wallet.pay": "Pay",
   "wallet.topup_success": "✓ Wallet topped up successfully!",
   "wallet.no_transactions": "No transactions yet",
-
   "login.skip": "Skip →",
   "login.get_started_free": "Get Started Free",
   "login.sign_in_account": "Sign In to My Account",
@@ -632,5 +589,9 @@
   "login.slide3_subtitle": "Every driver is verified, rated, and background-checked. Your safety is our priority.",
   "login.slide4_badge": "💰 Best Prices",
   "login.slide4_title": "Affordable Rides\nEvery Day",
-  "login.slide4_subtitle": "Fair, transparent pricing. No surge fees, no surprises. Get where you need to go without breaking the bank."
+  "login.slide4_subtitle": "Fair, transparent pricing. No surge fees, no surprises. Get where you need to go without breaking the bank.",
+  "login.continue_google": "Continue with Google",
+  "login.continue_apple": "Continue with Apple",
+  "or": "or",
+  "optional": "optional"
 }

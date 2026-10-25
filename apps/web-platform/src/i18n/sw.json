@@ -1,12 +1,10 @@
 {
   "app_name": "Safiri Haraka",
   "tagline": "Usafiri wa kisasa, salama na bei nafuu",
-
   "country_select": "Chagua nchi yako",
   "language_select": "Chagua lugha yako",
   "search_country": "Tafuta nchi...",
   "continue": "Endelea",
-
   "onboarding_1_title": "Piga Safari\nPapo Hapo",
   "onboarding_1_desc": "Chagua Gari, Bajaji, au Boda-Boda.\nChukuliwa kwa dakika chache.",
   "onboarding_2_title": "Ufuatiliaji\nwa Moja kwa Moja",
@@ -18,14 +16,12 @@
   "skip": "Ruka",
   "next": "Mbele",
   "get_started": "Anza Sasa",
-
   "i_am_a": "Mimi ni...",
   "passenger": "Abiria",
   "passenger_desc": "Piga safari, fuatilia, lipa kwa urahisi",
   "driver": "Dereva",
   "driver_desc": "Kubali safari, pata pesa, kukua",
   "dar_es_salaam": "🇹🇿 Dar es Salaam, Tanzania",
-
   "welcome_back": "Karibu Tena",
   "create_account": "Fungua Akaunti",
   "full_name": "Jina Kamili",
@@ -42,13 +38,12 @@
   "invalid_phone": "Weka nambari sahihi ya simu",
   "password_too_short": "Nenosiri lifanye angalau herufi 6",
   "auth_failed": "Uthibitisho umeshindwa",
-
   "good_morning": "Habari ya asubuhi",
   "good_afternoon": "Habari ya mchana",
   "good_evening": "Habari ya jioni",
   "where_to": "Unaenda wapi?",
   "schedule": "Panga",
-  "saved_places": "Maeneo yaliyohifadhiwa",
+  "saved_places": "Maeneo Yaliyohifadhiwa",
   "home": "Nyumbani",
   "work": "Kazini",
   "add_new": "Ongeza mpya",
@@ -57,12 +52,10 @@
   "refer_earn": "🎉 Alika na Pata",
   "bonus_amount": "Sh 5,000 bonasi",
   "share_with_friends": "Shiriki na marafiki",
-
   "services": "Huduma",
   "delivery": "Mizigo",
   "food": "Chakula",
   "rewards": "Tuzo",
-
   "choose_ride": "Chagua usafiri",
   "car": "Gari",
   "bajaji": "Bajaji",
@@ -78,7 +71,6 @@
   "get_fare": "Pata Makadirio ya Nauli",
   "confirm_ride": "Thibitisha Safari",
   "choose_vehicle": "Chagua gari",
-
   "payment_method": "Njia ya Malipo",
   "cash": "Taslimu",
   "mpesa": "M-Pesa",
@@ -89,7 +81,6 @@
   "vodacom_mobile": "Pesa za Vodacom",
   "tigo_mobile": "Pesa za Tigo",
   "airtel_mobile": "Pesa za Airtel",
-
   "finding_driver": "Inatafuta dereva wako...",
   "driver_found": "Dereva amepatikana!",
   "driver_coming": "Dereva anakuja...",
@@ -118,7 +109,6 @@
   "mobile": "Pesa za Simu",
   "cash_payment": "💵 Taslimu",
   "mobile_payment": "📱 Pesa za Simu",
-
   "rate_driver": "Kadirisha dereva wako",
   "excellent": "Bora sana!",
   "good": "Nzuri",
@@ -137,7 +127,6 @@
   "rating_error": "Imeshindwa kutuma tathmini. Jaribu tena.",
   "you_gave_stars": "Umempa {name} nyota {rating}",
   "stars": "nyota",
-
   "activity": "Shughuli",
   "all": "Zote",
   "completed": "Zilizokamilika",
@@ -151,7 +140,6 @@
   "today": "Leo",
   "yesterday": "Jana",
   "tomorrow": "Kesho",
-
   "account": "Akaunti",
   "edit_profile": "Hariri wasifu",
   "payments": "Malipo",
@@ -161,7 +149,7 @@
   "wallet_desc": "Taslimu, M-Pesa, Tigo",
   "saved_places_desc": "Nyumbani, Kazini, Vipendwa",
   "promo_codes": "Kodi za punguzo",
-  "refer_friends": "Alika marafiki",
+  "refer_friends": "Tuma Marafiki",
   "earn_per_referral": "Pata Sh 5,000 kwa kila mwaliko",
   "promotions": "Ofa",
   "promotions_desc": "Kodi za punguzo & punguzo",
@@ -186,13 +174,12 @@
   "terms_privacy": "Masharti, Sera ya Faragha",
   "about": "Kuhusu Safiri Haraka",
   "logout": "Ondoka",
-  "logout_confirm": "Una uhakika unataka kuondoka?",
+  "logout_confirm": "Una uhakika unataka kutoka?",
   "cancel": "Futa",
   "version": "Toleo",
   "rating_label": "Kiwango",
   "trips_label": "Safari",
   "member_label": "Mwanachama",
-
   "driver_home": "Hali ya Dereva",
   "go_online": "Kuwa Mtandaoni",
   "go_offline": "Ondoka Mtandaoni",
@@ -205,14 +192,12 @@
   "rating": "Kiwango",
   "online": "Mtandaoni",
   "offline": "Nje ya Mtandao",
-
   "new_trip_request": "Ombi Jipya la Safari!",
   "accept": "Kubali",
   "reject": "Kataa",
   "distance": "Umbali",
   "est_time": "Muda",
   "fare": "Nauli",
-
   "going_pickup": "Kwenda kumchukua abiria...",
   "arrived_pickup": "Nimefika Sehemu ya Kuchukua",
   "waiting_passenger": "Kusubiri abiria...",
@@ -222,7 +207,6 @@
   "you_earned": "Umepata",
   "done": "Tayari",
   "emergency_sos": "Dharura SOS",
-
   "earnings": "Mapato",
   "this_week": "Wiki Hii",
   "this_month": "Mwezi Huu",
@@ -240,7 +224,6 @@
   "net_earnings": "Mapato Halisi",
   "recent_payouts": "Malipo ya Karibuni",
   "no_payouts": "Hakuna malipo bado",
-
   "help": "Msaada",
   "we_help_247": "Tuko hapa kukusaidia 24/7",
   "call_us": "Tupigie",
@@ -258,13 +241,11 @@
   "faq_a4": "Ndiyo, safari zote zinalindwa na sera yetu ya usalama.",
   "faq_q5": "Ninawezaje kuwasiliana na usaidizi?",
   "faq_a5": "Tupigie, tutumie ujumbe kwenye WhatsApp, au tutumie barua pepe wakati wowote.",
-
   "enter_code": "Weka kodi",
   "apply": "Tumia",
   "active_promotions": "Ofa Zinazoendelea",
   "promo_enter_code": "Weka kodi ya ofa",
   "promo_applied": "Kodi \"{code}\" imetumika!",
-
   "road_conditions": "Hali ya Barabara",
   "traffic_clear": "Wazi",
   "traffic_slow": "Polepole",
@@ -287,7 +268,6 @@
   "medium_confidence": "Utabiri wa usahihi wa wastani",
   "baseline_prediction": "Mfumo wa msingi — data ya kweli inakusanywa",
   "updated_ago": "Imeboreshwa masaa {n} iliyopita",
-
   "pay_now": "Lipa Sasa",
   "wallet_balance": "Salio la Mkoba",
   "mobile_money": "Pesa za Simu",
@@ -309,7 +289,6 @@
   "drivers_nearby": "Madereva {n} karibu",
   "enter_pickup_destination": "Weka sehemu ya kuchukua na marudio",
   "arriving_min": "Unafika dakika {minutes}",
-
   "loading": "Inapakia...",
   "error": "Hitilafu",
   "back": "Rudi",
@@ -339,14 +318,12 @@
   "support": "Msaada",
   "countdown_label": "Inakubali ndani ya {n}s",
   "sos_sent": "Arifa ya dharura imetumwa!",
-
   "schedule_ride": "Panga Safari",
   "pick_date": "Chagua tarehe",
   "pick_time": "Chagua muda",
   "schedule_confirm": "Panga Safari",
   "scheduled_success": "Safari imepangwa kwa mafanikio!",
   "future_time_error": "Tafadhali chagua muda ujao",
-
   "where_to_input": "Unaenda wapi?",
   "route_unavailable": "Njia haipatikani",
   "confirm_ride_btn": "Thibitisha Safari",
@@ -378,7 +355,6 @@
   "trip_done_alert": "Safari Imekamilika!",
   "you_earned_alert": "Umepata",
   "emergency_sos_btn": "Dharura SOS",
-
   "tab_home": "Nyumbani",
   "tab_activity": "Shughuli",
   "tab_payments": "Malipo",
@@ -392,32 +368,25 @@
   "mark_all_read": "Weka yote kusoma",
   "add_payment_method": "Ongeza njia ya malipo",
   "transaction_history": "Historia ya Miamala",
-  "saved_places": "Maeneo Yaliyohifadhiwa",
-  "refer_friends": "Tuma Marafiki",
   "legal_terms": "Masharti",
   "about_app": "Kuhusu Safiri Haraka",
-  "logout_confirm": "Una uhakika unataka kutoka?",
   "no_trips_yet": "Hakuna safari bado",
   "trip_history_message": "Historia ya safari zako itaonekana hapa",
-
   "common.from": "Kutoka",
   "common.to": "Kwenda",
   "common.total": "Jumla",
   "common.time": "Muda",
   "common.call": "Piga",
   "common.load_more": "Pakia zaidi",
-
   "nav.home": "Nyumbani",
   "nav.my_trips": "Safari Zangu",
   "nav.wallet": "Mkoba",
   "nav.profile": "Wasifu",
-
   "install.installed_title": "Programu Imewekwa",
   "install.installed_desc": "Safiri Haraka imewekwa kwenye kifaa chako",
   "install.install_app_title": "Sakisha Programu ya Safiri Haraka",
   "install.quick_access": "Ufikiaji wa haraka kutoka skrini yako",
   "install.install_btn": "Sakisha",
-
   "tracking.driver_on_way_title": "Dereva anakuja",
   "tracking.driver_heading_pickup": "Dereva wako anaelekea eneo la kukuchukua",
   "tracking.on_way_destination": "Uko njiani kuelekea marudio",
@@ -428,7 +397,6 @@
   "tracking.light_traffic": "Msongamano Mwepesi",
   "tracking.moderate_traffic": "Msongamano Wastani",
   "tracking.heavy_traffic": "Msongamano Mkubwa",
-
   "route.calculating": "Inakadiria njia...",
   "route.choose_your_route": "Chagua Njia Yako",
   "route.options_available": "chaguo zinapatikana",
@@ -446,7 +414,6 @@
   "route.trip_word": "safari",
   "route.for_word": "kwa",
   "route.try_again": "Jaribu tena",
-
   "vehicle.select_type": "Chagua Aina ya Gari",
   "vehicle.vehicle_default": "Gari",
   "vehicle.car_desc": "Gari la kutumika, abiria 4",
@@ -456,7 +423,6 @@
   "vehicle.base_rate": "Kiwango cha msingi:",
   "vehicle.tip_label": "Kidokezo:",
   "vehicle.tip_text": "Boda-boda ni za haraka katika msongamano. Bajaji hutoa thamani bora kwa safari fupi.",
-
   "sos.alert_sent": "🚨 Arifa ya dharura imetumwa! Msaada unakuja. Anwani zako za dharura zimearifiwa.",
   "sos.alert_failed": "Imeshindwa kutuma arifa ya dharura. Tafadhali piga huduma za dharura moja kwa moja: 112",
   "sos.alert_active": "Arifa ya Dharura Inafanya Kazi",
@@ -469,7 +435,6 @@
   "sos.sending": "Inatuma Arifi...",
   "sos.confirm_emergency": "🚨 Thibitisha Dharura",
   "sos.emergency_btn": "SOS Dharura",
-
   "share.link_failed": "Imeshindwa kuunda kiungo cha kushiriki. Tafadhali jaribu tena.",
   "share.for_safety": "Kwa usalama wako",
   "share.desc": "Shiriki safari yako moja kwa moja na marafiki au familia ili wakufuatilie.",
@@ -483,7 +448,6 @@
   "share.sms_prefix": "Niko kwenye safari ya SafiriSalama. Nifuate:",
   "share.driver_label": "Dereva",
   "share.vehicle_label": "Gari",
-
   "trip.load_failed": "Imeshindwa kupakia maelezo ya safari",
   "trip.cancel_confirm": "Una uhakika unataka kufuta safari hii?",
   "trip.cancel_failed": "Imeshindwa kufuta safari",
@@ -500,7 +464,6 @@
   "trip.details": "Maelezo ya Safari",
   "trip.estimated_fare": "Makadirio ya Nauli",
   "trip.not_found": "Safari haijapatikana",
-
   "booking.choose_ride_type": "Chagua aina ya usafiri",
   "booking.economy": "Kawaida",
   "booking.comfort": "Starehe",
@@ -517,7 +480,6 @@
   "booking.promo_discount": "Punguzo la ofa",
   "booking.failed": "Agizo limefeli. Tafadhali jaribu tena.",
   "booking.book": "Agiza",
-
   "food.delivery_title": "Uwasilishaji wa Chakula",
   "food.order_desc": "Agiza kutoka migahawa karibu nawe",
   "food.search_restaurants": "Tafuta migahawa...",
@@ -530,7 +492,6 @@
   "food.your_cart": "Kikapu Chako",
   "food.each": "kila moja",
   "food.checkout": "Endelea kwenye Malipo",
-
   "home.hero_title": "Pata usafiri ndani ya dakika",
   "home.hero_subtitle": "Usafiri wa kuaminika na bei nafuu mkononi mwako",
   "home.enter_pickup": "Weka eneo la kukuchukua",
@@ -555,7 +516,6 @@
   "home.expires_5days": "siku 5",
   "home.expires_2days": "siku 2",
   "home.off": "PUNGUZO",
-
   "profile.referral_failed": "Imeshindwa kuunda kiungo cha mwaliko",
   "profile.title": "Wasifu",
   "profile.user": "Mtumiaji",
@@ -571,11 +531,9 @@
   "profile.support": "Msaada",
   "profile.log_out": "Ondoka",
   "profile.off_all_rides": "kwa safari zote · inajitarudia",
-
   "trips.history_title": "Historia ya Safari",
   "trips.empty_desc": "Safari zako zilizokamilika zitaonekana hapa",
   "trips.driver_label": "Dereva:",
-
   "wallet.topup_failed": "Kuweka pesa kumefeli. Tafadhali jaribu tena.",
   "wallet.title": "Mkoba Wangu",
   "wallet.available_balance": "Salio Lililopo",
@@ -585,7 +543,6 @@
   "wallet.pay": "Lipa",
   "wallet.topup_success": "✓ Mkoba umewekwa pesa kwa mafanikio!",
   "wallet.no_transactions": "Hakuna miamala bado",
-
   "login.skip": "Ruka →",
   "login.get_started_free": "Anza Bure",
   "login.sign_in_account": "Ingia Akaunti Yangu",
@@ -632,5 +589,9 @@
   "login.slide3_subtitle": "Kila dereva amechunguzwa, amepewa alama, na amepita ukaguzi. Usalama wako ni kipaumbele.",
   "login.slide4_badge": "💰 Bei Nafuu",
   "login.slide4_title": "Safari za Gharama\nNafuu Kila Siku",
-  "login.slide4_subtitle": "Bei ya haki na wazi. Hakuna ada za ziada, hakuna mshangao. Fika unakotaka bila wasiwasi."
+  "login.slide4_subtitle": "Bei ya haki na wazi. Hakuna ada za ziada, hakuna mshangao. Fika unakotaka bila wasiwasi.",
+  "login.continue_google": "Endelea na Google",
+  "login.continue_apple": "Endelea na Apple",
+  "or": "au",
+  "optional": "si lazima"
 }
