@@ -47,7 +47,13 @@ export default {
           900: '#0f172a',
           800: '#1e293b',
           700: '#334155',
-        }
+        },
+        // SIMNOVA palette — Safiri Haraka
+        navy:    '#0F172A',
+        'simnova-blue':   '#2563EB',
+        'simnova-purple': '#7C3AED',
+        'simnova-green':  '#128901',
+        'simnova-gray':   '#F3F5F9',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

@@ -1,60 +1,82 @@
 /**
- * Safiri Haraka Web Platform Main App
- * Responsive web app for booking rides, food delivery, and account management
+ * Safiri Haraka Web Platform — SIMNOVA Redesign
+ * Complete ride-hailing app with live Leaflet maps
  */
 
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import BottomNav from './components/BottomNav';
 import InstallPrompt from './components/InstallPrompt';
-import LoginPage from './pages/LoginPage';
-import HomePage from './pages/HomePage';
-import BookingPage from './pages/BookingPage';
-import ActiveTripPage from './pages/ActiveTripPage';
+import { useAuthStore } from './store/auth';
+import { useAppInit } from './hooks/useAppInit';
+
+// Import Leaflet CSS
+import 'leaflet/dist/leaflet.css';
+
+// New SIMNOVA screens
+import SplashScreen from './pages/SplashScreen';
+import SignUpLoginScreen from './pages/SignUpLoginScreen';
+import HomeScreenNew from './pages/HomeScreenNew';
+import BookingScreenNew from './pages/BookingScreenNew';
+import SearchingDriverScreen from './pages/SearchingDriverScreen';
+import ActiveTripScreenNew from './pages/ActiveTripScreenNew';
+import RideCompleteScreen from './pages/RideCompleteScreen';
+import ProfileScreenNew from './pages/ProfileScreenNew';
+import NotificationsScreen from './pages/NotificationsScreen';
+
+// Keep existing screens
 import TripHistoryPage from './pages/TripHistoryPage';
 import WalletPage from './pages/WalletPage';
-import ProfilePage from './pages/ProfilePage';
 import FoodPage from './pages/FoodPage';
-import { useAuthStore } from './store/auth';
 
 const App: React.FC = () => {
-  const { isAuthenticated, loading } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
+  const { initialized, loading } = useAppInit();
 
-  if (loading) {
+  if (!initialized || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#2563EB] to-[#1e40af]">
+        <div className="text-center">
+          <div className="w-20 h-20 bg-white/10 backdrop-blur rounded-3xl flex items-center justify-center mb-4 mx-auto">
+            <div className="text-white font-black text-3xl">SH</div>
+          </div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
+        </div>
       </div>
     );
   }
 
   return (
     <BrowserRouter>
-      {isAuthenticated && <Navbar />}
-      <main className={isAuthenticated ? 'md:pt-20 pb-20' : ''}>
-        {/* PWA Install Prompt - shows on all pages */}
-        <div className="container mx-auto px-4 pt-4">
-          <InstallPrompt />
-        </div>
+      <main>
+        <InstallPrompt />
         <Routes>
-          {!isAuthenticated ? (
+          {/* Public routes */}
+          <Route path="/splash" element={<SplashScreen />} />
+          <Route path="/login" element={<SignUpLoginScreen />} />
+
+          {/* Protected routes */}
+          {isAuthenticated ? (
             <>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </>
-          ) : (
-            <>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/book" element={<BookingPage />} />
-              <Route path="/trip/:tripId" element={<ActiveTripPage />} />
+              <Route path="/" element={<HomeScreenNew />} />
+              <Route path="/book" element={<BookingScreenNew />} />
+              <Route path="/searching" element={<SearchingDriverScreen />} />
+              <Route path="/active-trip" element={<ActiveTripScreenNew />} />
+              <Route path="/trip-complete" element={<RideCompleteScreen />} />
+              <Route path="/profile" element={<ProfileScreenNew />} />
+              <Route path="/notifications" element={<NotificationsScreen />} />
               <Route path="/trips" element={<TripHistoryPage />} />
               <Route path="/wallet" element={<WalletPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
               <Route path="/food" element={<FoodPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </>
+          ) : (
+            <Route path="*" element={<Navigate to="/splash" replace />} />
           )}
         </Routes>
+
+        {/* Bottom Navigation — show on all protected routes except splash/login */}
+        {isAuthenticated && <BottomNav />}
       </main>
     </BrowserRouter>
   );
