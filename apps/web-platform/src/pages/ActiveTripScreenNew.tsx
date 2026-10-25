@@ -8,12 +8,15 @@ import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import { Phone, MessageCircle, Share2, X } from 'lucide-react';
 import { useTripStore } from '../store/tripStore';
 import * as trackingSocket from '../services/trackingSocket';
+import { i18n } from '../i18n';
 import 'leaflet/dist/leaflet.css';
 
 const ActiveTripScreenNew: React.FC = () => {
   const navigate = useNavigate();
   const { activeTrip, driver, tripStatus, setTripStatus, updateDriverLocation, clearTrip } = useTripStore();
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  React.useEffect(() => { return i18n.subscribe(() => forceUpdate()); }, []);
 
   useEffect(() => {
     if (!activeTrip) {
@@ -105,9 +108,9 @@ const ActiveTripScreenNew: React.FC = () => {
             </div>
           </div>
           <div className="bg-[#F3F5F9] rounded-xl p-3 flex items-center justify-between">
-            <span className="text-[#0F172A] font-bold">Arriving in 2 min</span>
+            <span className="text-[#0F172A] font-bold">{i18n.t('arriving_in')} 2 {i18n.t('minutes')}</span>
             <button className="text-[#2563EB] font-semibold text-sm flex items-center gap-1">
-              <Share2 size={14} /> Share location
+              <Share2 size={14} /> {i18n.t('share.generate')}
             </button>
           </div>
         </div>
@@ -117,24 +120,24 @@ const ActiveTripScreenNew: React.FC = () => {
       {isInProgress && (
         <>
           <div className="absolute top-0 left-0 right-0 bg-[#0F172A] text-white p-4 z-10">
-            <p className="text-sm opacity-80">Ride in progress</p>
+            <p className="text-sm opacity-80">{i18n.t('trip_in_progress')}</p>
             <p className="font-bold">{driver?.vehicle || 'Vehicle'} · TZS {activeTrip.fare.toLocaleString()}</p>
           </div>
 
           <div className="absolute bottom-20 left-0 right-0 bg-white rounded-t-3xl shadow-2xl p-6 z-10">
-            <h3 className="text-[#0F172A] font-black text-lg mb-4">Trip Details</h3>
+            <h3 className="text-[#0F172A] font-black text-lg mb-4">{i18n.t('trip.details')}</h3>
             <div className="space-y-3 mb-6">
               <div className="flex items-start gap-3">
                 <div className="w-2 h-2 bg-[#128901] rounded-full flex-shrink-0 mt-1.5" />
                 <div className="flex-1">
-                  <p className="text-gray-500 text-xs">From</p>
+                  <p className="text-gray-500 text-xs">{i18n.t('common.from')}</p>
                   <p className="text-[#0F172A] font-semibold text-sm">{activeTrip.pickup.address}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0 mt-1.5" />
                 <div className="flex-1">
-                  <p className="text-gray-500 text-xs">To</p>
+                  <p className="text-gray-500 text-xs">{i18n.t('common.to')}</p>
                   <p className="text-[#0F172A] font-semibold text-sm">{activeTrip.dropoff.address}</p>
                 </div>
               </div>
@@ -149,11 +152,8 @@ const ActiveTripScreenNew: React.FC = () => {
               <div className="w-3 h-3 bg-gray-300 rounded-full" />
             </div>
 
-            <button
-              onClick={() => setShowCancelModal(true)}
-              className="w-full border-2 border-red-500 text-red-500 font-bold py-3 rounded-xl hover:bg-red-50 transition"
-            >
-              Cancel Ride
+            <button onClick={() => setShowCancelModal(true)} className="w-full border-2 border-red-500 text-red-500 font-bold py-3 rounded-xl hover:bg-red-50 transition">
+              {i18n.t('cancel_trip')}
             </button>
           </div>
         </>
@@ -163,20 +163,14 @@ const ActiveTripScreenNew: React.FC = () => {
       {showCancelModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
-            <h3 className="text-[#0F172A] font-black text-xl mb-2">Cancel Trip?</h3>
-            <p className="text-gray-600 mb-6">Are you sure you want to cancel this trip?</p>
+            <h3 className="text-[#0F172A] font-black text-xl mb-2">{i18n.t('cancel_confirm')}</h3>
+            <p className="text-gray-600 mb-6">{i18n.t('trip.cancel_confirm')}</p>
             <div className="flex gap-3">
-              <button
-                onClick={() => setShowCancelModal(false)}
-                className="flex-1 border-2 border-gray-300 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-50 transition"
-              >
-                No
+              <button onClick={() => setShowCancelModal(false)} className="flex-1 border-2 border-gray-300 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-50 transition">
+                {i18n.t('no')}
               </button>
-              <button
-                onClick={handleCancel}
-                className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-xl transition"
-              >
-                Yes, Cancel
+              <button onClick={handleCancel} className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-xl transition">
+                {i18n.t('yes_cancel')}
               </button>
             </div>
           </div>

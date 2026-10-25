@@ -1,60 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaBars, FaTimes, FaGlobe } from 'react-icons/fa';
-
-export type Lang = 'en' | 'sw';
-
-// Global language state - simple module-level so all pages can read it
-let _lang: Lang = 'en';
-let _listeners: Array<() => void> = [];
-
-export function getLang(): Lang { return _lang; }
-export function setGlobalLang(l: Lang) {
-  _lang = l;
-  _listeners.forEach(fn => fn());
-}
-export function useLang(): Lang {
-  const [lang, setLang] = useState<Lang>(_lang);
-  React.useEffect(() => {
-    const update = () => setLang(_lang);
-    _listeners.push(update);
-    return () => { _listeners = _listeners.filter(fn => fn !== update); };
-  }, []);
-  return lang;
-}
-
-const NAV_T = {
-  en: {
-    home: 'Home', services: 'Services', traffic: 'Traffic',
-    driver: 'Become a Driver', about: 'About', help: 'Help',
-    signIn: 'Sign In', bookRide: 'Book a Ride',
-  },
-  sw: {
-    home: 'Nyumbani', services: 'Huduma', traffic: 'Msongamano',
-    driver: 'Kuwa Dereva', about: 'Kuhusu', help: 'Msaada',
-    signIn: 'Ingia', bookRide: 'Piga Nauli',
-  },
-};
+import { pubI18n } from '../i18n';
 
 const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
-  const lang = useLang();
-  const t = NAV_T[lang];
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+
+  useEffect(() => { return pubI18n.subscribe(() => forceUpdate()); }, []);
+
+  const lang = pubI18n.getLanguage();
 
   const navLinks = [
-    { name: t.home,     path: '/' },
-    { name: t.services, path: '/services' },
-    { name: t.traffic,  path: '/traffic' },
-    { name: t.driver,   path: '/become-a-driver' },
-    { name: t.about,    path: '/about' },
-    { name: t.help,     path: '/help' },
+    { name: pubI18n.t('nav_home'),     path: '/' },
+    { name: pubI18n.t('nav_services'), path: '/services' },
+    { name: pubI18n.t('nav_traffic'),  path: '/traffic' },
+    { name: pubI18n.t('nav_driver'),   path: '/become-a-driver' },
+    { name: pubI18n.t('nav_about'),    path: '/about' },
+    { name: pubI18n.t('nav_help'),     path: '/help' },
   ];
 
   const LangMenu = () => (
     <div className="absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50">
       <button
-        onClick={() => { setGlobalLang('en'); setShowLangMenu(false); }}
+        onClick={() => { pubI18n.setLanguage('en'); setShowLangMenu(false); }}
         className={`w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 ${lang === 'en' ? 'bg-blue-50' : ''}`}
       >
         <span className="text-xl">🇬🇧</span>
@@ -62,7 +32,7 @@ const Navbar: React.FC = () => {
         {lang === 'en' && <span className="ml-auto text-blue-500 font-bold">✓</span>}
       </button>
       <button
-        onClick={() => { setGlobalLang('sw'); setShowLangMenu(false); }}
+        onClick={() => { pubI18n.setLanguage('sw'); setShowLangMenu(false); }}
         className={`w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 ${lang === 'sw' ? 'bg-blue-50' : ''}`}
       >
         <span className="text-xl">🇹🇿</span>
@@ -85,7 +55,7 @@ const Navbar: React.FC = () => {
             <span className="text-xl font-black text-white">Safiri <span className="text-secondary-400">Haraka</span></span>
           </Link>
 
-          {/* Desktop Nav Links */}
+          {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-6">
             {navLinks.map((link) => (
               <Link key={link.path} to={link.path}
@@ -95,9 +65,8 @@ const Navbar: React.FC = () => {
             ))}
           </div>
 
-          {/* Desktop Right: Lang + Buttons */}
+          {/* Desktop Right */}
           <div className="hidden md:flex items-center gap-3">
-            {/* Language Switcher */}
             <div className="relative">
               <button
                 onClick={() => setShowLangMenu(!showLangMenu)}
@@ -108,33 +77,31 @@ const Navbar: React.FC = () => {
               </button>
               {showLangMenu && <LangMenu />}
             </div>
-
             <Link to="/login">
               <button className="px-4 py-2 rounded-lg border border-dark-600 text-dark-200 hover:bg-dark-800 transition-colors text-sm font-semibold">
-                {t.signIn}
+                {pubI18n.t('nav_sign_in')}
               </button>
             </Link>
             <Link to="/login?intent=book">
               <button className="px-4 py-2 rounded-lg bg-secondary-500 hover:bg-secondary-600 text-dark-900 transition-colors text-sm font-black shadow-lg">
-                {t.bookRide}
+                {pubI18n.t('nav_book_ride')}
               </button>
             </Link>
           </div>
 
-          {/* Mobile Right: Lang + Hamburger */}
+          {/* Mobile Right */}
           <div className="md:hidden flex items-center gap-2">
             <div className="relative">
               <button
                 onClick={() => setShowLangMenu(!showLangMenu)}
-                className="flex items-center gap-1 px-2 py-1.5 rounded-lg border border-gray-200 text-sm"
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg border border-gray-600 text-sm text-white"
               >
-                <FaGlobe className="text-primary text-xs" />
+                <FaGlobe className="text-xs" />
                 <span>{lang === 'en' ? '🇬🇧' : '🇹🇿'}</span>
               </button>
               {showLangMenu && <LangMenu />}
             </div>
-            <button className="text-gray-700 text-2xl"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            <button className="text-white text-2xl" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <FaTimes /> : <FaBars />}
             </button>
           </div>
@@ -153,12 +120,12 @@ const Navbar: React.FC = () => {
             <div className="space-y-2 pt-4 border-t border-dark-700">
               <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                 <button className="w-full py-3 rounded-lg border border-dark-600 text-dark-200 hover:bg-dark-800 transition-colors font-semibold">
-                  {t.signIn}
+                  {pubI18n.t('nav_sign_in')}
                 </button>
               </Link>
               <Link to="/login?intent=book" onClick={() => setMobileMenuOpen(false)}>
                 <button className="w-full py-3 rounded-lg bg-secondary-500 hover:bg-secondary-600 text-dark-900 transition-colors font-black">
-                  {t.bookRide}
+                  {pubI18n.t('nav_book_ride')}
                 </button>
               </Link>
             </div>

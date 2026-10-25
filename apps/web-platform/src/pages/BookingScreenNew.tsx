@@ -8,6 +8,7 @@ import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import { ArrowLeft, Car, Zap, Sparkles, ChevronRight } from 'lucide-react';
 import { useTripStore } from '../store/tripStore';
 import { getRoute, calculateFare } from '../services/mapService';
+import { i18n } from '../i18n';
 import api from '../services/api';
 import 'leaflet/dist/leaflet.css';
 
@@ -27,6 +28,8 @@ const BookingScreenNew: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [routeInfo, setRouteInfo] = useState<{ distance: number; duration: number } | null>(null);
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+  React.useEffect(() => { return i18n.subscribe(() => forceUpdate()); }, []);
 
   useEffect(() => {
     if (!pickupLocation || !dropoffLocation) {
@@ -54,24 +57,24 @@ const BookingScreenNew: React.FC = () => {
     {
       type: 'economy' as const,
       icon: Car,
-      label: 'Economy',
-      desc: 'Affordable everyday rides',
+      label: i18n.t('booking.economy'),
+      desc: i18n.t('booking.economy_desc'),
       color: 'text-gray-700',
       badge: null,
     },
     {
       type: 'comfort' as const,
       icon: Sparkles,
-      label: 'Comfort',
-      desc: 'Roomier cars, top-rated drivers',
+      label: i18n.t('booking.comfort'),
+      desc: i18n.t('booking.comfort_desc'),
       color: 'text-[#7C3AED]',
       badge: 'BEST VALUE',
     },
     {
       type: 'express' as const,
       icon: Zap,
-      label: 'Express',
-      desc: 'Fastest route, priority pickup',
+      label: i18n.t('booking.express'),
+      desc: i18n.t('booking.express_desc'),
       color: 'text-[#2563EB]',
       badge: null,
     },
