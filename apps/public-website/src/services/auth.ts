@@ -8,9 +8,9 @@ export const login = async (credentials: { phone: string; password: string }) =>
 export const register = async (data: {
   name: string;
   phone: string;
-  email: string;
+  email?: string;
   password: string;
-  role: string;
+  user_type: string;
   vehicleType?: string;
   licenseNumber?: string;
   plateNumber?: string;
