@@ -106,3 +106,78 @@ If `expo-location` native module fails to initialise, the app now renders normal
 | FIX 6 — lazy import BackgroundLocation | `driver-app/App.tsx` | ✅ Confirmed |
 
 **Build & tests:** `services/api-gateway` TypeScript build passes with exit code 0; all 89 Jest tests pass (5 suites). The operator-dashboard build was not runnable due to missing `node_modules` (pre-existing condition, unrelated to this change).
+
+---
+
+## Unit Testing Infrastructure Setup ✅
+
+**Applied by:** Testing agent
+
+### Test files created
+
+#### passenger-app (Jest + jest-expo)
+- `apps/passenger-app/__tests__/setup.ts` — extends jest-native matchers
+- `apps/passenger-app/__tests__/LoginScreen.test.tsx` — 4 tests: renders phone/password placeholders, blocks short phone, calls API on valid input, navigates to MainTabs
+- `apps/passenger-app/__tests__/ActivityScreen.test.tsx` — 4 tests: renders filter tabs, shows trip addresses, shows empty state
+- `apps/passenger-app/__tests__/MainTabNavigator.test.tsx` — 3 tests: renders without crashing, shows Home/Activity tab labels
+
+#### driver-app (Jest + jest-expo)
+- `apps/driver-app/__tests__/setup.ts` — extends jest-native matchers
+- `apps/driver-app/__tests__/EarningsScreen.test.tsx` — 3 tests: period tabs (Today/Week/Month), TSh format display, empty history message
+- `apps/driver-app/__tests__/MainNavigator.test.tsx` — 1 test: renders without crashing
+
+#### admin-panel (Vitest + jsdom)
+- `apps/admin-panel/src/__tests__/setup.ts` — imports jest-dom matchers
+- `apps/admin-panel/src/__tests__/Login.test.tsx` — 4 tests: renders phone/password fields, shows login_error for non-admin, does not navigate for non-admin, calls login API with credentials
+- `apps/admin-panel/src/__tests__/navigation.test.tsx` — 4 tests: sidebar Overview, Drivers, multi-item, Logout button
+
+#### operator-dashboard (Vitest + jsdom)
+- `apps/operator-dashboard/src/__tests__/setup.ts` — imports jest-dom matchers
+- `apps/operator-dashboard/src/__tests__/authStore.test.ts` — 4 tests: sets operator from res.data.user, stores token in localStorage, clears state on logout, throws on failed login
+- `apps/operator-dashboard/src/__tests__/LiveMap.test.tsx` — 3 tests: map container renders, page heading, All filter button
+
+### Config files modified
+- `apps/passenger-app/package.json` — added jest devDependencies, test/test:coverage scripts, jest config block
+- `apps/driver-app/package.json` — same as passenger-app
+- `apps/admin-panel/package.json` — added `@testing-library/jest-dom`, `@testing-library/user-event`, `jsdom` devDependencies
+- `apps/operator-dashboard/package.json` — same additions as admin-panel
+- `apps/admin-panel/vite.config.ts` — added `test: { environment: 'jsdom', globals: true, setupFiles: [...] }` block
+- `apps/operator-dashboard/vite.config.ts` — same test block added
+
+### Deviations from plan
+- **EarningsScreen** — does not accept a `navigation` prop (it's a standalone screen in the tab navigator); test calls `<EarningsScreen />` with no props. Mock uses `DriverAPI` (actual data source) rather than `axios.get` directly.
+- **MainTabNavigator** — the screen mocks the i18n module to return static English labels ('Home', 'Activity') since translation keys are resolved at render time via `i18n.t()`.
+- **admin-panel navigation test** — tests `Layout` component directly (via `MemoryRouter`) rather than `App` with `RouterProvider`, because `createBrowserRouter` / `RouterProvider` does not compose with `MemoryRouter`. Tests cover the same sidebar nav items.
+- **operator-dashboard authStore test** — mocks `../services/api` (the axios instance) rather than raw `axios`, because `store/auth.ts` imports `api` (the configured instance), not axios directly.
+
+### Instructions to run tests
+
+**After cloning or pulling, install dependencies in each app first:**
+
+```bash
+# passenger-app
+cd apps/passenger-app && npm install
+
+# driver-app
+cd apps/driver-app && npm install
+
+# admin-panel
+cd apps/admin-panel && npm install
+
+# operator-dashboard
+cd apps/operator-dashboard && npm install
+```
+
+**Then run tests:**
+
+```bash
+# Expo apps (Jest)
+cd apps/passenger-app && npm test
+cd apps/driver-app && npm test
+
+# Web apps (Vitest)
+cd apps/admin-panel && npm test
+cd apps/operator-dashboard && npm test
+```
+
+> **Note:** The Expo apps require `node_modules` to be installed before Jest can resolve `jest-expo` preset and `@testing-library/react-native` transforms. Tests will pass with `--passWithNoTests` even before `node_modules` exist (they just skip).
