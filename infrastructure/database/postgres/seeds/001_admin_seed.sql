@@ -1,13 +1,29 @@
--- Run this once to create the initial admin account
--- Change the values before running in production
--- Password below is bcrypt hash of 'Admin@1234' (change immediately after first login)
-INSERT INTO users (phone, password_hash, name, user_type, status, created_at, updated_at)
-VALUES (
-  '+255700000000',
-  '$2b$10$YourBcryptHashHere',
-  'Super Admin',
-  'admin',
-  'active',
-  NOW(),
-  NOW()
-) ON CONFLICT (phone) DO NOTHING;
+-- Admin Seed Script
+-- ─────────────────────────────────────────────────────────────────────────────
+-- DO NOT use this SQL file directly for production — it contains a placeholder
+-- hash. Use the Node.js script instead:
+--
+--   DATABASE_URL=postgres://... ADMIN_PHONE=+255700000000 \
+--   ADMIN_PASSWORD=YourSecurePass ADMIN_NAME="Super Admin" \
+--   node infrastructure/database/postgres/seeds/seed-admin.js
+--
+-- If you must use raw SQL, generate the bcrypt hash first:
+--   node -e "const b=require('bcryptjs'); b.hash('YourPass',10).then(console.log)"
+-- Then replace <BCRYPT_HASH_HERE> below with the output.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+-- Example (replace <BCRYPT_HASH_HERE> with a real bcrypt hash before running):
+-- INSERT INTO users (phone, password_hash, name, user_type, status, created_at, updated_at)
+-- VALUES (
+--   '+255700000000',
+--   '<BCRYPT_HASH_HERE>',
+--   'Super Admin',
+--   'admin',
+--   'active',
+--   NOW(),
+--   NOW()
+-- ) ON CONFLICT (phone) DO UPDATE
+--   SET password_hash = EXCLUDED.password_hash,
+--       user_type     = 'admin',
+--       status        = 'active',
+--       updated_at    = NOW();
