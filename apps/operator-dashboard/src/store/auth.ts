@@ -36,7 +36,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const res = await api.post('/auth/login', { phone, password });
       localStorage.setItem('operator_token', res.data.token);
       set({
-        operator: res.data.operator,
+        operator: res.data.user,
         isAuthenticated: true,
         loading: false,
         token: res.data.token,

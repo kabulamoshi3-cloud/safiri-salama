@@ -17,9 +17,12 @@ const logger = createLogger('api-gateway');
 
 // Security middleware
 app.use(helmet());
+const rawOrigins = process.env.CORS_ORIGIN || '*';
+const allowedOrigins = rawOrigins === '*' ? '*' : rawOrigins.split(',').map(o => o.trim());
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
-  credentials: true
+  origin: allowedOrigins,
+  credentials: true,
 }));
 
 // Logging

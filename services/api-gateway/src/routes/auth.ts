@@ -11,17 +11,45 @@ import { pool } from '../database/connection';
 import { verifyFirebaseToken } from '../services/firebaseAdmin';
 
 const router = Router();
-const JWT_SECRET  = process.env.JWT_SECRET || 'safiri-secret';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error('JWT_SECRET environment variable is required');
 const JWT_EXPIRES = '30d';
 
 function issueJwt(userId: string, userType: string): string {
   return jwt.sign({ userId, userType }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
 }
 
+function normalizePhoneNumber(value: string): string {
+  const compact = String(value).trim().replace(/[\s()-]/g, '');
+  if (compact.startsWith('+')) return `+${compact.slice(1).replace(/\D/g, '')}`;
+  const digits = compact.replace(/\D/g, '');
+  if (digits.startsWith('255')) return `+${digits}`;
+  if (digits.startsWith('0')) return `+255${digits.slice(1)}`;
+  return `+255${digits}`;
+}
+
 // ─── POST /auth/register ──────────────────────────────────────────────────────
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    const { phone, password, name, user_type } = req.body;
+    const {
+      phone,
+      password,
+      name,
+      email,
+      user_type: requestedUserType,
+      userType: requestedUserTypeCamel,
+      vehicle_type,
+      vehicleType,
+      license_number,
+      licenseNumber,
+      plate_number,
+      plateNumber,
+    } = req.body;
+    const accountType = requestedUserType || requestedUserTypeCamel || 'passenger';
+    const license = license_number || licenseNumber;
+    const plate = plate_number || plateNumber;
+    const rawVehicleType = String(vehicle_type || vehicleType || '').toLowerCase().replace(/[ _]+/g, '-');
+    const normalizedVehicleType = rawVehicleType === 'boda-boda' ? 'boda-boda' : rawVehicleType;
 
     if (!phone || !password || !name) {
       return res.status(400).json({ error: 'Phone, password and name are required' });
@@ -29,29 +57,60 @@ router.post('/register', async (req: Request, res: Response) => {
     if (password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
+    if (!['passenger', 'driver', 'operator'].includes(accountType)) {
+      return res.status(400).json({ error: 'Invalid account type' });
+    }
+    if (accountType === 'driver' && (!license || !plate || !['car', 'bajaji', 'boda-boda'].includes(normalizedVehicleType))) {
+      return res.status(400).json({ error: 'Driver registration requires a license number, plate number and valid vehicle type' });
+    }
 
     // Format phone
-    const cleanPhone = phone.replace(/\s/g, '');
-    const fullPhone  = cleanPhone.startsWith('+') ? cleanPhone : `+255${cleanPhone}`;
-
-    // Check existing
-    const existing = await pool.query('SELECT id FROM users WHERE phone = $1', [fullPhone]);
-    if (existing.rows.length > 0) {
-      return res.status(400).json({ error: 'Account already exists with this phone number' });
-    }
+    const fullPhone = normalizePhoneNumber(phone);
 
     // Hash password
     const hash = await bcrypt.hash(password, 10);
 
-    // Create user
-    const result = await pool.query(
-      `INSERT INTO users (phone, password_hash, name, user_type, status, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, 'active', NOW(), NOW())
-       RETURNING id, phone, name, email, user_type, status`,
-      [fullPhone, hash, name.trim(), user_type || 'passenger']
-    );
+    // Create the account and (for drivers) its initial profile in one transaction.
+    const client = await pool.connect();
+    let user: any;
+    try {
+      await client.query('BEGIN');
+      const existing = await client.query('SELECT id FROM users WHERE phone = $1', [fullPhone]);
+      if (existing.rows.length > 0) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ error: 'Account already exists with this phone number' });
+      }
 
-    const user  = result.rows[0];
+      const result = await client.query(
+        `INSERT INTO users (phone, password_hash, name, email, user_type, status, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, 'active', NOW(), NOW())
+         RETURNING id, phone, name, email, user_type, status`,
+        [fullPhone, hash, name.trim(), email?.trim() || null, accountType]
+      );
+      user = result.rows[0];
+
+      if (accountType === 'driver') {
+        const driverResult = await client.query(
+          `INSERT INTO drivers (user_id, name, phone, email, license_number, status)
+           VALUES ($1, $2, $3, $4, $5, 'offline')
+           RETURNING id`,
+          [user.id, user.name, user.phone, user.email, license.trim()]
+        );
+        await client.query(
+          `INSERT INTO vehicles (driver_id, plate_number, vehicle_type)
+           VALUES ($1, $2, $3)`,
+          [driverResult.rows[0].id, plate.trim(), normalizedVehicleType]
+        );
+      }
+
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      throw error;
+    } finally {
+      client.release();
+    }
+
     const token = issueJwt(user.id, user.user_type);
 
     // Transform DB column names to camelCase
@@ -77,8 +136,7 @@ router.post('/login', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Phone and password are required' });
     }
 
-    const cleanPhone = phone.replace(/\s/g, '');
-    const fullPhone  = cleanPhone.startsWith('+') ? cleanPhone : `+255${cleanPhone}`;
+    const fullPhone = normalizePhoneNumber(phone);
 
     const result = await pool.query(
       'SELECT id, phone, password_hash, name, email, user_type, status FROM users WHERE phone = $1',
@@ -210,7 +268,7 @@ router.get('/me', async (req: Request, res: Response) => {
         return res.status(401).json({ error: 'No token provided' });
       }
       const token = authHeader.substring(7);
-      const secret = process.env.JWT_SECRET || 'safiri-secret';
+      const secret = process.env.JWT_SECRET;
       let decoded: any;
       try {
         decoded = jwt.verify(token, secret);
@@ -252,7 +310,7 @@ router.patch('/me', async (req: Request, res: Response) => {
         return res.status(401).json({ error: 'No token provided' });
       }
       const token = authHeader.substring(7);
-      const secret = process.env.JWT_SECRET || 'safiri-secret';
+      const secret = process.env.JWT_SECRET;
       let decoded: any;
       try {
         decoded = jwt.verify(token, secret);
@@ -316,7 +374,7 @@ router.post('/change-password', async (req: Request, res: Response) => {
         return res.status(401).json({ error: 'No token provided' });
       }
       const token = authHeader.substring(7);
-      const secret = process.env.JWT_SECRET || 'safiri-secret';
+      const secret = process.env.JWT_SECRET;
       let decoded: any;
       try {
         decoded = jwt.verify(token, secret);
@@ -359,6 +417,57 @@ router.post('/change-password', async (req: Request, res: Response) => {
     return res.json({ message: 'Password changed successfully' });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
+// ─── POST /auth/admin-register ────────────────────────────────────────────────
+router.post('/admin-register', async (req: Request, res: Response) => {
+  try {
+    const setupSecret = process.env.SETUP_SECRET;
+    if (!setupSecret) {
+      return res.status(403).json({ error: 'Admin registration is not available' });
+    }
+
+    const headerSecret = req.headers['x-setup-secret'];
+    if (headerSecret !== setupSecret) {
+      return res.status(403).json({ error: 'Invalid setup secret' });
+    }
+
+    const { phone, password, name, email } = req.body;
+
+    if (!phone || !password || !name) {
+      return res.status(400).json({ error: 'Phone, password and name are required' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const fullPhone = normalizePhoneNumber(phone);
+    const hash = await bcrypt.hash(password, 10);
+
+    const existing = await pool.query('SELECT id FROM users WHERE phone = $1', [fullPhone]);
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'Account already exists with this phone number' });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO users (phone, password_hash, name, email, user_type, status, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, 'admin', 'active', NOW(), NOW())
+       RETURNING id, phone, name, email, user_type, status`,
+      [fullPhone, hash, name.trim(), email?.trim() || null]
+    );
+    const user = result.rows[0];
+    const token = issueJwt(user.id, user.user_type);
+    const { user_type: userType, ...rest } = user;
+
+    return res.status(201).json({
+      message: 'Admin account created successfully',
+      token,
+      user: { ...rest, userType, phone_number: user.phone },
+    });
+  } catch (err) {
+    console.error('admin-register error:', err);
+    return res.status(500).json({ error: 'Admin registration failed. Please try again.' });
   }
 });
 

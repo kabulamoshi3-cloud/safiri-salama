@@ -4,6 +4,9 @@ import { createLogger } from '../utils/logger';
 
 const logger = createLogger('auth-middleware');
 
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error('JWT_SECRET environment variable is required');
+
 export interface AuthRequest extends Request {
   user?: {
     id: string;
@@ -34,17 +37,8 @@ export const authMiddleware = async (
     }
 
     const token = authHeader.substring(7);
-    const secret = process.env.JWT_SECRET;
-    
-    if (!secret) {
-      logger.error('JWT_SECRET not configured');
-      return res.status(500).json({
-        error: 'INTERNAL_ERROR',
-        message: 'Authentication not configured'
-      });
-    }
 
-    const decoded = jwt.verify(token, secret) as {
+    const decoded = jwt.verify(token, JWT_SECRET) as {
       userId: string;
       userType: string;
     };
