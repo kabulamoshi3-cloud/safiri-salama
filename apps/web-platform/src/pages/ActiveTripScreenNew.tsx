@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import { Phone, MessageCircle, Share2, X } from 'lucide-react';
 import { useTripStore } from '../store/tripStore';
-import * as trackingSocket from '../services/trackingSocket';
+import trackingSocket from '../services/trackingSocket';
 import { i18n } from '../i18n';
 import 'leaflet/dist/leaflet.css';
 
@@ -25,26 +25,33 @@ const ActiveTripScreenNew: React.FC = () => {
     }
 
     // Connect to Socket.IO for live updates
-    trackingSocket.connect();
-    trackingSocket.emit('join_trip', { trip_id: activeTrip.id });
-
-    trackingSocket.on('driver_location_update', (data: { lat: number; lng: number }) => {
-      updateDriverLocation(data.lat, data.lng);
+    trackingSocket.connect(localStorage.getItem('safiri_token') || '');
+    const unsubscribeConnect = trackingSocket.onConnect(() => trackingSocket.joinTrip(activeTrip.id));
+    const unsubscribeDriver = trackingSocket.onDriverMoved((data: { latitude: number; longitude: number }) => {
+      updateDriverLocation(data.latitude, data.longitude);
     });
 
-    trackingSocket.on('trip_started', () => {
+    const markStarted = () => {
       setTripStatus('in_progress');
-    });
-
-    trackingSocket.on('trip_completed', () => {
+    };
+    const markCompleted = () => {
       setTripStatus('completed');
       navigate('/trip-complete');
+    };
+
+    const unsubscribeStatus = trackingSocket.onTripStatus((data: { status?: string }) => {
+      if (data.status === 'in_progress') markStarted();
+      if (data.status === 'completed') markCompleted();
     });
+    const unsubscribeStarted = trackingSocket.onTripStarted(markStarted);
+    const unsubscribeCompleted = trackingSocket.onTripCompleted(markCompleted);
 
     return () => {
-      trackingSocket.off('driver_location_update');
-      trackingSocket.off('trip_started');
-      trackingSocket.off('trip_completed');
+      unsubscribeConnect();
+      unsubscribeDriver();
+      unsubscribeStatus();
+      unsubscribeStarted();
+      unsubscribeCompleted();
       trackingSocket.disconnect();
     };
   }, [activeTrip, navigate, setTripStatus, updateDriverLocation]);

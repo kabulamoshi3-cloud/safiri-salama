@@ -61,13 +61,13 @@ const ProfileScreen: React.FC = () => {
       icon: 'file-document-multiple',
       label: t('required_documents') || 'Required Documents',
       subtitle: 'Insurance, registration, etc.',
-      onPress: () => {},
+      onPress: () => navigation.navigate('DocumentUpload'),
     },
     {
       icon: 'shield-check',
       label: t('verification_status') || 'Verification Status',
       subtitle: 'Approved',
-      onPress: () => {},
+      onPress: () => navigation.navigate('VerificationStatus'),
     },
     {
       icon: 'cog',

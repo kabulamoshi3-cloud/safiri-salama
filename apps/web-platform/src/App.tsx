@@ -28,7 +28,7 @@ import TripHistoryPage from './pages/TripHistoryPage';
 import WalletPage from './pages/WalletPage';
 import FoodPage from './pages/FoodPage';
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuthStore();
   const { initialized, loading } = useAppInit();
 
@@ -46,7 +46,6 @@ const App: React.FC = () => {
   }
 
   return (
-    <BrowserRouter>
       <main>
         <InstallPrompt />
         <Routes>
@@ -77,8 +76,13 @@ const App: React.FC = () => {
         {/* Bottom Navigation — show on all protected routes except splash/login */}
         {isAuthenticated && <BottomNav />}
       </main>
-    </BrowserRouter>
   );
 };
+
+const App: React.FC = () => (
+  <BrowserRouter>
+    <AppContent />
+  </BrowserRouter>
+);
 
 export default App;

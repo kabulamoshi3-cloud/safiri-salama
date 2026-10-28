@@ -17,6 +17,9 @@ export default function LoginScreen({ route, navigation }: any) {
   const [loading, setLoading] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
   const [name, setName] = useState('');
+  const [licenseNumber, setLicenseNumber] = useState('');
+  const [plateNumber, setPlateNumber] = useState('');
+  const [vehicleType, setVehicleType] = useState('car');
   const [, forceUpdate] = useState(0);
 
   const formSlide = useRef(new Animated.Value(40)).current;
@@ -39,12 +42,28 @@ export default function LoginScreen({ route, navigation }: any) {
     setLoading(true);
     try {
       const endpoint = isRegister ? `${API}/auth/register` : `${API}/auth/login`;
-      const body = isRegister ? { phone, password, name, userType: role } : { phone, password };
+      if (isRegister && role === 'driver' && (!licenseNumber.trim() || !plateNumber.trim())) {
+        Alert.alert(i18n.t('error'), 'Enter your license number and vehicle plate number');
+        setLoading(false);
+        return;
+      }
+      const body = isRegister
+        ? {
+            phone,
+            password,
+            name,
+            user_type: role,
+            ...(role === 'driver'
+              ? { license_number: licenseNumber, plate_number: plateNumber, vehicle_type: vehicleType }
+              : {}),
+          }
+        : { phone, password };
       const res = await axios.post(endpoint, body);
+      const authenticatedRole = res.data.user?.userType || role;
       await AsyncStorage.setItem('@safiriharaka:token', res.data.token);
-      await AsyncStorage.setItem('@safiriharaka:role', role);
+      await AsyncStorage.setItem('@safiriharaka:role', authenticatedRole);
       await AsyncStorage.setItem('@safiriharaka:user', JSON.stringify(res.data.user));
-      navigation.reset({ index: 0, routes: [{ name: role === 'driver' ? 'DriverMain' : 'Main' }] });
+      navigation.reset({ index: 0, routes: [{ name: authenticatedRole === 'driver' ? 'DriverMain' : 'MainTabs' }] });
     } catch (err: any) {
       Alert.alert(i18n.t('error'), err.response?.data?.error || i18n.t('auth_failed'));
     } finally { setLoading(false); }
@@ -77,6 +96,34 @@ export default function LoginScreen({ route, navigation }: any) {
                 autoCapitalize="words"
               />
             </View>
+          )}
+          {isRegister && role === 'driver' && (
+            <>
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>License number</Text>
+                <TextInput style={styles.input} value={licenseNumber} onChangeText={setLicenseNumber} />
+              </View>
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Vehicle plate number</Text>
+                <TextInput style={styles.input} value={plateNumber} onChangeText={setPlateNumber} autoCapitalize="characters" />
+              </View>
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Vehicle type</Text>
+                <View style={styles.vehicleTypes}>
+                  {['car', 'bajaji', 'boda-boda'].map((type) => (
+                    <TouchableOpacity
+                      key={type}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: vehicleType === type }}
+                      onPress={() => setVehicleType(type)}
+                      style={[styles.vehicleTypeButton, vehicleType === type && styles.vehicleTypeSelected]}
+                    >
+                      <Text style={vehicleType === type ? styles.vehicleTypeSelectedText : styles.vehicleTypeText}>{type}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </>
           )}
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>{i18n.t('phone_number')}</Text>
@@ -130,6 +177,11 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#eee', borderRadius: 12,
     padding: 14, fontSize: 16, backgroundColor: '#fafafa',
   },
+  vehicleTypes: { flexDirection: 'row', gap: 8 },
+  vehicleTypeButton: { flex: 1, alignItems: 'center', borderWidth: 1, borderColor: '#ddd', borderRadius: 10, paddingVertical: 10 },
+  vehicleTypeSelected: { backgroundColor: '#1a73e8', borderColor: '#1a73e8' },
+  vehicleTypeText: { color: '#333', fontSize: 11 },
+  vehicleTypeSelectedText: { color: '#fff', fontSize: 11, fontWeight: '700' },
   button: {
     backgroundColor: '#1a73e8', borderRadius: 14, padding: 16,
     alignItems: 'center', marginTop: 10, elevation: 3,

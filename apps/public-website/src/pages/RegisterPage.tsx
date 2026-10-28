@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { register } from '../services/auth';
+import api from '../services/api';
 import { pubI18n } from '../i18n';
 
 const RegisterPage: React.FC = () => {
@@ -33,7 +34,12 @@ const RegisterPage: React.FC = () => {
     try {
       let phone = formData.phone.trim();
       if (!phone.startsWith('+')) {
-        phone = phone.startsWith('0') ? '+255' + phone.substring(1) : '+255' + phone;
+        const digits = phone.replace(/\D/g, '');
+        phone = digits.startsWith('255')
+          ? '+' + digits
+          : '+255' + (digits.startsWith('0') ? digits.substring(1) : digits);
+      } else {
+        phone = '+' + phone.slice(1).replace(/\D/g, '');
       }
       const payload: any = { name: formData.name, phone, password: formData.password, user_type: role };
       if (formData.email?.trim()) payload.email = formData.email.trim();
@@ -43,9 +49,21 @@ const RegisterPage: React.FC = () => {
         payload.plateNumber = formData.plateNumber;
       }
       await register(payload);
-      navigate('/login?registered=true');
+      // Auto-login after successful registration
+      const loginRes = await api.post('/auth/login', { phone, password: formData.password });
+      localStorage.setItem('token', loginRes.data.token);
+      navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      const status = err.response?.status;
+      if (!err.response) {
+        setError('Cannot connect to server. Check your internet connection.');
+      } else if (status === 409 || (status === 400 && err.response?.data?.error?.toLowerCase().includes('already exists'))) {
+        setError('An account with this phone number already exists. Try logging in.');
+      } else if (status === 400) {
+        setError(err.response?.data?.error || 'Please check your inputs and try again.');
+      } else {
+        setError('Registration failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

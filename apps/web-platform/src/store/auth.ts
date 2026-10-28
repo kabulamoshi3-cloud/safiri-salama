@@ -19,7 +19,7 @@ interface AuthState {
   user:            User | null;
   isAuthenticated: boolean;
   loading:         boolean;
-  register:     (phone: string, password: string, name: string) => Promise<void>;
+  register:     (phone: string, password: string, name: string, email?: string) => Promise<void>;
   login:        (phone: string, password: string) => Promise<void>;
   loginGoogle:  () => Promise<void>;
   logout:       () => void;
@@ -32,10 +32,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   loading:         false,
 
   // ── Register ────────────────────────────────────────────────────────────────
-  register: async (phone, password, name) => {
+  register: async (phone, password, name, email) => {
     set({ loading: true });
     try {
-      const res = await api.post('/auth/register', { phone, password, name });
+      const body: Record<string, string> = { phone, password, name };
+      if (email?.trim()) body.email = email.trim();
+      const res = await api.post('/auth/register', body);
       localStorage.setItem('safiri_token', res.data.token);
       set({ user: res.data.user, isAuthenticated: true, loading: false });
     } catch (err: any) {

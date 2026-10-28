@@ -1,5 +1,31 @@
 # 🧪 Safiri Haraka Testing Guide
 
+## Automated unit tests
+
+From the repository root, run:
+
+```sh
+npm test
+```
+
+This runs the socket-free API gateway validation tests, all web platform Vitest
+tests, and the ML traffic predictor tests with Python's standard `unittest`
+runner. No database, Redis server, external API, or trained model is needed.
+
+You can also run each suite directly:
+
+```sh
+cd services/api-gateway && npx jest --runInBand --runTestsByPath src/__tests__/middleware/validation.unit.test.ts
+cd apps/web-platform && npm test -- --run
+cd ../.. && python3 -m unittest discover -s services/ml-service/tests -v
+```
+
+The API route suites under `services/api-gateway/src/__tests__/routes` use
+Supertest and bind a local HTTP socket. They are separate from the socket-free
+unit suite and may require an environment that permits local socket binding.
+The project also contains services and apps with no unit suites yet; the root
+command currently runs the suites listed above.
+
 ## Step-by-Step Testing Instructions
 
 ---

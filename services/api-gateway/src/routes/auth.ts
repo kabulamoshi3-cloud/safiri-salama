@@ -11,12 +11,17 @@ import { pool } from '../database/connection';
 import { verifyFirebaseToken } from '../services/firebaseAdmin';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) throw new Error('JWT_SECRET environment variable is required');
+
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error('JWT_SECRET environment variable is required');
+  return secret;
+}
+
 const JWT_EXPIRES = '30d';
 
 function issueJwt(userId: string, userType: string): string {
-  return jwt.sign({ userId, userType }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
+  return jwt.sign({ userId, userType }, getJwtSecret(), { expiresIn: JWT_EXPIRES });
 }
 
 function normalizePhoneNumber(value: string): string {
@@ -270,7 +275,7 @@ router.get('/me', async (req: Request, res: Response) => {
       const token = authHeader.substring(7);
       let decoded: any;
       try {
-        decoded = jwt.verify(token, JWT_SECRET);
+        decoded = jwt.verify(token, getJwtSecret());
       } catch {
         return res.status(401).json({ error: 'Invalid or expired token' });
       }
@@ -311,7 +316,7 @@ router.patch('/me', async (req: Request, res: Response) => {
       const token = authHeader.substring(7);
       let decoded: any;
       try {
-        decoded = jwt.verify(token, JWT_SECRET);
+        decoded = jwt.verify(token, getJwtSecret());
       } catch {
         return res.status(401).json({ error: 'Invalid or expired token' });
       }
@@ -374,7 +379,7 @@ router.post('/change-password', async (req: Request, res: Response) => {
       const token = authHeader.substring(7);
       let decoded: any;
       try {
-        decoded = jwt.verify(token, JWT_SECRET);
+        decoded = jwt.verify(token, getJwtSecret());
       } catch {
         return res.status(401).json({ error: 'Invalid or expired token' });
       }

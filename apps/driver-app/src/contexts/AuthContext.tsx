@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { APIClient } from '../services/api/client';
 import type { User } from '../types/shared';
 
 interface AuthContextType {
@@ -7,6 +8,14 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (phoneNumber: string, password: string) => Promise<void>;
+  register: (
+    name: string,
+    phoneNumber: string,
+    password: string,
+    licenseNumber: string,
+    plateNumber: string,
+    vehicleType: string
+  ) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -14,6 +23,38 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const TOKEN_KEY = '@safiriharaka:token';
 const USER_KEY = '@safiriharaka:user';
+
+interface AuthResponse {
+  token: string;
+  user: {
+    id: string;
+    phone?: string;
+    phone_number?: string;
+    name: string;
+    email?: string;
+    userType?: User['type'];
+    user_type?: User['type'];
+  };
+}
+
+function normalizeUser(user: AuthResponse['user']): User {
+  return {
+    id: user.id,
+    phone: user.phone_number || user.phone || '',
+    name: user.name,
+    email: user.email,
+    type: user.userType || user.user_type || 'driver',
+  };
+}
+
+async function saveAuth(response: AuthResponse) {
+  const normalizedUser = normalizeUser(response.user);
+  await Promise.all([
+    AsyncStorage.setItem(TOKEN_KEY, response.token),
+    AsyncStorage.setItem(USER_KEY, JSON.stringify(normalizedUser)),
+  ]);
+  return normalizedUser;
+}
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -44,26 +85,42 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (phoneNumber: string, password: string) => {
     try {
-      // Mock login - replace with actual API call
-      const response = {
-        token: 'mock-token',
-        user: {
-          id: '1',
-          phoneNumber,
-          fullName: 'Driver Name',
-          userType: 'driver' as const,
-        },
-      };
-
-      await Promise.all([
-        AsyncStorage.setItem(TOKEN_KEY, response.token),
-        AsyncStorage.setItem(USER_KEY, JSON.stringify(response.user)),
-      ]);
-
+      const response = await APIClient.post<AuthResponse>('/auth/login', {
+        phone: phoneNumber.trim(),
+        password,
+      });
+      const normalizedUser = await saveAuth(response);
       setToken(response.token);
-      setUser(response.user as User);
+      setUser(normalizedUser);
     } catch (error) {
       console.error('Login failed:', error);
+      throw error;
+    }
+  };
+
+  const register = async (
+    name: string,
+    phoneNumber: string,
+    password: string,
+    licenseNumber: string,
+    plateNumber: string,
+    vehicleType: string
+  ) => {
+    try {
+      const response = await APIClient.post<AuthResponse>('/auth/register', {
+        name: name.trim(),
+        phone: phoneNumber.trim(),
+        password,
+        user_type: 'driver',
+        license_number: licenseNumber.trim(),
+        plate_number: plateNumber.trim(),
+        vehicle_type: vehicleType,
+      });
+      const normalizedUser = await saveAuth(response);
+      setToken(response.token);
+      setUser(normalizedUser);
+    } catch (error) {
+      console.error('Registration failed:', error);
       throw error;
     }
   };
@@ -89,6 +146,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         token,
         isLoading,
         login,
+        register,
         logout,
       }}
     >

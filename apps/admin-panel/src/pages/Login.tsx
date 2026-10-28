@@ -14,6 +14,8 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const apiUrlMissing = !import.meta.env.VITE_API_URL;
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
@@ -26,8 +28,16 @@ export default function Login() {
       }
       setToken(data.token);
       navigate('/', { replace: true });
-    } catch {
-      setError(t('login_error'));
+    } catch (err: any) {
+      if (!err.status) {
+        setError('Cannot reach the server. Check your network.');
+      } else if (err.status === 401) {
+        setError('Wrong phone number or password.');
+      } else if (err.status === 403) {
+        setError('Account suspended or not authorised. Contact your administrator.');
+      } else {
+        setError(t('login_error'));
+      }
     } finally {
       setLoading(false);
     }
@@ -75,6 +85,21 @@ export default function Login() {
             {t('login_title')}
           </p>
         </div>
+
+        {apiUrlMissing && (
+          <div style={{
+            background: '#fef3c7',
+            border: '1px solid #f59e0b',
+            borderRadius: '8px',
+            padding: '12px',
+            marginBottom: '16px',
+            fontSize: '13px',
+            color: '#92400e',
+          }}>
+            ⚠️ <strong>VITE_API_URL</strong> is not set. Requests will go to{' '}
+            <code>localhost:3000</code>. Set it in your <code>.env</code> file.
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} noValidate>
           <div style={{ marginBottom: '16px' }}>

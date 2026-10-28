@@ -18,12 +18,13 @@ export function useAppInit() {
 
   useEffect(() => {
     async function init() {
+      let destination = '/splash';
       try {
         const token = localStorage.getItem('safiri_token');
 
         if (!token) {
           // No session → show splash
-          navigate('/splash');
+          destination = '/splash';
           return;
         }
 
@@ -56,7 +57,7 @@ export function useAppInit() {
               fare: trip.fare || 0,
               vehicleType: trip.vehicle_type || 'economy',
             });
-            navigate('/active-trip');
+            destination = '/active-trip';
             return;
           }
         } catch {
@@ -66,19 +67,20 @@ export function useAppInit() {
         // Check locally stored active trip
         const localTrip = useTripStore.getState().activeTrip;
         if (localTrip && ['searching', 'driver_assigned', 'driver_en_route', 'in_progress'].includes(localTrip.status)) {
-          navigate('/active-trip');
+          destination = '/active-trip';
           return;
         }
 
         // All good — go to home
-        navigate('/');
+        destination = '/';
       } catch {
-        // Auth failed
+        // Auth failed — clear token and send to splash
         localStorage.removeItem('safiri_token');
-        navigate('/splash');
+        destination = '/splash';
       } finally {
         setLoading(false);
         setInitialized(true);
+        navigate(destination, { replace: true });
       }
     }
 

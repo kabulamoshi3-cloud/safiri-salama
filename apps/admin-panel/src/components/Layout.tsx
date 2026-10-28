@@ -23,6 +23,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/staff',       labelKey: 'nav_staff',       icon: '👥' },
   { to: '/passengers',  labelKey: 'nav_passengers',  icon: '🧑‍🤝‍🧑' },
   { to: '/settings',    labelKey: 'nav_settings',    icon: '⚙️' },
+  { to: '/audit-logs',  labelKey: 'nav_audit_logs',  icon: '📋' },
 ];
 
 export default function Layout() {

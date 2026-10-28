@@ -5,7 +5,8 @@
   "scripts": {
     "install": "cd services/api-gateway && npm install --legacy-peer-deps",
     "build": "cd services/api-gateway && npm run build",
-    "start": "cd services/api-gateway && node dist/index.js"
+    "start": "cd services/api-gateway && node dist/index.js",
+    "test": "node scripts/test-all.cjs"
   },
   "dependencies": {
     "firebase-admin": "^12.0.0"

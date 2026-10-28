@@ -15,18 +15,26 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey:            'AIzaSyBkDgINXZ6talT1JByhytoTsiUNv8JVoo8',
-  authDomain:        'safiri-salama-838eb.firebaseapp.com',
-  projectId:         'safiri-salama-838eb',
-  storageBucket:     'safiri-salama-838eb.firebasestorage.app',
-  messagingSenderId: '820851879376',
-  appId:             '1:820851879376:web:e45eff1a284bc5cf0f5dd5',
+  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId:             import.meta.env.VITE_FIREBASE_APP_ID,
 };
-const fbApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-const auth = getAuth(fbApp);
+
 const googleProvider = new GoogleAuthProvider();
-googleProvider.addScope('email');
-googleProvider.addScope('profile');
+let fbAuth: ReturnType<typeof getAuth> | null = null;
+try {
+  if (firebaseConfig.apiKey) {
+    const fbApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    fbAuth = getAuth(fbApp);
+    googleProvider.addScope('email');
+    googleProvider.addScope('profile');
+  }
+} catch (e) {
+  console.warn('Firebase init failed:', e);
+}
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -49,19 +57,28 @@ const LoginPage: React.FC = () => {
     setLoading(true);
     try {
       let loginPhone = email.trim();
-      if (/^\d/.test(loginPhone)) {
-        if (!loginPhone.startsWith('+')) {
-          loginPhone = loginPhone.startsWith('0')
-            ? '+255' + loginPhone.substring(1)
-            : '+255' + loginPhone;
-        }
+      const digits = loginPhone.replace(/\D/g, '');
+      if (loginPhone.startsWith('+')) {
+        loginPhone = '+' + digits;
+      } else if (digits) {
+        loginPhone = digits.startsWith('255')
+          ? '+' + digits
+          : '+255' + (digits.startsWith('0') ? digits.substring(1) : digits);
       }
       const data = await login({ phone: loginPhone, password });
       localStorage.setItem('token', data.token);
-      if (data.user?.userType === 'driver') navigate('/driver');
-      else navigate('/');
-    } catch (err) {
-      setError(pubI18n.t('login_error'));
+      navigate('/');
+    } catch (err: any) {
+      const status = err.response?.status;
+      if (!err.response) {
+        setError('Cannot connect to server. Check your internet connection.');
+      } else if (status === 401) {
+        setError('Incorrect phone number or password.');
+      } else if (status === 403) {
+        setError('Your account has been suspended. Contact support.');
+      } else {
+        setError(err.response?.data?.error || pubI18n.t('login_error'));
+      }
     } finally {
       setLoading(false);
     }
@@ -69,9 +86,10 @@ const LoginPage: React.FC = () => {
 
   const handleGoogle = async () => {
     setError('');
+    if (!fbAuth) { setError('Google sign-in is not configured.'); return; }
     setGoogleLoading(true);
     try {
-      const result = await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(fbAuth, googleProvider);
       const idToken = await result.user.getIdToken();
       let name = result.user.displayName || '';
       let userEmail = result.user.email || '';
@@ -146,7 +164,14 @@ const LoginPage: React.FC = () => {
           <p className="text-gray-600">{pubI18n.t('sign_in_subtitle')}</p>
         </div>
 
-        {registered === 'true' && (
+        {registered === 'true' && searchParams.get('role') === 'driver' && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <p className="text-yellow-800 text-center">
+              Registration received! Your driver account is under review. You will be notified once approved.
+            </p>
+          </div>
+        )}
+        {registered === 'true' && !searchParams.get('role') && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
             <p className="text-green-800 text-center">{pubI18n.t('login_success')}</p>
           </div>
@@ -197,10 +222,10 @@ const LoginPage: React.FC = () => {
           {/* Phone/Password Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{pubI18n.t('email_phone')}</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{pubI18n.t('phone')}</label>
               <input
-                type="text"
-                placeholder={pubI18n.t('email_phone_placeholder')}
+                type="tel"
+                placeholder={pubI18n.t('phone_placeholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -219,9 +244,9 @@ const LoginPage: React.FC = () => {
               />
             </div>
             <div>
-              <a href="/forgot-password" className="text-blue-600 hover:underline text-sm">
+              <Link to="/forgot-password" className="text-blue-600 hover:underline text-sm">
                 {pubI18n.t('forgot_password')}
-              </a>
+              </Link>
             </div>
 
             {error && (

@@ -28,7 +28,9 @@ async function request<T>(
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({ error: response.statusText }));
-    throw new Error(err.error || `HTTP ${response.status}`);
+    const thrownErr: any = new Error(err.error || `HTTP ${response.status}`);
+    thrownErr.status = response.status;
+    throw thrownErr;
   }
 
   return response.json() as Promise<T>;
@@ -170,3 +172,94 @@ export const saveSetting = (key: string, value: string) =>
 
 export const login = (phone: string, password: string) =>
   request<LoginResponse>('POST', '/auth/login', { phone, password });
+
+// ── Types for new features ─────────────────────────────────
+
+export interface DriverDocument {
+  id: string;
+  documentType: string;
+  status: 'pending' | 'approved' | 'rejected' | 'not_uploaded';
+  image_url?: string;
+  rejection_reason?: string;
+  created_at?: string;
+  reviewed_at?: string;
+}
+
+export interface AuditLog {
+  id: string;
+  admin_id: string;
+  admin_name: string;
+  action: string;
+  affected_account: string;
+  reason?: string;
+  created_at: string;
+}
+
+export interface FinanceTransaction {
+  id: string;
+  trip_id?: string;
+  passenger_name?: string;
+  driver_name?: string;
+  amount: string;
+  platform_fee?: string;
+  driver_payout?: string;
+  payment_method: string;
+  status: string;
+  created_at: string;
+}
+
+export interface AnalyticsData {
+  trips_over_time: Array<{ day: string; trips: number }>;
+  revenue_trends: Array<{ day: string; revenue: number }>;
+  driver_performance: Array<{ name: string; trips: number; rating: number }>;
+  peak_hours: Array<{ hour: string; demand: number }>;
+}
+
+export interface SupportTicket {
+  id: string;
+  user_id?: string;
+  user_name?: string;
+  subject: string;
+  status: 'open' | 'in_progress' | 'resolved' | 'closed';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  assigned_to?: string;
+  message?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+// ── New API functions ──────────────────────────────────────
+
+export const getDriverDocuments = (driverId: string) =>
+  request<{ documents: DriverDocument[] }>('GET', `/upload/documents?driver_id=${encodeURIComponent(driverId)}`);
+
+export const reviewDocument = (docId: string, status: 'approved' | 'rejected', rejection_reason?: string) =>
+  request<{ message: string }>('PATCH', `/upload/documents/${docId}/review`, { status, rejection_reason });
+
+export const getAuditLogs = (params?: { from?: string; to?: string; admin_id?: string; page?: number; limit?: number }) => {
+  const qs = new URLSearchParams();
+  if (params?.from) qs.set('from', params.from);
+  if (params?.to) qs.set('to', params.to);
+  if (params?.admin_id) qs.set('admin_id', params.admin_id);
+  if (params?.page !== undefined) qs.set('page', String(params.page));
+  if (params?.limit !== undefined) qs.set('limit', String(params.limit));
+  const query = qs.toString() ? `?${qs.toString()}` : '';
+  return request<{ logs: AuditLog[]; total: number }>('GET', `/admin/audit-logs${query}`);
+};
+
+export const getFinanceTransactions = (params?: { page?: number; limit?: number }) => {
+  const qs = new URLSearchParams();
+  if (params?.page !== undefined) qs.set('page', String(params.page));
+  if (params?.limit !== undefined) qs.set('limit', String(params.limit));
+  const query = qs.toString() ? `?${qs.toString()}` : '';
+  return request<{ transactions: FinanceTransaction[]; total: number }>('GET', `/admin/finance${query}`);
+};
+
+export const getAnalytics = (period = '30d') =>
+  request<AnalyticsData>('GET', `/admin/analytics?period=${encodeURIComponent(period)}`);
+
+export const getSupportTickets = () =>
+  request<{ tickets: SupportTicket[] }>('GET', '/support');
+
+export const updateSupportTicket = (id: string, status: SupportTicket['status']) =>
+  request<{ message: string }>('PATCH', `/support/${id}`, { status });

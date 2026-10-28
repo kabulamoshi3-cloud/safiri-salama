@@ -38,7 +38,7 @@ const SignUpLoginScreen: React.FC = () => {
       if (phone.length < 9) return setError(i18n.t('login.err_phone'));
       if (password.length < 6) return setError(i18n.t('login.err_password_short'));
       try {
-        await register(`+255${phone}`, password, name.trim());
+        await register(`+255${phone}`, password, name.trim(), email.trim() || undefined);
         navigate('/');
       } catch (err: any) {
         setError(err.message);

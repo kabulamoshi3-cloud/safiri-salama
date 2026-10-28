@@ -3,6 +3,7 @@ import { NavigationContainer, NavigationContainerRef } from '@react-navigation/n
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
+import { View, Text, ActivityIndicator } from 'react-native';
 import i18n from './i18n';
 import { registerForPushNotifications, setupNotificationHandlers } from './services/NotificationService';
 
@@ -35,26 +36,40 @@ export default function App() {
 
   useEffect(() => {
     (async () => {
-      await i18n.loadSavedLanguage();
+      try {
+        await i18n.loadSavedLanguage();
+        const [token, role, hasOnboarded, hasCountry] = await Promise.all([
+          AsyncStorage.getItem('@safiriharaka:token'),
+          AsyncStorage.getItem('@safiriharaka:role'),
+          AsyncStorage.getItem('@safiriharaka:onboarded'),
+          AsyncStorage.getItem('@safiriharaka:country'),
+        ]);
 
-      // Register for push notifications and set up handlers
-      await registerForPushNotifications();
+        if (token && role === 'driver') setInitialRoute('DriverMain');
+        else if (token) setInitialRoute('MainTabs');
+        else if (hasOnboarded) setInitialRoute('Welcome');
+        else if (hasCountry) setInitialRoute('Onboarding');
+        else setInitialRoute('CountryLanguage');
+      } catch (error) {
+        console.warn('[App] Could not restore saved app state:', error);
+        setInitialRoute('CountryLanguage');
+      }
+
+      // Optional notification setup must not prevent the app from opening.
+      void registerForPushNotifications();
       setupNotificationHandlers();
-
-      const token = await AsyncStorage.getItem('@safiriharaka:token');
-      const role = await AsyncStorage.getItem('@safiriharaka:role');
-      const hasOnboarded = await AsyncStorage.getItem('@safiriharaka:onboarded');
-      const hasCountry = await AsyncStorage.getItem('@safiriharaka:country');
-
-      if (token && role === 'driver') setInitialRoute('DriverMain');
-      else if (token) setInitialRoute('MainTabs');
-      else if (hasOnboarded) setInitialRoute('Welcome');
-      else if (hasCountry) setInitialRoute('Onboarding');
-      else setInitialRoute('CountryLanguage');
     })();
   }, []);
 
-  if (!initialRoute) return null;
+  if (!initialRoute) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#1a73e8', alignItems: 'center', justifyContent: 'center' }}>
+        <Text style={{ fontSize: 56 }}>🚗</Text>
+        <Text style={{ fontSize: 28, fontWeight: '800', color: '#fff', marginTop: 12 }}>Safiri Haraka</Text>
+        <ActivityIndicator color="#fff" style={{ marginTop: 32 }} size="large" />
+      </View>
+    );
+  }
 
   const handleNavigationReady = async () => {
     try {

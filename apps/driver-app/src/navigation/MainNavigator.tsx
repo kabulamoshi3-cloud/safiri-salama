@@ -17,6 +17,8 @@ import NavigationScreen from '../screens/trip/NavigationScreen';
 import RatePassengerScreen from '../screens/trip/RatePassengerScreen';
 import VehicleInfoScreen from '../screens/profile/VehicleInfoScreen';
 import SettingsScreen from '../screens/profile/SettingsScreen';
+import DocumentUploadScreen from '../screens/onboarding/DocumentUploadScreen';
+import VerificationStatusScreen from '../screens/onboarding/VerificationStatusScreen';
 
 export type MainTabParamList = {
   Home: undefined;
@@ -59,6 +61,8 @@ export type ProfileStackParamList = {
   ProfileMain: undefined;
   VehicleInfo: undefined;
   Settings: undefined;
+  DocumentUpload: undefined;
+  VerificationStatus: undefined;
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -114,6 +118,16 @@ const ProfileNavigator: React.FC = () => {
         name="Settings"
         component={SettingsScreen}
         options={{ title: 'Settings' }}
+      />
+      <ProfileStack.Screen
+        name="DocumentUpload"
+        component={DocumentUploadScreen}
+        options={{ title: 'Required Documents' }}
+      />
+      <ProfileStack.Screen
+        name="VerificationStatus"
+        component={VerificationStatusScreen}
+        options={{ title: 'Verification Status' }}
       />
     </ProfileStack.Navigator>
   );

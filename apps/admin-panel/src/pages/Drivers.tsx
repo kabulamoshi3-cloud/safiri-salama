@@ -10,7 +10,7 @@ import {
 } from '../services/api';
 import Table, { Column } from '../components/Table';
 import StatusBadge from '../components/StatusBadge';
-import Modal from '../components/Modal';
+import DriverVerificationModal from '../components/DriverVerificationModal';
 
 const FILTER_KEYS = ['', 'pending', 'approved', 'rejected'];
 
@@ -23,7 +23,7 @@ export default function Drivers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selected, setSelected] = useState<Driver | null>(null);
-  const [actionLoading, setActionLoading] = useState(false);
+  const [inlineActionLoading, setInlineActionLoading] = useState(false);
 
   function load() {
     setLoading(true);
@@ -36,18 +36,17 @@ export default function Drivers() {
 
   useEffect(() => { load(); }, [approvalFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function handleAction(action: 'approve' | 'reject' | 'ban', driver: Driver) {
-    setActionLoading(true);
+  async function handleInlineAction(action: 'approve' | 'reject' | 'ban', driver: Driver) {
+    setInlineActionLoading(true);
     try {
       if (action === 'approve') await approveDriver(driver.id);
       else if (action === 'reject') await rejectDriver(driver.id);
       else await banDriver(driver.id);
-      setSelected(null);
       load();
     } catch {
       alert(t('error'));
     } finally {
-      setActionLoading(false);
+      setInlineActionLoading(false);
     }
   }
 
@@ -84,16 +83,28 @@ export default function Drivers() {
           </button>
           {r.verification_status === 'pending' && (
             <>
-              <button onClick={() => handleAction('approve', r)} style={btnStyle('green')}>
+              <button
+                disabled={inlineActionLoading}
+                onClick={() => handleInlineAction('approve', r)}
+                style={btnStyle('green')}
+              >
                 {t('approve')}
               </button>
-              <button onClick={() => handleAction('reject', r)} style={btnStyle('red')}>
+              <button
+                disabled={inlineActionLoading}
+                onClick={() => handleInlineAction('reject', r)}
+                style={btnStyle('red')}
+              >
                 {t('reject')}
               </button>
             </>
           )}
           {r.user_status !== 'banned' && (
-            <button onClick={() => handleAction('ban', r)} style={btnStyle('dark')}>
+            <button
+              disabled={inlineActionLoading}
+              onClick={() => handleInlineAction('ban', r)}
+              style={btnStyle('dark')}
+            >
               {t('ban')}
             </button>
           )}
@@ -151,16 +162,13 @@ export default function Drivers() {
         )}
       </div>
 
-      {/* Driver detail modal */}
+      {/* Driver detail + documents modal */}
       {selected && (
-        <Modal title={t('driver_details')} onClose={() => setSelected(null)}>
-          <DriverDetail
-            driver={selected}
-            onAction={(a) => handleAction(a, selected)}
-            loading={actionLoading}
-            t={t}
-          />
-        </Modal>
+        <DriverVerificationModal
+          driver={selected}
+          onClose={() => setSelected(null)}
+          onActionDone={load}
+        />
       )}
     </div>
   );
@@ -185,80 +193,4 @@ function btnStyle(variant: 'blue' | 'green' | 'red' | 'dark' | 'orange') {
     background: bg,
     color,
   } as React.CSSProperties;
-}
-
-function DriverDetail({
-  driver,
-  onAction,
-  loading,
-  t,
-}: {
-  driver: Driver;
-  onAction: (a: 'approve' | 'reject' | 'ban') => void;
-  loading: boolean;
-  t: (k: string) => string;
-}) {
-  const rows = [
-    [t('detail_name'), driver.name],
-    [t('detail_phone'), driver.phone],
-    [t('detail_email'), driver.email ?? '—'],
-    [t('detail_license_num'), driver.license_number],
-    [t('detail_license_expiry'), driver.license_expiry ? new Date(driver.license_expiry).toLocaleDateString() : '—'],
-    [t('detail_verification'), driver.verification_status],
-    [t('detail_account_status'), driver.user_status],
-    [t('detail_driver_status'), driver.status],
-    [t('detail_vehicle_plate'), driver.plate_number ?? '—'],
-    [t('detail_vehicle'), `${driver.make ?? ''} ${driver.model ?? ''}`.trim() || '—'],
-    [t('detail_vehicle_type'), driver.vehicle_type ?? '—'],
-    [t('detail_total_trips'), driver.total_trips],
-    [t('detail_rating'), driver.rating ? `★ ${Number(driver.rating).toFixed(1)}` : '—'],
-    [t('detail_joined'), driver.created_at ? new Date(driver.created_at).toLocaleDateString() : '—'],
-  ];
-
-  return (
-    <div>
-      <table style={{ width: '100%', fontSize: '13px', marginBottom: '20px' }}>
-        <tbody>
-          {rows.map(([label, value]) => (
-            <tr key={label} style={{ borderBottom: '1px solid var(--color-border)' }}>
-              <td style={{ padding: '8px 0', color: 'var(--color-text-secondary)', width: '40%' }}>
-                {label}
-              </td>
-              <td style={{ padding: '8px 0', fontWeight: 500 }}>{value}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        {driver.verification_status === 'pending' && (
-          <>
-            <button
-              disabled={loading}
-              onClick={() => onAction('approve')}
-              style={{ ...btnStyle('green'), padding: '8px 16px', fontSize: '13px' }}
-            >
-              {t('approve')}
-            </button>
-            <button
-              disabled={loading}
-              onClick={() => onAction('reject')}
-              style={{ ...btnStyle('red'), padding: '8px 16px', fontSize: '13px' }}
-            >
-              {t('reject')}
-            </button>
-          </>
-        )}
-        {driver.user_status !== 'banned' && (
-          <button
-            disabled={loading}
-            onClick={() => onAction('ban')}
-            style={{ ...btnStyle('dark'), padding: '8px 16px', fontSize: '13px' }}
-          >
-            {t('ban')}
-          </button>
-        )}
-      </div>
-    </div>
-  );
 }

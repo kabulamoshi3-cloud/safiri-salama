@@ -21,17 +21,25 @@ import { signRouteToken, TEST_PASSENGER_ID } from '../helpers/jwt';
 // --- Mock the database pool used by auth.ts -------------------------------
 jest.mock('../../database/connection', () => ({
   __esModule: true,
-  pool: { query: jest.fn() },
-  default: { query: jest.fn() },
+  pool: { query: jest.fn(), connect: jest.fn() },
+  default: { query: jest.fn(), connect: jest.fn() },
 }));
 import { pool } from '../../database/connection';
 const mockQuery = pool.query as jest.Mock;
+const mockClientQuery = jest.fn();
+const mockConnect = pool.connect as jest.Mock;
+const mockRelease = jest.fn();
 
 // A stable bcrypt hash for the test password, computed once.
 const PASSWORD = 'pass123';
 const PASSWORD_HASH = bcrypt.hashSync(PASSWORD, 10);
 
-beforeEach(() => mockQuery.mockReset());
+beforeEach(() => {
+  mockQuery.mockReset();
+  mockClientQuery.mockReset();
+  mockRelease.mockReset();
+  mockConnect.mockReset().mockResolvedValue({ query: mockClientQuery, release: mockRelease });
+});
 
 // --- Harness that injects a pre-populated req.user onto the auth router ---
 function buildAuthApp(user: { userId: string; userType?: string } | null) {
@@ -47,15 +55,17 @@ function buildAuthApp(user: { userId: string; userType?: string } | null) {
 
 describe('POST /api/v1/auth/register', () => {
   it('registers a new passenger and returns 201 with a token', async () => {
-    mockQuery
+    mockClientQuery
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 }) // BEGIN
       .mockResolvedValueOnce({ rows: [], rowCount: 0 }) // SELECT existing -> none
       .mockResolvedValueOnce({                          // INSERT returning row
         rows: [{
-          id: 'u1', phone: '255744111111', name: 'Amina',
+          id: 'u1', phone: '+255744111111', name: 'Amina',
           email: null, user_type: 'passenger', status: 'active',
         }],
         rowCount: 1,
-      });
+      })
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 }); // COMMIT
 
     const res = await request(app).post('/api/v1/auth/register').send({
       phone: '255744111111', password: PASSWORD, userType: 'passenger', name: 'Amina',
@@ -64,8 +74,47 @@ describe('POST /api/v1/auth/register', () => {
     expect(res.status).toBe(201);
     expect(res.body.token).toBeTruthy();
     expect(res.body.user).toMatchObject({
-      id: 'u1', phone: '255744111111', userType: 'passenger', status: 'active',
+      id: 'u1', phone: '+255744111111', userType: 'passenger', status: 'active',
     });
+    expect(mockRelease).toHaveBeenCalledTimes(1);
+  });
+
+  it('creates driver and vehicle profiles in the account transaction', async () => {
+    mockClientQuery
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 })
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 })
+      .mockResolvedValueOnce({ rows: [{
+        id: 'driver-user', phone: '+255744111112', name: 'Juma',
+        email: null, user_type: 'driver', status: 'active',
+      }], rowCount: 1 })
+      .mockResolvedValueOnce({ rows: [{ id: 'driver-profile' }], rowCount: 1 })
+      .mockResolvedValueOnce({ rows: [], rowCount: 1 })
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 });
+
+    const res = await request(app).post('/api/v1/auth/register').send({
+      phone: '0744111112', password: PASSWORD, name: 'Juma', user_type: 'driver',
+      license_number: 'DL-123', plate_number: 'T123ABC', vehicle_type: 'boda-boda',
+    });
+
+    expect(res.status).toBe(201);
+    expect(mockClientQuery).toHaveBeenNthCalledWith(4,
+      expect.stringContaining('INSERT INTO drivers'),
+      ['driver-user', 'Juma', '+255744111112', null, 'DL-123']
+    );
+    expect(mockClientQuery).toHaveBeenNthCalledWith(5,
+      expect.stringContaining('INSERT INTO vehicles'),
+      ['driver-profile', 'T123ABC', 'boda-boda']
+    );
+    expect(mockClientQuery).toHaveBeenLastCalledWith('COMMIT');
+  });
+
+  it('requires driver profile details for driver accounts', async () => {
+    const res = await request(app).post('/api/v1/auth/register').send({
+      phone: '0744111112', password: PASSWORD, name: 'Juma', user_type: 'driver',
+    });
+
+    expect(res.status).toBe(400);
+    expect(mockConnect).not.toHaveBeenCalled();
   });
 
   it('returns 400 when phone is missing', async () => {
@@ -87,7 +136,10 @@ describe('POST /api/v1/auth/register', () => {
   });
 
   it('returns 400 when the phone number is already registered', async () => {
-    mockQuery.mockResolvedValueOnce({ rows: [{ id: 'existing' }], rowCount: 1 });
+    mockClientQuery
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 })
+      .mockResolvedValueOnce({ rows: [{ id: 'existing' }], rowCount: 1 })
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 });
 
     const res = await request(app).post('/api/v1/auth/register').send({
       phone: '255744111111', password: PASSWORD, name: 'Amina', userType: 'passenger',

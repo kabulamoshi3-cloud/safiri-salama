@@ -24,12 +24,13 @@ const RegisterScreen: React.FC = () => {
   const navigation = useNavigation<RegisterScreenNavigationProp>();
   const { t } = useTranslation();
   const { theme } = useTheme();
-  const { login } = useAuth();
+  const { register } = useAuth();
 
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [vehicleNumber, setVehicleNumber] = useState('');
   const [licenseNumber, setLicenseNumber] = useState('');
+  const [vehicleType, setVehicleType] = useState('car');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -47,9 +48,7 @@ const RegisterScreen: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Mock registration - replace with actual API call
-      await login(phoneNumber, password);
-      Alert.alert(t('common.success'), 'Registration successful');
+      await register(fullName, phoneNumber, password, licenseNumber, vehicleNumber, vehicleType);
     } catch (error: any) {
       Alert.alert(t('common.error'), error.message || 'Registration failed');
     } finally {
@@ -70,6 +69,29 @@ const RegisterScreen: React.FC = () => {
         </View>
 
         <View style={styles.form}>
+          <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: theme.colors.text }]}>Vehicle Type</Text>
+            <View style={styles.vehicleTypes}>
+              {['car', 'bajaji', 'boda-boda'].map((type) => (
+                <TouchableOpacity
+                  key={type}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: vehicleType === type }}
+                  onPress={() => setVehicleType(type)}
+                  style={[
+                    styles.vehicleTypeButton,
+                    { borderColor: theme.colors.border },
+                    vehicleType === type && { backgroundColor: theme.colors.primary },
+                  ]}
+                >
+                  <Text style={{ color: vehicleType === type ? theme.colors.white : theme.colors.text }}>
+                    {type}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
           <View style={styles.inputContainer}>
             <Text style={[styles.label, { color: theme.colors.text }]}>
               Full Name
@@ -256,6 +278,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     fontSize: 16,
+  },
+  vehicleTypes: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  vehicleTypeButton: {
+    flex: 1,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 12,
   },
   button: {
     height: 56,

@@ -54,6 +54,18 @@ function onTripStatus(cb: (data: any) => void): () => void {
   return () => socket?.off('trip:status', cb);
 }
 
+function onTripStarted(cb: (data: any) => void): () => void {
+  if (!socket) return () => {};
+  socket.on('trip:started', cb);
+  return () => socket?.off('trip:started', cb);
+}
+
+function onTripCompleted(cb: (data: any) => void): () => void {
+  if (!socket) return () => {};
+  socket.on('trip:completed', cb);
+  return () => socket?.off('trip:completed', cb);
+}
+
 function onETAChanged(cb: (data: any) => void): () => void {
   if (!socket) return () => {};
   socket.on('eta:changed', cb);
@@ -90,6 +102,8 @@ const trackingSocket = {
   leaveTrip,
   onDriverMoved,
   onTripStatus,
+  onTripStarted,
+  onTripCompleted,
   onETAChanged,
   onConnect,
   onConnectError,

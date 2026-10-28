@@ -19,7 +19,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error.response?.status === 401) {
+    const requestUrl = error.config?.url || '';
+    const isAuthRequest = /\/auth\/(login|register|firebase-verify)$/.test(requestUrl);
+    if (error.response?.status === 401 && !isAuthRequest) {
       localStorage.removeItem('safiri_token');
       window.location.href = '/login';
     }
