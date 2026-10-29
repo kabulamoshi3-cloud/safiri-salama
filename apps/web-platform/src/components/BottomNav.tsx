@@ -1,10 +1,10 @@
 /**
  * Bottom Navigation
- * 4 tabs: Home, Ride, Activity, Profile
+ * 4 tabs + Footer with Admin & Operator links
  */
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Car, Clock, User } from 'lucide-react';
+import { Home, Car, Clock, User, Shield, Building2 } from 'lucide-react';
 
 const BottomNav: React.FC = () => {
   const navigate = useNavigate();
@@ -24,7 +24,8 @@ const BottomNav: React.FC = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)] z-50">
-      <div className="flex items-center justify-around px-4 py-3">
+      {/* Main Navigation Tabs */}
+      <div className="flex items-center justify-around px-4 py-3 border-b border-gray-100">
         {tabs.map((tab) => {
           const active = isActive(tab.path);
           const Icon = tab.icon;
@@ -49,6 +50,29 @@ const BottomNav: React.FC = () => {
             </button>
           );
         })}
+      </div>
+
+      {/* Footer Links */}
+      <div className="flex items-center justify-center gap-6 px-4 py-2 bg-gray-50">
+        <a
+          href="https://admin-panel-pi-ebon.vercel.app"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-xs text-gray-600 hover:text-[#2563EB] transition-colors"
+        >
+          <Shield size={14} />
+          <span>Admin Panel</span>
+        </a>
+        <span className="text-gray-300">|</span>
+        <a
+          href="https://operator-dashboard.vercel.app"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-xs text-gray-600 hover:text-[#2563EB] transition-colors"
+        >
+          <Building2 size={14} />
+          <span>Operator Dashboard</span>
+        </a>
       </div>
     </nav>
   );

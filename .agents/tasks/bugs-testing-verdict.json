@@ -1,0 +1,10 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    "`safiri-secret` survives in tracking-service — services/tracking-service/src/index.ts line 59 still uses `process.env.JWT_SECRET || 'safiri-secret'`. Remove the fallback and throw at startup.",
+    "Inline JWT reads in routes/auth.ts bypass the null guard — GET /me, PATCH /me, and POST /change-password each do `const secret = process.env.JWT_SECRET` (type: string | undefined) and pass it to jwt.verify(). Replace with the module-level JWT_SECRET constant.",
+    "`setupFilesAfterFramework` typo silences jest-native in both Expo apps — rename to `setupFilesAfterEnv` in apps/passenger-app/package.json and apps/driver-app/package.json.",
+    "SQL seed contains an invalid placeholder bcrypt hash — 001_admin_seed.sql inserts `$2b$10$YourBcryptHashHere`; bcrypt.compare() always returns false and ON CONFLICT DO NOTHING prevents the Node.js script from repairing it. Delete the file or replace the placeholder with a real pre-computed hash."
+  ],
+  "reviewDoc": "/home/masalago/projects/daladala/.agents/tasks/bugs-testing-review.md"
+}
