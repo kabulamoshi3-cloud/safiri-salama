@@ -1,8 +1,8 @@
-# Safiri Haraka Redis Configuration
+# SkyRex Redis Configuration
 
 ## Overview
 
-Redis serves two roles in the Safiri Haraka platform:
+Redis serves two roles in the SkyRex platform:
 
 1. **Cache** — hot data that is expensive to recompute (vehicle positions, crowding predictions, fare tables, session tokens)
 2. **Pub/Sub** — real-time event fan-out between microservices (vehicle position updates → SSE live feed, payment retry queue, emergency alerts)

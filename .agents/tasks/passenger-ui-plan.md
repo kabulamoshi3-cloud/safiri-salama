@@ -1,4 +1,4 @@
-# Implementation Plan — Safiri Haraka Passenger App Live Tracking
+# Implementation Plan — SkyRex Passenger App Live Tracking
 
 ## Context from codebase exploration
 

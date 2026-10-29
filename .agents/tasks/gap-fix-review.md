@@ -1,4 +1,4 @@
-# Safiri Haraka — Seven gap fixes (pass 2)
+# SkyRex — Seven gap fixes (pass 2)
 
 All seven placeholders and dead-code items identified in the gap analysis have been addressed
 across two commits. The prior review pass flagged two blocking issues: a `RoleBasedRoute`
@@ -64,7 +64,7 @@ Reads `tripId` from `route.params`, fetches `GET /trips/:tripId` via `APIClient.
 matches the REST convention used by the existing API client throughout the project.
 `formatDateTime` accepts both `created_at` and `started_at` to guard against backend
 variation. Stars render using `MaterialCommunityIcons` `star`/`star-outline` for filled/empty
-states. The "Report an Issue" button deep-links to `mailto:support@safiriharaka.co.tz` with the
+states. The "Report an Issue" button deep-links to `mailto:support@skyrex.co.tz` with the
 trip reference URI-encoded.
 
 ## GAP 2 — VehicleInfoScreen replacement

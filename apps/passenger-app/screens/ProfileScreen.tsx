@@ -16,7 +16,7 @@ export default function ProfileScreen({ navigation }: any) {
   }, []);
 
   const loadUser = async () => {
-    const userData = await AsyncStorage.getItem('@safiriharaka:user');
+    const userData = await AsyncStorage.getItem('@skyrex:user');
     if (userData) setUser(JSON.parse(userData));
   };
 
@@ -26,7 +26,7 @@ export default function ProfileScreen({ navigation }: any) {
       {
         text: i18n.t('logout'), style: 'destructive',
         onPress: async () => {
-          await AsyncStorage.multiRemove(['@safiriharaka:token', '@safiriharaka:role', '@safiriharaka:user']);
+          await AsyncStorage.multiRemove(['@skyrex:token', '@skyrex:role', '@skyrex:user']);
           navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
         },
       },
@@ -60,7 +60,7 @@ export default function ProfileScreen({ navigation }: any) {
           <View style={styles.onlineDot} />
         </View>
 
-        <Text style={styles.userName}>{user?.name || 'Safiri Haraka User'}</Text>
+        <Text style={styles.userName}>{user?.name || 'SkyRex User'}</Text>
         <Text style={styles.userPhone}>{user?.phone || '+255 ...'}</Text>
 
         <View style={styles.statsRow}>

@@ -88,7 +88,7 @@
 
 - [ ] 7. **Wire `RatingScreen.tsx` to the real API.**
   Modify `apps/passenger-app/screens/RatingScreen.tsx`. Add `axios` import and `API_BASE` constant. Replace the Alert-only `submitRating` body with:
-  1. Get token from `AsyncStorage.getItem('@safiriharaka:token')`.
+  1. Get token from `AsyncStorage.getItem('@skyrex:token')`.
   2. `axios.post(\`\${API_BASE}/ratings\`, { trip_id: tripId, ratee_id: driver.id, rating, review: comment }, { headers: { Authorization: \`Bearer \${token}\` } })`.
   3. On success → `navigation.popToTop()`. On error → `Alert.alert('Error', 'Failed to submit rating')`.
   4. Show `ActivityIndicator` while submitting (disable button).

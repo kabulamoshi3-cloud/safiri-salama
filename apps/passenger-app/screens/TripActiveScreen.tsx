@@ -8,7 +8,7 @@ import axios from 'axios';
 import * as TrackingSocket from '../services/TrackingSocket';
 import i18n from '../i18n';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://skyrex-api.vercel.app/api/v1';
 
 type TripStatus = 'searching' | 'accepted' | 'arriving' | 'in_progress' | 'completed' | 'cancelled';
 
@@ -142,7 +142,7 @@ export default function TripActiveScreen({ route, navigation }: any) {
       let unsubETA: () => void = () => {};
       let cancelled = false; // guards against a resolved promise after cleanup
 
-      AsyncStorage.getItem('@safiriharaka:token').then((token) => {
+      AsyncStorage.getItem('@skyrex:token').then((token) => {
         if (cancelled) return; // effect was already cleaned up
         if (token) {
           TrackingSocket.connect(token);

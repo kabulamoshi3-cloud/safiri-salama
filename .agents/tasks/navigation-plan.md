@@ -1,4 +1,4 @@
-# Implementation Plan — Safiri Haraka Navigation + Routing + Live Tracking
+# Implementation Plan — SkyRex Navigation + Routing + Live Tracking
 
 ## Codebase facts discovered
 

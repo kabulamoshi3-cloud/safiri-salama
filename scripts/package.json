@@ -1,7 +1,7 @@
 {
-  "name": "@safiriharaka/test-scripts",
+  "name": "@skyrex/test-scripts",
   "version": "1.0.0",
-  "description": "Testing and simulation scripts for Safiri Haraka platform",
+  "description": "Testing and simulation scripts for SkyRex platform",
   "private": true,
   "scripts": {
     "simulate": "node fake-driver-simulator.js",

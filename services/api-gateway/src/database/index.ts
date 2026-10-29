@@ -11,7 +11,7 @@ dotenv.config();
 
 const logger = createLogger('database');
 
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/safiriharaka';
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/skyrex';
 
 // Create connection pool
 const pool = new Pool({

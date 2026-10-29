@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { HomeStackParamList } from '../../navigation/MainNavigator';
 import { startBackgroundTracking, stopBackgroundTracking } from '../../services/BackgroundLocation';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://skyrex-api.vercel.app/api/v1';
 
 type RouteStep = {
   instruction: string;
@@ -103,7 +103,7 @@ const NavigationScreen: React.FC<Props> = ({ navigation, route }) => {
     };
 
     try {
-      const token = await AsyncStorage.getItem('@safiriharaka:token');
+      const token = await AsyncStorage.getItem('@skyrex:token');
       const response = await axios.post(
         `${API_BASE}/tracking/calculate-route`,
         {
@@ -158,7 +158,7 @@ const NavigationScreen: React.FC<Props> = ({ navigation, route }) => {
 
           // POST driver location — fire and forget
           try {
-            const token = await AsyncStorage.getItem('@safiriharaka:token');
+            const token = await AsyncStorage.getItem('@skyrex:token');
             await axios.post(
               `${API_BASE}/tracking/driver/location`,
               { lat, lng, bearing, speed, trip_id: params.tripId },
@@ -212,7 +212,7 @@ const NavigationScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const handleArrived = async () => {
     try {
-      const token = await AsyncStorage.getItem('@safiriharaka:token');
+      const token = await AsyncStorage.getItem('@skyrex:token');
       await axios.post(
         `${API_BASE}/trips/${params.tripId}/complete`,
         {},

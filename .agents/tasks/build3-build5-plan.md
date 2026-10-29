@@ -35,7 +35,7 @@ Last committed migration: `013_admin_settings.sql`.
 - TypeScript: 0 errors in all created/edited files.
 - Always read target files in full before editing.
 - API base URL: `process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1'`
-- Driver-app API client token key: `'@safiriharaka:token'`. Same key in passenger-app.
+- Driver-app API client token key: `'@skyrex:token'`. Same key in passenger-app.
 - Auth user ID: `(req as any).user?.userId` in existing routes (trips.ts uses `userId`); use the same in new routes for consistency.
 
 ---
@@ -56,7 +56,7 @@ import axios from 'axios';
 let TaskManager: any = null;
 try { TaskManager = require('expo-task-manager'); } catch {}
 
-export const BACKGROUND_LOCATION_TASK = 'safiriharaka-background-location';
+export const BACKGROUND_LOCATION_TASK = 'skyrex-background-location';
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
 
 if (TaskManager) {
@@ -67,8 +67,8 @@ if (TaskManager) {
     const loc = locations[locations.length - 1];
     const { latitude: lat, longitude: lng, heading, speed } = loc.coords;
     try {
-      const token   = await AsyncStorage.getItem('@safiriharaka:token');
-      const trip_id = await AsyncStorage.getItem('@safiriharaka:active_trip_id');
+      const token   = await AsyncStorage.getItem('@skyrex:token');
+      const trip_id = await AsyncStorage.getItem('@skyrex:active_trip_id');
       await axios.post(
         `${API_BASE}/tracking/driver/location`,
         { lat, lng, bearing: heading ?? 0, speed: speed ?? 0, trip_id: trip_id ?? undefined },
@@ -92,7 +92,7 @@ export async function startBackgroundTracking(): Promise<void> {
       distanceInterval: 15,
       showsBackgroundLocationIndicator: true,
       foregroundService: {
-        notificationTitle: 'Safiri Haraka GPS Inaendelea',
+        notificationTitle: 'SkyRex GPS Inaendelea',
         notificationBody: 'Tunafuatilia mahali pako ili kuwasaidia abiria.',
         notificationColor: '#2e7d32',
       },
@@ -165,7 +165,7 @@ import './src/services/BackgroundLocation';
      [
        "expo-location",
        {
-         "locationAlwaysAndWhenInUsePermission": "Safiri Haraka inahitaji eneo lako kuendesha safari hata wakati app inaendesha nyuma.",
+         "locationAlwaysAndWhenInUsePermission": "SkyRex inahitaji eneo lako kuendesha safari hata wakati app inaendesha nyuma.",
          "isAndroidBackgroundLocationEnabled": true
        }
      ],
@@ -246,7 +246,7 @@ let Notifications: any = null;
 try { Notifications = require('expo-notifications'); } catch {}
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
-const PUSH_TOKEN_KEY = '@safiriharaka:push_token';
+const PUSH_TOKEN_KEY = '@skyrex:push_token';
 
 export class NotificationService {
   static async initialize(): Promise<void> {
@@ -264,7 +264,7 @@ export class NotificationService {
       const saved = await AsyncStorage.getItem(PUSH_TOKEN_KEY);
       if (saved !== token) {
         await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);
-        const authToken = await AsyncStorage.getItem('@safiriharaka:token');
+        const authToken = await AsyncStorage.getItem('@skyrex:token');
         await axios.post(
           `${API_BASE}/notifications/register`,
           { pushToken: token, platform: Platform.OS },
@@ -279,7 +279,7 @@ export class NotificationService {
         const data = response.notification.request.content.data ?? {};
         if (data.type === 'new_trip_request' && data.trip_id) {
           AsyncStorage.setItem(
-            '@safiriharaka:pending_nav',
+            '@skyrex:pending_nav',
             JSON.stringify({ screen: 'TripRequest', params: { tripId: data.trip_id } })
           ).catch(() => {});
         }
@@ -318,7 +318,7 @@ let Notifications: any = null;
 try { Notifications = require('expo-notifications'); } catch {}
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
-const PUSH_TOKEN_KEY = '@safiriharaka:push_token';
+const PUSH_TOKEN_KEY = '@skyrex:push_token';
 
 export async function registerForPushNotifications(): Promise<void> {
   if (!Notifications) return;
@@ -335,7 +335,7 @@ export async function registerForPushNotifications(): Promise<void> {
     const saved = await AsyncStorage.getItem(PUSH_TOKEN_KEY);
     if (saved !== token) {
       await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);
-      const authToken = await AsyncStorage.getItem('@safiriharaka:token');
+      const authToken = await AsyncStorage.getItem('@skyrex:token');
       await axios.post(
         `${API_BASE}/notifications/register`,
         { pushToken: token, platform: Platform.OS },
@@ -356,7 +356,7 @@ export function setupNotificationHandlers(): void {
     const data = response.notification.request.content.data ?? {};
     if (data.trip_id) {
       AsyncStorage.setItem(
-        '@safiriharaka:pending_nav',
+        '@skyrex:pending_nav',
         JSON.stringify({ screen: 'TripActive', params: { tripId: data.trip_id } })
       ).catch(() => {});
     }
@@ -392,10 +392,10 @@ export function setupNotificationHandlers(): void {
    ```tsx
    ref={navigationRef}
    onReady={() => {
-     AsyncStorage.getItem('@safiriharaka:pending_nav').then((raw) => {
+     AsyncStorage.getItem('@skyrex:pending_nav').then((raw) => {
        if (!raw) return;
        const { screen, params } = JSON.parse(raw);
-       AsyncStorage.removeItem('@safiriharaka:pending_nav');
+       AsyncStorage.removeItem('@skyrex:pending_nav');
        navigationRef.current?.navigate(screen, params);
      });
    }}
@@ -523,7 +523,7 @@ router.post('/push-token', async (req: Request, res: Response) => {
    pool.query('SELECT passenger_id FROM trips WHERE id = $1', [tripId])
      .then(r => {
        if (r.rows[0]?.passenger_id)
-         sendPushNotification(r.rows[0].passenger_id, 'Safari Imekamilika! 🎉', 'Asante kwa kutumia Safiri Haraka. Tafadhali tathmini safari yako.', { tripId, type: 'trip_completed' });
+         sendPushNotification(r.rows[0].passenger_id, 'Safari Imekamilika! 🎉', 'Asante kwa kutumia SkyRex. Tafadhali tathmini safari yako.', { tripId, type: 'trip_completed' });
      }).catch(() => {});
    ```
 
@@ -949,7 +949,7 @@ static async getDriverRating(driverId: string): Promise<{ average: number; count
    const submitRating = async () => {
      setSubmitting(true);
      try {
-       const token = await AsyncStorage.getItem('@safiriharaka:token');
+       const token = await AsyncStorage.getItem('@skyrex:token');
        await axios.post(
          `${API_BASE}/ratings`,
          { trip_id: tripId, ratee_id: driver.id, rating, review: comment },

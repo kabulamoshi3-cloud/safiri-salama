@@ -20,5 +20,5 @@
     "cd services/api-gateway && npx tsc --noEmit"
   ],
   "blocked_reason": null,
-  "findings": "Pre-existing TS errors found in intelligence.ts (lines 128-129: TypeScript primitive types used as runtime values in an object literal) and in api-gateway middleware (rbac.ts: missing @safiriharaka/shared-types package; validation.ts: AJV JSONSchemaType strictNullChecks requirement). These are unrelated to FEAT-001 and the files are either forbidden (intelligence.ts) or outside FEAT-001 scope. tracking-service was missing @types/jsonwebtoken and @types/cors devDependencies — both installed. All new code in internal.ts and the index.ts mount line are TypeScript-clean."
+  "findings": "Pre-existing TS errors found in intelligence.ts (lines 128-129: TypeScript primitive types used as runtime values in an object literal) and in api-gateway middleware (rbac.ts: missing @skyrex/shared-types package; validation.ts: AJV JSONSchemaType strictNullChecks requirement). These are unrelated to FEAT-001 and the files are either forbidden (intelligence.ts) or outside FEAT-001 scope. tracking-service was missing @types/jsonwebtoken and @types/cors devDependencies — both installed. All new code in internal.ts and the index.ts mount line are TypeScript-clean."
 }

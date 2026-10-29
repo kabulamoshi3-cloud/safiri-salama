@@ -1,4 +1,4 @@
-# Safiri Haraka S3-Compatible Object Storage Configuration
+# SkyRex S3-Compatible Object Storage Configuration
 
 All buckets are provisioned on **MinIO** for local development and on **AWS S3** (or an S3-compatible service such as Wasabi or Cloudflare R2) for production. The configuration below applies to both environments unless noted.
 
@@ -6,7 +6,7 @@ All buckets are provisioned on **MinIO** for local development and on **AWS S3**
 
 ## Buckets
 
-### 1. `safiriharaka-incident-media`
+### 1. `skyrex-incident-media`
 
 Stores photo, audio, and video attachments submitted with incident reports.
 
@@ -37,8 +37,8 @@ incident-media/<incidentId>/<attachmentId>.<ext>
       "Principal": "*",
       "Action": "s3:*",
       "Resource": [
-        "arn:aws:s3:::safiriharaka-incident-media",
-        "arn:aws:s3:::safiriharaka-incident-media/*"
+        "arn:aws:s3:::skyrex-incident-media",
+        "arn:aws:s3:::skyrex-incident-media/*"
       ],
       "Condition": {
         "Bool": {
@@ -50,7 +50,7 @@ incident-media/<incidentId>/<attachmentId>.<ext>
       "Sid": "AllowSafetyModuleService",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::<ACCOUNT_ID>:role/safiriharaka-safety-module-role"
+        "AWS": "arn:aws:iam::<ACCOUNT_ID>:role/skyrex-safety-module-role"
       },
       "Action": [
         "s3:PutObject",
@@ -59,23 +59,23 @@ incident-media/<incidentId>/<attachmentId>.<ext>
         "s3:ListBucket"
       ],
       "Resource": [
-        "arn:aws:s3:::safiriharaka-incident-media",
-        "arn:aws:s3:::safiriharaka-incident-media/*"
+        "arn:aws:s3:::skyrex-incident-media",
+        "arn:aws:s3:::skyrex-incident-media/*"
       ]
     },
     {
       "Sid": "AllowAdminPanelReadOnly",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::<ACCOUNT_ID>:role/safiriharaka-admin-panel-role"
+        "AWS": "arn:aws:iam::<ACCOUNT_ID>:role/skyrex-admin-panel-role"
       },
       "Action": [
         "s3:GetObject",
         "s3:ListBucket"
       ],
       "Resource": [
-        "arn:aws:s3:::safiriharaka-incident-media",
-        "arn:aws:s3:::safiriharaka-incident-media/*"
+        "arn:aws:s3:::skyrex-incident-media",
+        "arn:aws:s3:::skyrex-incident-media/*"
       ]
     }
   ]
@@ -84,7 +84,7 @@ incident-media/<incidentId>/<attachmentId>.<ext>
 
 ---
 
-### 2. `safiriharaka-emergency-audio`
+### 2. `skyrex-emergency-audio`
 
 Stores discreet audio recordings captured when a passenger or driver activates the emergency button.
 
@@ -104,7 +104,7 @@ Stores discreet audio recordings captured when a passenger or driver activates t
 emergency-audio/<emergencyEventId>/<timestamp_iso8601>.m4a
 ```
 
-**Encryption**: Uses a dedicated KMS key (`safiriharaka-emergency-audio-key`) with key rotation enabled annually. Access to the KMS key is restricted to the Safety Module IAM role and the Admin Panel IAM role.
+**Encryption**: Uses a dedicated KMS key (`skyrex-emergency-audio-key`) with key rotation enabled annually. Access to the KMS key is restricted to the Safety Module IAM role and the Admin Panel IAM role.
 
 **Bucket policy** (deny all public access, enforce TLS, enforce SSE-KMS):
 ```json
@@ -117,8 +117,8 @@ emergency-audio/<emergencyEventId>/<timestamp_iso8601>.m4a
       "Principal": "*",
       "Action": "s3:*",
       "Resource": [
-        "arn:aws:s3:::safiriharaka-emergency-audio",
-        "arn:aws:s3:::safiriharaka-emergency-audio/*"
+        "arn:aws:s3:::skyrex-emergency-audio",
+        "arn:aws:s3:::skyrex-emergency-audio/*"
       ],
       "Condition": {
         "Bool": {
@@ -131,7 +131,7 @@ emergency-audio/<emergencyEventId>/<timestamp_iso8601>.m4a
       "Effect": "Deny",
       "Principal": "*",
       "Action": "s3:PutObject",
-      "Resource": "arn:aws:s3:::safiriharaka-emergency-audio/*",
+      "Resource": "arn:aws:s3:::skyrex-emergency-audio/*",
       "Condition": {
         "StringNotEquals": {
           "s3:x-amz-server-side-encryption": "aws:kms"
@@ -142,27 +142,27 @@ emergency-audio/<emergencyEventId>/<timestamp_iso8601>.m4a
       "Sid": "AllowSafetyModuleWrite",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::<ACCOUNT_ID>:role/safiriharaka-safety-module-role"
+        "AWS": "arn:aws:iam::<ACCOUNT_ID>:role/skyrex-safety-module-role"
       },
       "Action": [
         "s3:PutObject",
         "s3:GetObject"
       ],
-      "Resource": "arn:aws:s3:::safiriharaka-emergency-audio/*"
+      "Resource": "arn:aws:s3:::skyrex-emergency-audio/*"
     },
     {
       "Sid": "AllowAdminPanelRead",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::<ACCOUNT_ID>:role/safiriharaka-admin-panel-role"
+        "AWS": "arn:aws:iam::<ACCOUNT_ID>:role/skyrex-admin-panel-role"
       },
       "Action": [
         "s3:GetObject",
         "s3:ListBucket"
       ],
       "Resource": [
-        "arn:aws:s3:::safiriharaka-emergency-audio",
-        "arn:aws:s3:::safiriharaka-emergency-audio/*"
+        "arn:aws:s3:::skyrex-emergency-audio",
+        "arn:aws:s3:::skyrex-emergency-audio/*"
       ]
     }
   ]
@@ -171,7 +171,7 @@ emergency-audio/<emergencyEventId>/<timestamp_iso8601>.m4a
 
 ---
 
-### 3. `safiriharaka-driver-documents`
+### 3. `skyrex-driver-documents`
 
 Stores driver license scans, background check documents, and vehicle compliance certificates uploaded during the operator onboarding workflow.
 
@@ -192,7 +192,7 @@ driver-documents/<driverId>/<documentType>/<uploadTimestamp>.<ext>
 
 ---
 
-### 4. `safiriharaka-exports`
+### 4. `skyrex-exports`
 
 Stores generated CSV and PDF reports (earnings reports, expense reports, P&L statements).
 
@@ -226,14 +226,14 @@ For local development, all four buckets are created automatically by the `docker
 
 ```bash
 mc alias set local http://minio:9000 minioadmin minioadmin
-mc mb local/safiriharaka-incident-media
-mc mb local/safiriharaka-emergency-audio
-mc mb local/safiriharaka-driver-documents
-mc mb local/safiriharaka-exports
-mc anonymous set none local/safiriharaka-incident-media
-mc anonymous set none local/safiriharaka-emergency-audio
-mc anonymous set none local/safiriharaka-driver-documents
-mc anonymous set none local/safiriharaka-exports
+mc mb local/skyrex-incident-media
+mc mb local/skyrex-emergency-audio
+mc mb local/skyrex-driver-documents
+mc mb local/skyrex-exports
+mc anonymous set none local/skyrex-incident-media
+mc anonymous set none local/skyrex-emergency-audio
+mc anonymous set none local/skyrex-driver-documents
+mc anonymous set none local/skyrex-exports
 ```
 
 MinIO console is available at `http://localhost:9001` (credentials: `minioadmin` / `minioadmin`).
@@ -248,8 +248,8 @@ S3_ENDPOINT=http://minio:9000          # MinIO local; use https://s3.amazonaws.c
 S3_REGION=af-south-1                   # AWS Africa (Cape Town) — closest to Dar es Salaam
 S3_ACCESS_KEY_ID=<your-access-key>
 S3_SECRET_ACCESS_KEY=<your-secret-key>
-S3_BUCKET_INCIDENT_MEDIA=safiriharaka-incident-media
-S3_BUCKET_EMERGENCY_AUDIO=safiriharaka-emergency-audio
-S3_BUCKET_DRIVER_DOCUMENTS=safiriharaka-driver-documents
-S3_BUCKET_EXPORTS=safiriharaka-exports
+S3_BUCKET_INCIDENT_MEDIA=skyrex-incident-media
+S3_BUCKET_EMERGENCY_AUDIO=skyrex-emergency-audio
+S3_BUCKET_DRIVER_DOCUMENTS=skyrex-driver-documents
+S3_BUCKET_EXPORTS=skyrex-exports
 ```

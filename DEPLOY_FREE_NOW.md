@@ -1,4 +1,4 @@
-# 🚀 Deploy Safiri Haraka Platform (100% FREE)
+# 🚀 Deploy SkyRex Platform (100% FREE)
 
 All components ready to deploy at zero cost!
 
@@ -176,8 +176,8 @@ After deployment, update these files with real URLs:
 3. **apps/public-website/src/components/Footer.tsx**
 
 Replace placeholder links:
-- `https://play.google.com/store/apps/details?id=com.safiriharaka.passenger`
-- `https://play.google.com/store/apps/details?id=com.safiriharaka.driver`
+- `https://play.google.com/store/apps/details?id=com.skyrex.passenger`
+- `https://play.google.com/store/apps/details?id=com.skyrex.driver`
 
 ---
 

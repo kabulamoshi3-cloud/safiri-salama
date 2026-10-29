@@ -42,7 +42,7 @@ app.use(rateLimiter);
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
-    name: 'Safiri Haraka API',
+    name: 'SkyRex API',
     version: '1.0.0',
     status: 'running',
     endpoints: {

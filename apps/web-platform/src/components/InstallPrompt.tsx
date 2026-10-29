@@ -66,7 +66,7 @@ const InstallPrompt: React.FC = () => {
             <span className="text-white font-black text-sm">SH</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm mb-1">Install Safiri Haraka</p>
+            <p className="font-bold text-sm mb-1">Install SkyRex</p>
             {isIOS ? (
               <p className="text-white/60 text-xs">
                 Tap <Share size={12} className="inline" /> Share → "Add to Home Screen"

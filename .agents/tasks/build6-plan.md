@@ -101,7 +101,7 @@
       Verify: `npm test -- --testPathPattern=routes/tracking` — all cases pass.
 
 - [ ] 7. Run full test suite and fix any remaining failures
-      Run `npm test` from `services/api-gateway`. Fix any TypeScript type errors or import failures that appear. The middleware unit tests (`auth.test.ts`, `rbac.test.ts`, `validation.test.ts`) import from `@safiriharaka/shared-types` and a slightly different `auth.ts` shape than the current file; add jest `moduleNameMapper` in jest.config.js if needed to resolve workspace packages, or adjust the test imports to match current source.
+      Run `npm test` from `services/api-gateway`. Fix any TypeScript type errors or import failures that appear. The middleware unit tests (`auth.test.ts`, `rbac.test.ts`, `validation.test.ts`) import from `@skyrex/shared-types` and a slightly different `auth.ts` shape than the current file; add jest `moduleNameMapper` in jest.config.js if needed to resolve workspace packages, or adjust the test imports to match current source.
       Files: `services/api-gateway/jest.config.js`, any test files requiring minor fixes.
       Verify: `npm test` exits 0, all suites green.
 

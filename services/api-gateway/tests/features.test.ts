@@ -1,5 +1,5 @@
 /**
- * Integration Tests for Safiri Haraka Features
+ * Integration Tests for SkyRex Features
  * Tests all new features: Promo codes, Referral, Incentives, Subscription, Support, Corporate, Food Delivery
  */
 
@@ -12,7 +12,7 @@ const TEST_DRIVER_ID = '660e8400-e29b-41d4-a716-446655440001';
 // Mock authentication token
 const mockAuthToken = 'Bearer test-token-12345';
 
-describe('Safiri Haraka Feature Integration Tests', () => {
+describe('SkyRex Feature Integration Tests', () => {
 
   // ============================================================================
   // PROMO CODE TESTS
@@ -84,7 +84,7 @@ describe('Safiri Haraka Feature Integration Tests', () => {
 
       expect(response.status).toBe(201);
       expect(response.data.referral_code).toBeTruthy();
-      expect(response.data.referral_link).toContain('safiriharaka.com');
+      expect(response.data.referral_link).toContain('skyrex.com');
       
       referralCode = response.data.referral_code;
     });

@@ -8,7 +8,7 @@ import axios from 'axios';
 import AnimatedButton from '../components/AnimatedButton';
 import i18n from '../i18n';
 
-const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
+const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://skyrex-api.vercel.app/api/v1';
 
 export default function LoginScreen({ route, navigation }: any) {
   const role = route?.params?.role || 'passenger';
@@ -60,9 +60,9 @@ export default function LoginScreen({ route, navigation }: any) {
         : { phone, password };
       const res = await axios.post(endpoint, body);
       const authenticatedRole = res.data.user?.userType || role;
-      await AsyncStorage.setItem('@safiriharaka:token', res.data.token);
-      await AsyncStorage.setItem('@safiriharaka:role', authenticatedRole);
-      await AsyncStorage.setItem('@safiriharaka:user', JSON.stringify(res.data.user));
+      await AsyncStorage.setItem('@skyrex:token', res.data.token);
+      await AsyncStorage.setItem('@skyrex:role', authenticatedRole);
+      await AsyncStorage.setItem('@skyrex:user', JSON.stringify(res.data.user));
       navigation.reset({ index: 0, routes: [{ name: authenticatedRole === 'driver' ? 'DriverMain' : 'MainTabs' }] });
     } catch (err: any) {
       Alert.alert(i18n.t('error'), err.response?.data?.error || i18n.t('auth_failed'));

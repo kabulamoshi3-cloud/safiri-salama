@@ -36,7 +36,7 @@ const AboutPage: React.FC = () => {
       <section className="bg-gradient-to-br from-primary to-blue-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-            About Safiri Haraka
+            About SkyRex
           </h1>
           <p className="text-xl md:text-2xl max-w-3xl mx-auto">
             Transforming transportation across Tanzania
@@ -73,7 +73,7 @@ const AboutPage: React.FC = () => {
           </h2>
           <div className="space-y-6 text-lg text-gray-700">
             <p>
-              Safiri Haraka was founded in 2023 by a team of Tanzanian engineers who saw
+              SkyRex was founded in 2023 by a team of Tanzanian engineers who saw
               the daily struggles of commuters in Dar es Salaam. Long waits, uncertain
               pricing, and safety concerns were barriers that prevented people from
               accessing reliable transportation.
@@ -122,10 +122,10 @@ const AboutPage: React.FC = () => {
               <div>
                 <span className="font-semibold">Email: </span>
                 <a
-                  href="mailto:info@safiriharaka.co.tz"
+                  href="mailto:info@skyrex.co.tz"
                   className="text-primary hover:underline"
                 >
-                  info@safiriharaka.co.tz
+                  info@skyrex.co.tz
                 </a>
               </div>
               <div>

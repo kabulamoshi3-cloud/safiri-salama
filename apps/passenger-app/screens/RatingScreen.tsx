@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import i18n from '../i18n';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://skyrex-api.vercel.app/api/v1';
 
 export default function RatingScreen({ route, navigation }: any) {
   const { driver: driverParam, fare, pickup, destination, tripId, driverId: driverIdParam } = route.params ?? {};
@@ -32,7 +32,7 @@ export default function RatingScreen({ route, navigation }: any) {
     setFetching(true);
     (async () => {
       try {
-        const token = await AsyncStorage.getItem('@safiriharaka:token');
+        const token = await AsyncStorage.getItem('@skyrex:token');
         const resp = await axios.get(`${API_BASE}/trips/${tripId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -59,7 +59,7 @@ export default function RatingScreen({ route, navigation }: any) {
 
   const submitRating = async () => {
     try {
-      const token = await AsyncStorage.getItem('@safiriharaka:token');
+      const token = await AsyncStorage.getItem('@skyrex:token');
       if (tripId) {
         await axios.post(
           `${API_BASE}/ratings`,

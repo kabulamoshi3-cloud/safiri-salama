@@ -1,7 +1,7 @@
 {
-  "name": "@safiriharaka/trip-planner",
+  "name": "@skyrex/trip-planner",
   "version": "1.0.0",
-  "description": "Safiri Haraka Trip Planner Service — Python / FastAPI (multi-modal routing, schedules)",
+  "description": "SkyRex Trip Planner Service — Python / FastAPI (multi-modal routing, schedules)",
   "private": true,
   "scripts": {
     "install:python": "pip install -r requirements.txt",

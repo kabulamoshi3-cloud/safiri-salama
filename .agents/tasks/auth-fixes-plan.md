@@ -484,20 +484,20 @@ In `Login.tsx` `handleSubmit` catch, expand the error handling after Fix 10's `A
 **Status: CONFIRMED BROKEN**
 
 **Findings:**
-- `screens/LoginScreen.tsx` line 10: `const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';`
+- `screens/LoginScreen.tsx` line 10: `const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://skyrex-api.vercel.app/api/v1';`
 - This is a raw string directly in the screen. The driver app does the same in `src/services/api/client.ts`. If the URL changes, every file must be updated independently.
 
 **What to do:**
 1. Create `apps/passenger-app/src/config.ts`:
    ```ts
    export const API_BASE_URL =
-     process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
+     process.env.EXPO_PUBLIC_API_URL ?? 'https://skyrex-api.vercel.app/api/v1';
    ```
    Note: `src/` may not exist yet in passenger-app — check; if the file structure puts screens at the root level, create `config.ts` at the root of `apps/passenger-app/`.
 
 2. In `screens/LoginScreen.tsx`, replace:
    ```ts
-   const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
+   const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://skyrex-api.vercel.app/api/v1';
    ```
    with:
    ```ts
@@ -533,7 +533,7 @@ if (isRegister) {
     i18n.t('success'),
     authenticatedRole === 'driver'
       ? 'Driver account created! Pending review before you can accept trips.'
-      : 'Account created successfully! Welcome to Safiri Haraka.',
+      : 'Account created successfully! Welcome to SkyRex.',
     [{ text: 'OK', onPress: () => navigation.reset({ index: 0, routes: [{ name: authenticatedRole === 'driver' ? 'DriverMain' : 'MainTabs' }] }) }]
   );
 } else {

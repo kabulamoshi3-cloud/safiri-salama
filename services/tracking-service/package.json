@@ -1,5 +1,5 @@
 {
-  "name": "@safiriharaka/tracking-service",
+  "name": "@skyrex/tracking-service",
   "version": "1.0.0",
   "description": "Real-time GPS tracking and location service",
   "main": "dist/index.js",

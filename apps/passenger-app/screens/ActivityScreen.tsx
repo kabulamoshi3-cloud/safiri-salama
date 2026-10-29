@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import i18n from '../i18n';
 
-const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
+const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://skyrex-api.vercel.app/api/v1';
 
 export default function ActivityScreen({ navigation }: any) {
   const [filter, setFilter] = useState('all');
@@ -21,7 +21,7 @@ export default function ActivityScreen({ navigation }: any) {
   const fetchTrips = async () => {
     setLoading(true);
     try {
-      const token = await AsyncStorage.getItem('@safiriharaka:token');
+      const token = await AsyncStorage.getItem('@skyrex:token');
       const res = await axios.get(`${API}/trips`, {
         headers: { Authorization: `Bearer ${token}` },
         params: filter !== 'all' ? { status: filter } : {},

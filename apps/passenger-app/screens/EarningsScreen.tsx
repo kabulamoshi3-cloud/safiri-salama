@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import i18n from '../i18n';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://skyrex-api.vercel.app/api/v1';
 
 interface EarningsSummary {
   today: number;
@@ -32,7 +32,7 @@ export default function EarningsScreen() {
   const load = useCallback(async () => {
     try {
       setError(null);
-      const token = await AsyncStorage.getItem('@safiriharaka:token');
+      const token = await AsyncStorage.getItem('@skyrex:token');
       const resp = await axios.get<EarningsSummary>(`${API_BASE}/earnings/summary`, {
         headers: { Authorization: `Bearer ${token}` },
       });

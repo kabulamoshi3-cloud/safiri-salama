@@ -14,8 +14,8 @@ const router = Router();
 
 // Cloudinary config (unsigned upload preset)
 // Users will need to create a free Cloudinary account and set these
-const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'safiriharaka';
-const CLOUDINARY_UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET || 'safiriharaka_unsigned';
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'skyrex';
+const CLOUDINARY_UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET || 'skyrex_unsigned';
 
 /**
  * GET /api/v1/upload/config

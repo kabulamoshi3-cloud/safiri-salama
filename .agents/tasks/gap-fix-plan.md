@@ -1,4 +1,4 @@
-# Implementation Plan — Safiri Haraka Gap Fixes
+# Implementation Plan — SkyRex Gap Fixes
 
 Seven concrete gaps, ordered by independence (they do not depend on each other — each can fail
 or succeed without blocking the others). Web/portal gaps come first because they have simpler
@@ -72,12 +72,12 @@ benefit.
   store icons — import `FaGooglePlay` and `FaApple` from `react-icons/fa`.
 
   **URLs (authoritative, do not change):**
-  - Passenger Google Play: `https://play.google.com/store/apps/details?id=com.safiriharaka.passenger`
-  - Passenger App Store: `https://apps.apple.com/app/safiriharaka-passenger/id000000001`
-  - Driver Google Play: `https://play.google.com/store/apps/details?id=com.safiriharaka.driver`
-  - Driver App Store: `https://apps.apple.com/app/safiriharaka-driver/id000000002`
+  - Passenger Google Play: `https://play.google.com/store/apps/details?id=com.skyrex.passenger`
+  - Passenger App Store: `https://apps.apple.com/app/skyrex-passenger/id000000001`
+  - Driver Google Play: `https://play.google.com/store/apps/details?id=com.skyrex.driver`
+  - Driver App Store: `https://apps.apple.com/app/skyrex-driver/id000000002`
 
-  **HomePage.tsx** — "Download the Safiri Haraka App" section:
+  **HomePage.tsx** — "Download the SkyRex App" section:
   Replace the two static gray divs with two groups ("Passenger App" and "Driver App"), each
   containing an `<a>` Google Play button and an `<a>` App Store button. Use
   `target="_blank" rel="noopener noreferrer"`. Add a small italic note below:
@@ -299,7 +299,7 @@ benefit.
        otherwise show "Not rated"
      - **Footer:** `TouchableOpacity` button "Report an Issue" styled as an outline button
        (`borderColor: theme.colors.primary`) — `onPress` opens a deep-link or `Linking.openURL`
-       to `mailto:support@safiriharaka.co.tz?subject=Trip Issue ${trip.id}`
+       to `mailto:support@skyrex.co.tz?subject=Trip Issue ${trip.id}`
 
   **Style:** match the card pattern in `ActiveTripScreen` (border-radius 12, elevation 3,
   `theme.colors.surface` background). Use `StyleSheet.create`.

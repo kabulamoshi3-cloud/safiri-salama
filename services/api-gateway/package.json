@@ -1,7 +1,7 @@
 {
-  "name": "safiriharaka-api",
+  "name": "skyrex-api",
   "version": "1.0.0",
-  "description": "Safiri Haraka API Gateway with JWT authentication and rate limiting",
+  "description": "SkyRex API Gateway with JWT authentication and rate limiting",
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon --watch src -e ts --exec ts-node src/index.ts",

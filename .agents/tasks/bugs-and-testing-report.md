@@ -31,7 +31,7 @@ Three critical bugs found:
 - No `expo-font` usage means no font-loading gate that could hang the app.
 - **Risk:** `EXPO_PUBLIC_API_URL` is read directly in `screens/LoginScreen.tsx`:
   ```tsx
-  const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
+  const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://skyrex-api.vercel.app/api/v1';
   ```
   If the Vercel deployment is down/unset, API calls will fail but the app itself will still open (errors are shown via `Alert`). Not a blank-page cause.
 
@@ -114,7 +114,7 @@ const App: React.FC = () => {
 
 - `src/App.tsx` renders a loading spinner while `!initialized || loading` — correct.
 - `useAppInit` hook navigates to `/splash` if no token, then sets `initialized = true` in `finally`. The `initialized` state starts `false` and `loading` starts `true`, so the spinner shows until the init completes. No blank-page risk.
-- **Potential blank-page in production:** `src/services/api.ts` falls back to `https://safiriharaka-api.vercel.app/api/v1`. If that Vercel endpoint doesn't exist, `fetchProfile()` in `useAppInit` will throw, navigate to `/splash`, and the app will still render. Not a blank-page cause.
+- **Potential blank-page in production:** `src/services/api.ts` falls back to `https://skyrex-api.vercel.app/api/v1`. If that Vercel endpoint doesn't exist, `fetchProfile()` in `useAppInit` will throw, navigate to `/splash`, and the app will still render. Not a blank-page cause.
 - PWA service worker registration in `index.html` won't cause blank pages — it's non-blocking.
 
 **Verdict:** No blank page bug.
@@ -264,11 +264,11 @@ if (!JWT_SECRET) throw new Error('JWT_SECRET env var is required');
 
 | App | Config file | API base URL default |
 |-----|-------------|---------------------|
-| web-platform | `src/services/api.ts` | `https://safiriharaka-api.vercel.app/api/v1` |
+| web-platform | `src/services/api.ts` | `https://skyrex-api.vercel.app/api/v1` |
 | admin-panel | `src/services/api.ts` | `http://localhost:3000/api/v1` ← **wrong in prod** |
 | operator-dashboard | `src/services/api.ts` | `http://localhost:3000/api/v1` ← **wrong in prod** |
-| passenger-app | `screens/LoginScreen.tsx` | `https://safiriharaka-api.vercel.app/api/v1` |
-| driver-app | `src/services/BackgroundLocation.ts` | `https://safiriharaka-api.vercel.app/api/v1` |
+| passenger-app | `screens/LoginScreen.tsx` | `https://skyrex-api.vercel.app/api/v1` |
+| driver-app | `src/services/BackgroundLocation.ts` | `https://skyrex-api.vercel.app/api/v1` |
 
 **Admin-panel and operator-dashboard will fail all API calls in production** because they default to `localhost`. Each needs a `.env.local` (for dev) or Vercel environment variable `VITE_API_URL=https://your-api.vercel.app/api/v1` (for prod).
 

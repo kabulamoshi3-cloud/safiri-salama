@@ -10,7 +10,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import axios from 'axios';
 import i18n from '../i18n';
 
-const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
+const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://skyrex-api.vercel.app/api/v1';
 const { width } = Dimensions.get('window');
 
 interface NearbyDriver {
@@ -61,13 +61,13 @@ export default function HomeScreen({ navigation }: any) {
   }, [isPolling]);
 
   const loadUser = async () => {
-    const data = await AsyncStorage.getItem('@safiriharaka:user');
+    const data = await AsyncStorage.getItem('@skyrex:user');
     if (data) setUser(JSON.parse(data));
   };
 
   const fetchNearbyDrivers = async () => {
     try {
-      const token = await AsyncStorage.getItem('@safiriharaka:token');
+      const token = await AsyncStorage.getItem('@skyrex:token');
       const { latitude, longitude } = regionRef.current;
       const res = await axios.get(
         `${API}/tracking/nearby-drivers?lat=${latitude}&lng=${longitude}&radius=3`,

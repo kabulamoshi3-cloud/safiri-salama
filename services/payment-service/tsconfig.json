@@ -8,7 +8,7 @@
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "baseUrl": ".",
     "paths": {
-      "@safiriharaka/shared-types": ["../../packages/shared-types/src/index.ts"]
+      "@skyrex/shared-types": ["../../packages/shared-types/src/index.ts"]
     }
   },
   "include": ["src/**/*"],

@@ -13,14 +13,14 @@ const translations: Record<Lang, Record<string, string>> = {
     nav_sign_in: 'Sign In', nav_book_ride: 'Book a Ride',
     // Home
     hero_title: 'Ride Smarter.\nMove Morogoro.',
-    hero_subtitle: 'Safiri Haraka is your trusted AI-powered ride-hailing platform, connecting you to safe, reliable and affordable rides in Morogoro and beyond.',
+    hero_subtitle: 'SkyRex is your trusted AI-powered ride-hailing platform, connecting you to safe, reliable and affordable rides in Morogoro and beyond.',
     get_started: 'Get Started',
     download_app: 'Download App',
     passenger_app: 'Passenger App',
     driver_app: 'Driver App',
     install_passenger: 'Install Passenger App',
     install_driver: 'Install Driver App',
-    features_title: 'Why Choose Safiri Haraka?',
+    features_title: 'Why Choose SkyRex?',
     feature_fast: 'Fast & Safe Booking',
     feature_fast_desc: 'Book a ride in seconds. Verified drivers with high ratings.',
     feature_tracking: 'Live Tracking & ETA',
@@ -33,7 +33,7 @@ const translations: Record<Lang, Record<string, string>> = {
     feature_support_desc: 'We are always here for you. Call, chat, or email anytime.',
     // Login
     welcome_back: 'Welcome Back',
-    sign_in_subtitle: 'Sign in to your Safiri Haraka account',
+    sign_in_subtitle: 'Sign in to your SkyRex account',
     continue_google: 'Continue with Google',
     continue_apple: 'Continue with Apple',
     or: 'or',
@@ -52,7 +52,7 @@ const translations: Record<Lang, Record<string, string>> = {
     login_error: 'Invalid email or password. Please try again.',
     // Register
     create_account: 'Create Account',
-    join_subtitle: 'Join Safiri Haraka today',
+    join_subtitle: 'Join SkyRex today',
     register_as: 'I want to register as:',
     full_name: 'Full Name',
     full_name_placeholder: 'Enter your full name',
@@ -74,7 +74,7 @@ const translations: Record<Lang, Record<string, string>> = {
     passwords_no_match: 'Passwords do not match',
     agree_terms_error: 'You must agree to the Terms of Service and Privacy Policy',
     // About
-    about_title: 'About Safiri Haraka',
+    about_title: 'About SkyRex',
     about_subtitle: 'Intelligence in Every Journey',
     // Help
     help_title: 'Help & Support',
@@ -95,14 +95,14 @@ const translations: Record<Lang, Record<string, string>> = {
     nav_sign_in: 'Ingia', nav_book_ride: 'Piga Nauli',
     // Home
     hero_title: 'Safari Bora.\nHamia Morogoro.',
-    hero_subtitle: 'Safiri Haraka ni jukwaa lako la kuomba usafiri linalotumia akili bandia, linalokuunganisha na safari salama, za kuaminika na za bei nafuu Morogoro na zaidi.',
+    hero_subtitle: 'SkyRex ni jukwaa lako la kuomba usafiri linalotumia akili bandia, linalokuunganisha na safari salama, za kuaminika na za bei nafuu Morogoro na zaidi.',
     get_started: 'Anza Sasa',
     download_app: 'Pakua Programu',
     passenger_app: 'Programu ya Abiria',
     driver_app: 'Programu ya Dereva',
     install_passenger: 'Sakinisha Programu ya Abiria',
     install_driver: 'Sakinisha Programu ya Dereva',
-    features_title: 'Kwa Nini Uchague Safiri Haraka?',
+    features_title: 'Kwa Nini Uchague SkyRex?',
     feature_fast: 'Kuomba Haraka na Salama',
     feature_fast_desc: 'Omba safari kwa sekunde. Madereva waliothibitishwa wenye alama nzuri.',
     feature_tracking: 'Ufuatiliaji wa Moja kwa Moja na ETA',
@@ -115,7 +115,7 @@ const translations: Record<Lang, Record<string, string>> = {
     feature_support_desc: 'Sisi daima tuko hapa kwako. Piga simu, zungumza, au tuma barua pepe wakati wowote.',
     // Login
     welcome_back: 'Karibu Tena',
-    sign_in_subtitle: 'Ingia kwenye akaunti yako ya Safiri Haraka',
+    sign_in_subtitle: 'Ingia kwenye akaunti yako ya SkyRex',
     continue_google: 'Endelea na Google',
     continue_apple: 'Endelea na Apple',
     or: 'au',
@@ -134,7 +134,7 @@ const translations: Record<Lang, Record<string, string>> = {
     login_error: 'Barua pepe au nenosiri si sahihi. Jaribu tena.',
     // Register
     create_account: 'Fungua Akaunti',
-    join_subtitle: 'Jiunge na Safiri Haraka leo',
+    join_subtitle: 'Jiunge na SkyRex leo',
     register_as: 'Nataka kujisajili kama:',
     full_name: 'Jina Kamili',
     full_name_placeholder: 'Weka jina lako kamili',
@@ -156,7 +156,7 @@ const translations: Record<Lang, Record<string, string>> = {
     passwords_no_match: 'Manenosiri hayalingani',
     agree_terms_error: 'Lazima ukubali Masharti ya Huduma na Sera ya Faragha',
     // About
-    about_title: 'Kuhusu Safiri Haraka',
+    about_title: 'Kuhusu SkyRex',
     about_subtitle: 'Akili katika Kila Safari',
     // Help
     help_title: 'Msaada na Usaidizi',

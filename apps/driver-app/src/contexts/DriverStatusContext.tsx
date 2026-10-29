@@ -16,7 +16,7 @@ interface DriverStatusContextType {
 
 const DriverStatusContext = createContext<DriverStatusContextType | undefined>(undefined);
 
-const STATUS_KEY = '@safiriharaka:driver_status';
+const STATUS_KEY = '@skyrex:driver_status';
 
 export const DriverStatusProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [status, setStatusState] = useState<DriverStatus>('offline');

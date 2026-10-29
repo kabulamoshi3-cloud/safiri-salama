@@ -18,7 +18,7 @@ interface Props {
   route: RatePassengerRouteProp;
 }
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://skyrex-api.vercel.app/api/v1';
 
 const RatePassengerScreen: React.FC<Props> = ({ navigation, route }) => {
   const { theme } = useTheme();
@@ -29,7 +29,7 @@ const RatePassengerScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const submitRating = async () => {
     try {
-      const token = await AsyncStorage.getItem('@safiriharaka:token');
+      const token = await AsyncStorage.getItem('@skyrex:token');
       await axios.post(
         `${API_BASE}/ratings`,
         { trip_id: tripId, rating, review: comment || null },

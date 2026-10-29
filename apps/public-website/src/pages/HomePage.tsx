@@ -8,7 +8,7 @@ import {
 } from 'react-icons/fa';
 import { pubI18n } from '../i18n';
 
-const APP_URL = 'https://safiriharaka-apps.vercel.app';
+const APP_URL = 'https://skyrex-apps.vercel.app';
 
 const HomePage: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -70,7 +70,7 @@ const HomePage: React.FC = () => {
   }, []);
 
   const testimonials = [
-    { name: 'Amina T.', text: 'Safiri Haraka imenifanya safari yangu ya kila siku iwe rahisi sana!', rating: 5 },
+    { name: 'Amina T.', text: 'SkyRex imenifanya safari yangu ya kila siku iwe rahisi sana!', rating: 5 },
     { name: 'John M.',  text: 'I love the live tracking feature. Always know when my ride arrives.', rating: 5 },
     { name: 'Fatuma S.', text: 'Safe, reliable and affordable. Best app in Morogoro!', rating: 5 },
   ];
@@ -210,7 +210,7 @@ const HomePage: React.FC = () => {
         <div className="max-w-2xl mx-auto px-6">
           <div className="text-6xl mb-6">🚗</div>
           <h2 className="text-3xl md:text-4xl font-black mb-4">Ready to ride?</h2>
-          <p className="text-blue-200 mb-8">Install Safiri Haraka and get your first ride in under 60 seconds.</p>
+          <p className="text-blue-200 mb-8">Install SkyRex and get your first ride in under 60 seconds.</p>
 
           <a
             href={APP_URL}

@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
+const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://skyrex-api.vercel.app/api/v1';
 
 const STATUS_COLORS: Record<string, string> = {
   REQUESTED:       '#ffc107',
@@ -76,7 +76,7 @@ export default function TripDetailScreen({ route }: any) {
     setLoading(true);
     setError(null);
     try {
-      const token = await AsyncStorage.getItem('@safiriharaka:token');
+      const token = await AsyncStorage.getItem('@skyrex:token');
       const res = await axios.get(`${API}/trips/${tripId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });

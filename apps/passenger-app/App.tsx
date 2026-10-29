@@ -39,10 +39,10 @@ export default function App() {
       try {
         await i18n.loadSavedLanguage();
         const [token, role, hasOnboarded, hasCountry] = await Promise.all([
-          AsyncStorage.getItem('@safiriharaka:token'),
-          AsyncStorage.getItem('@safiriharaka:role'),
-          AsyncStorage.getItem('@safiriharaka:onboarded'),
-          AsyncStorage.getItem('@safiriharaka:country'),
+          AsyncStorage.getItem('@skyrex:token'),
+          AsyncStorage.getItem('@skyrex:role'),
+          AsyncStorage.getItem('@skyrex:onboarded'),
+          AsyncStorage.getItem('@skyrex:country'),
         ]);
 
         if (token && role === 'driver') setInitialRoute('DriverMain');
@@ -65,7 +65,7 @@ export default function App() {
     return (
       <View style={{ flex: 1, backgroundColor: '#1a73e8', alignItems: 'center', justifyContent: 'center' }}>
         <Text style={{ fontSize: 56 }}>🚗</Text>
-        <Text style={{ fontSize: 28, fontWeight: '800', color: '#fff', marginTop: 12 }}>Safiri Haraka</Text>
+        <Text style={{ fontSize: 28, fontWeight: '800', color: '#fff', marginTop: 12 }}>SkyRex</Text>
         <ActivityIndicator color="#fff" style={{ marginTop: 32 }} size="large" />
       </View>
     );
@@ -73,10 +73,10 @@ export default function App() {
 
   const handleNavigationReady = async () => {
     try {
-      const raw = await AsyncStorage.getItem('@safiriharaka:pending_nav');
+      const raw = await AsyncStorage.getItem('@skyrex:pending_nav');
       if (raw && navigationRef.current) {
         const { screen, params } = JSON.parse(raw);
-        await AsyncStorage.removeItem('@safiriharaka:pending_nav');
+        await AsyncStorage.removeItem('@skyrex:pending_nav');
         navigationRef.current.navigate(screen, params);
       }
     } catch (_) {

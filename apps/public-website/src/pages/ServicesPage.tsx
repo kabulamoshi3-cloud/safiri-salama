@@ -100,7 +100,7 @@ const ServicesPage: React.FC = () => {
       <section className="py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-            Why Choose Safiri Haraka?
+            Why Choose SkyRex?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {features.map((feature, index) => (
@@ -120,15 +120,15 @@ const ServicesPage: React.FC = () => {
             Ready to Get Started?
           </h2>
           <p className="text-xl mb-8">
-            Download the Safiri Haraka app today and enjoy hassle-free rides
+            Download the SkyRex app today and enjoy hassle-free rides
           </p>
 
           {/* Passenger App */}
           <div className="mb-8">
-            <p className="text-lg font-semibold mb-4">Download Safiri Haraka for Passengers</p>
+            <p className="text-lg font-semibold mb-4">Download SkyRex for Passengers</p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <a
-                href="https://play.google.com/store/apps/details?id=com.safiriharaka.passenger"
+                href="https://play.google.com/store/apps/details?id=com.skyrex.passenger"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-3 bg-white text-gray-900 px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors font-semibold"
@@ -140,7 +140,7 @@ const ServicesPage: React.FC = () => {
                 </div>
               </a>
               <a
-                href="https://apps.apple.com/app/safiriharaka-passenger/id000000001"
+                href="https://apps.apple.com/app/skyrex-passenger/id000000001"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-3 bg-white text-gray-900 px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors font-semibold"
@@ -157,10 +157,10 @@ const ServicesPage: React.FC = () => {
           {/* Driver App */}
           <div className="bg-white/10 backdrop-blur rounded-xl p-6">
             <p className="text-sm font-semibold mb-1 opacity-80">Are you a driver?</p>
-            <p className="text-lg font-semibold mb-4">Download Safiri Haraka for Drivers</p>
+            <p className="text-lg font-semibold mb-4">Download SkyRex for Drivers</p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <a
-                href="https://play.google.com/store/apps/details?id=com.safiriharaka.driver"
+                href="https://play.google.com/store/apps/details?id=com.skyrex.driver"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-3 bg-white text-gray-900 px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors font-semibold"
@@ -172,7 +172,7 @@ const ServicesPage: React.FC = () => {
                 </div>
               </a>
               <a
-                href="https://apps.apple.com/app/safiriharaka-driver/id000000002"
+                href="https://apps.apple.com/app/skyrex-driver/id000000002"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-3 bg-white text-gray-900 px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors font-semibold"

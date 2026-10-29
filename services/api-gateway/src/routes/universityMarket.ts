@@ -26,7 +26,7 @@ type MarketCategory =
   | 'other';
 
 type ListingStatus = 'active' | 'sold' | 'paused' | 'removed';
-type DeliveryType = 'pickup_only' | 'campus_delivery' | 'safiriharaka_delivery';
+type DeliveryType = 'pickup_only' | 'campus_delivery' | 'skyrex_delivery';
 
 // ─── GET /listings — browse all marketplace listings ─────────────────────────
 universityMarketRouter.get('/listings', async (req: Request, res: Response) => {

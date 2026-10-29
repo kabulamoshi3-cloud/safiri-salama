@@ -117,7 +117,7 @@ const Settings: React.FC = () => {
         </h2>
         <div className="flex items-center gap-3">
           <span className="text-3xl font-bold text-gray-900">15%</span>{/* MOCK DATA commission rate */}
-          <span className="text-sm text-gray-500">— rates are set by Safiri Haraka admin and cannot be changed here.</span>
+          <span className="text-sm text-gray-500">— rates are set by SkyRex admin and cannot be changed here.</span>
         </div>
       </div>
 

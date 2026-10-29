@@ -1,4 +1,4 @@
-# OSRM Setup Guide for Safiri Haraka
+# OSRM Setup Guide for SkyRex
 
 This guide walks you through setting up the OSRM (Open Source Routing Machine) routing engine for offline routing in Dar es Salaam.
 

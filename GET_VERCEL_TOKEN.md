@@ -4,7 +4,7 @@
 
 1. Go to: https://vercel.com/account/tokens
 2. Click **"Create Token"**
-3. Name it: `safiriharaka-deployment`
+3. Name it: `skyrex-deployment`
 4. Scope: **Full Account**
 5. Click **"Create"**
 6. **Copy the token** (it looks like: `v1_xxxxxxxxx...`)

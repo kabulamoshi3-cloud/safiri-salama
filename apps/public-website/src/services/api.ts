@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://safiriharaka-api.vercel.app/api/v1',
+  baseURL: import.meta.env.VITE_API_URL || 'https://skyrex-api.vercel.app/api/v1',
 });
 
 api.interceptors.request.use((config) => {

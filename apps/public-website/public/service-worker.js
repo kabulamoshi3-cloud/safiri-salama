@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 
-const CACHE_NAME = 'safiri-haraka-v1';
+const CACHE_NAME = 'skyrex-v1';
 const urlsToCache = [
   '/',
   '/index.html',

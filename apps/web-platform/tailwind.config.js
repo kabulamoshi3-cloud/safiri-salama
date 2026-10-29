@@ -48,7 +48,7 @@ export default {
           800: '#1e293b',
           700: '#334155',
         },
-        // SIMNOVA palette — Safiri Haraka
+        // SIMNOVA palette — SkyRex
         navy:    '#0F172A',
         'simnova-blue':   '#2563EB',
         'simnova-purple': '#7C3AED',

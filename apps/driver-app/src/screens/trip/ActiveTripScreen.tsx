@@ -108,7 +108,7 @@ const ActiveTripScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const handleStartTrip = () => {
-    AsyncStorage.getItem('@safiriharaka:token').then((token) => {
+    AsyncStorage.getItem('@skyrex:token').then((token) => {
       if (token) {
         TrackingSocket.connect(token);
         TrackingSocket.startLocationEmit(route.params.tripId, async () => {

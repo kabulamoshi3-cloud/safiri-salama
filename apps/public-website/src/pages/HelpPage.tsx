@@ -45,7 +45,7 @@ const HelpPage: React.FC = () => {
         {
           question: 'How do I book a ride?',
           answer:
-            'Open the Safiri Haraka app, enter your destination, choose your ride type (Car, Bajaji, or Boda Boda), and confirm. A nearby driver will be assigned to pick you up.',
+            'Open the SkyRex app, enter your destination, choose your ride type (Car, Bajaji, or Boda Boda), and confirm. A nearby driver will be assigned to pick you up.',
         },
         {
           question: 'How do I cancel a ride?',
@@ -75,7 +75,7 @@ const HelpPage: React.FC = () => {
         {
           question: 'How are earnings calculated?',
           answer:
-            'You earn based on distance traveled and time spent on each trip. Safiri Haraka takes a 20% commission, and you receive weekly payouts to your mobile money account. All earnings are tracked in the app.',
+            'You earn based on distance traveled and time spent on each trip. SkyRex takes a 20% commission, and you receive weekly payouts to your mobile money account. All earnings are tracked in the app.',
         },
         {
           question: 'How do I rate passengers?',
@@ -95,7 +95,7 @@ const HelpPage: React.FC = () => {
         {
           question: 'How are drivers verified?',
           answer:
-            'All drivers undergo background checks, license verification, and vehicle inspections before joining Safiri Haraka. We continuously monitor ratings and safety compliance.',
+            'All drivers undergo background checks, license verification, and vehicle inspections before joining SkyRex. We continuously monitor ratings and safety compliance.',
         },
         {
           question: 'What happens in an emergency?',
@@ -246,10 +246,10 @@ const HelpPage: React.FC = () => {
               <div>
                 <span className="font-semibold">Email: </span>
                 <a
-                  href="mailto:support@safiriharaka.co.tz"
+                  href="mailto:support@skyrex.co.tz"
                   className="text-primary hover:underline"
                 >
-                  support@safiriharaka.co.tz
+                  support@skyrex.co.tz
                 </a>
               </div>
               <div>
@@ -396,7 +396,7 @@ const HelpPage: React.FC = () => {
                 </a>
               </div>
               <div className="flex justify-between items-center">
-                <span className="font-semibold">Safiri Haraka Emergency:</span>
+                <span className="font-semibold">SkyRex Emergency:</span>
                 <a
                   href="tel:+255800000000"
                   className="text-red-600 hover:underline font-bold text-xl"

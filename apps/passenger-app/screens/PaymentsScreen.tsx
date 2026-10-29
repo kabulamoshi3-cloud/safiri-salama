@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import i18n from '../i18n';
 
-const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
+const API = process.env.EXPO_PUBLIC_API_URL ?? 'https://skyrex-api.vercel.app/api/v1';
 const POLL_INTERVAL_MS = 30_000;
 
 interface PaymentMethod {
@@ -67,7 +67,7 @@ export default function PaymentsScreen() {
 
   const fetchPaymentInfo = useCallback(async () => {
     try {
-      const token = await AsyncStorage.getItem('@safiriharaka:token');
+      const token = await AsyncStorage.getItem('@skyrex:token');
       const res = await axios.get(`${API}/payments/info`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -81,7 +81,7 @@ export default function PaymentsScreen() {
 
   const fetchHistory = useCallback(async () => {
     try {
-      const token = await AsyncStorage.getItem('@safiriharaka:token');
+      const token = await AsyncStorage.getItem('@skyrex:token');
       const res = await axios.get(`${API}/payments/history`, {
         headers: { Authorization: `Bearer ${token}` },
         params: { limit: 20 },
@@ -149,7 +149,7 @@ export default function PaymentsScreen() {
         {paymentInfo && (
           <View style={styles.walletCard}>
             <Ionicons name="wallet" size={28} color="#fff" />
-            <Text style={styles.walletLabel}>Safiri Haraka Wallet</Text>
+            <Text style={styles.walletLabel}>SkyRex Wallet</Text>
             <Text style={styles.walletBalance}>{paymentInfo.wallet_balance_formatted}</Text>
             {paymentInfo.masked_phone ? (
               <Text style={styles.walletPhone}>{paymentInfo.masked_phone}</Text>

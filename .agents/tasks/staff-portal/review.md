@@ -151,7 +151,7 @@ Not blocking for review approval if manual testing was performed. Blocking for p
 - `tailwind.config.js`, `postcss.config.js` — Tailwind setup from operator-dashboard
 - `vite.config.ts` — Vite with @ alias for src
 - `tsconfig.json`, `tsconfig.node.json` — TypeScript config
-- `index.html` — entry point, "Safiri Haraka Staff Portal" title
+- `index.html` — entry point, "SkyRex Staff Portal" title
 
 **Application core**
 - `src/main.tsx` — React root, i18n init

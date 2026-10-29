@@ -1,8 +1,8 @@
 {
-  "name": "safiriharaka",
+  "name": "skyrex",
   "version": "1.0.0",
   "private": true,
-  "description": "Safiri Haraka AI-Powered Mobility Platform — monorepo root",
+  "description": "SkyRex AI-Powered Mobility Platform — monorepo root",
   "scripts": {
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",

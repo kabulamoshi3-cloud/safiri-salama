@@ -33,7 +33,7 @@ import axios from 'axios';
 let TaskManager: any = null;
 try { TaskManager = require('expo-task-manager'); } catch {}
 
-export const BACKGROUND_LOCATION_TASK = 'safiriharaka-background-location';
+export const BACKGROUND_LOCATION_TASK = 'skyrex-background-location';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
 
@@ -46,8 +46,8 @@ if (TaskManager) {
     const loc = locations[locations.length - 1];
     const { latitude: lat, longitude: lng, heading, speed } = loc.coords;
     try {
-      const token   = await AsyncStorage.getItem('@safiriharaka:token');
-      const trip_id = await AsyncStorage.getItem('@safiriharaka:active_trip_id');
+      const token   = await AsyncStorage.getItem('@skyrex:token');
+      const trip_id = await AsyncStorage.getItem('@skyrex:active_trip_id');
       await axios.post(
         `${API_BASE}/tracking/driver/location`,
         { lat, lng, bearing: heading ?? 0, speed: speed ?? 0, trip_id: trip_id ?? undefined },
@@ -73,7 +73,7 @@ export async function startBackgroundTracking(): Promise<void> {
       distanceInterval: 15,
       showsBackgroundLocationIndicator: true,
       foregroundService: {
-        notificationTitle: 'Safiri Haraka GPS Inaendelea',
+        notificationTitle: 'SkyRex GPS Inaendelea',
         notificationBody: 'Tunafuatilia mahali pako ili kuwasaidia abiria.',
         notificationColor: '#2e7d32',
       },
@@ -151,7 +151,7 @@ import './src/services/BackgroundLocation';
      [
        "expo-location",
        {
-         "locationAlwaysAndWhenInUsePermission": "Safiri Haraka inahitaji eneo lako kuendesha safari hata wakati app inaendesha nyuma.",
+         "locationAlwaysAndWhenInUsePermission": "SkyRex inahitaji eneo lako kuendesha safari hata wakati app inaendesha nyuma.",
          "isAndroidBackgroundLocationEnabled": true
        }
      ]
@@ -249,7 +249,7 @@ let Notifications: any = null;
 try { Notifications = require('expo-notifications'); } catch {}
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
-const PUSH_TOKEN_KEY = '@safiriharaka:push_token';
+const PUSH_TOKEN_KEY = '@skyrex:push_token';
 
 export class NotificationService {
   static async initialize(): Promise<void> {
@@ -271,7 +271,7 @@ export class NotificationService {
       const saved = await AsyncStorage.getItem(PUSH_TOKEN_KEY);
       if (saved !== token) {
         await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);
-        const authToken = await AsyncStorage.getItem('@safiriharaka:token');
+        const authToken = await AsyncStorage.getItem('@skyrex:token');
         await axios.post(
           `${API_BASE}/notifications/register`,
           { pushToken: token, platform: Platform.OS },
@@ -287,7 +287,7 @@ export class NotificationService {
         const data = response.notification.request.content.data ?? {};
         if (data.type === 'new_trip_request' && data.trip_id) {
           // Navigation handled by navigationRef in App.tsx — store pending nav in AsyncStorage
-          AsyncStorage.setItem('@safiriharaka:pending_nav', JSON.stringify({
+          AsyncStorage.setItem('@skyrex:pending_nav', JSON.stringify({
             screen: 'TripRequest', // DriverTripRequestScreen
             params: { tripId: data.trip_id },
           })).catch(() => {});
@@ -330,7 +330,7 @@ let Notifications: any = null;
 try { Notifications = require('expo-notifications'); } catch {}
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
-const PUSH_TOKEN_KEY = '@safiriharaka:push_token';
+const PUSH_TOKEN_KEY = '@skyrex:push_token';
 
 export async function registerForPushNotifications(): Promise<void> {
   if (!Notifications) return;
@@ -348,7 +348,7 @@ export async function registerForPushNotifications(): Promise<void> {
     const saved = await AsyncStorage.getItem(PUSH_TOKEN_KEY);
     if (saved !== token) {
       await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);
-      const authToken = await AsyncStorage.getItem('@safiriharaka:token');
+      const authToken = await AsyncStorage.getItem('@skyrex:token');
       await axios.post(
         `${API_BASE}/notifications/register`,
         { pushToken: token, platform: Platform.OS },
@@ -369,7 +369,7 @@ export function setupNotificationHandlers(): void {
     const data = response.notification.request.content.data ?? {};
     if (data.trip_id) {
       // Store pending nav; App.tsx should check this on focus/mount and navigate
-      AsyncStorage.setItem('@safiriharaka:pending_nav', JSON.stringify({
+      AsyncStorage.setItem('@skyrex:pending_nav', JSON.stringify({
         screen: 'TripActive',
         params: { tripId: data.trip_id },
       })).catch(() => {});
@@ -384,7 +384,7 @@ export function setupNotificationHandlers(): void {
 
 ### Step 2.3 — Call `registerForPushNotifications` in passenger `App.tsx`
 
-**What:** Read `apps/passenger-app/App.tsx` in full (already read — it exports `App` function with a `useEffect` that loads language and token). Import the two notification functions and call them inside the existing `useEffect`, after `i18n.loadSavedLanguage()`. Also add a NavigationContainer `onReady` handler that checks `@safiriharaka:pending_nav` and navigates.
+**What:** Read `apps/passenger-app/App.tsx` in full (already read — it exports `App` function with a `useEffect` that loads language and token). Import the two notification functions and call them inside the existing `useEffect`, after `i18n.loadSavedLanguage()`. Also add a NavigationContainer `onReady` handler that checks `@skyrex:pending_nav` and navigates.
 
 **File to edit:**
 `apps/passenger-app/App.tsx`
@@ -407,10 +407,10 @@ export function setupNotificationHandlers(): void {
    // Add to NavigationContainer:
    ref={navigationRef}
    onReady={() => {
-     AsyncStorage.getItem('@safiriharaka:pending_nav').then((raw) => {
+     AsyncStorage.getItem('@skyrex:pending_nav').then((raw) => {
        if (!raw) return;
        const { screen, params } = JSON.parse(raw);
-       AsyncStorage.removeItem('@safiriharaka:pending_nav');
+       AsyncStorage.removeItem('@skyrex:pending_nav');
        navigationRef.current?.navigate(screen, params);
      });
    }}
@@ -432,7 +432,7 @@ export function setupNotificationHandlers(): void {
 -- Migration 012: Push Tokens Table
 -- Adds a dedicated user_push_tokens table for multi-device support.
 -- Also ensures users.push_token / device_platform columns exist (used by notifications.ts).
--- Run: psql safiriharaka_db < migrations/012_push_tokens.sql
+-- Run: psql skyrex_db < migrations/012_push_tokens.sql
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS push_token TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS device_platform TEXT;
@@ -556,7 +556,7 @@ For the "new trip" case, query `users` for drivers with a push_token within roug
    pool.query('SELECT passenger_id FROM trips WHERE id = $1', [tripId])
      .then(r => {
        if (r.rows[0]?.passenger_id) {
-         sendPushNotification(r.rows[0].passenger_id, 'Safari Imekamilika! 🎉', 'Asante kwa kutumia Safiri Haraka. Tafadhali tathmini safari yako.', { tripId, type: 'trip_completed' });
+         sendPushNotification(r.rows[0].passenger_id, 'Safari Imekamilika! 🎉', 'Asante kwa kutumia SkyRex. Tafadhali tathmini safari yako.', { tripId, type: 'trip_completed' });
        }
      }).catch(() => {});
    ```
@@ -606,7 +606,7 @@ For the "new trip" case, query `users` for drivers with a push_token within roug
   [
     "expo-location",
     {
-      "locationAlwaysAndWhenInUsePermission": "Safiri Haraka inahitaji eneo lako kuendesha safari hata wakati app inaendesha nyuma.",
+      "locationAlwaysAndWhenInUsePermission": "SkyRex inahitaji eneo lako kuendesha safari hata wakati app inaendesha nyuma.",
       "isAndroidBackgroundLocationEnabled": true
     }
   ],

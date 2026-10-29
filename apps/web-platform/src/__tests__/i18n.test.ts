@@ -11,7 +11,7 @@ describe('i18n system', () => {
   });
 
   it('returns English translation by default', () => {
-    expect(i18n.t('app_name')).toBe('Safiri Haraka');
+    expect(i18n.t('app_name')).toBe('SkyRex');
   });
 
   it('returns Kiswahili translation when language is sw', () => {
@@ -23,7 +23,7 @@ describe('i18n system', () => {
   it('falls back to English if key missing in sw', () => {
     i18n.setLanguage('sw');
     const val = i18n.t('app_name');
-    expect(val).toBe('Safiri Haraka');
+    expect(val).toBe('SkyRex');
   });
 
   it('returns the key itself if not found in any language', () => {

@@ -16,7 +16,7 @@ try {
 
 export const BACKGROUND_LOCATION_TASK = 'DALASMART_BACKGROUND_LOCATION';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://skyrex-api.vercel.app/api/v1';
 
 // Register the background task only if TaskManager is available
 if (TaskManager !== null) {
@@ -48,8 +48,8 @@ if (TaskManager !== null) {
 
     try {
       const [token, tripId] = await Promise.all([
-        AsyncStorage.getItem('@safiriharaka:token'),
-        AsyncStorage.getItem('@safiriharaka:active_trip_id'),
+        AsyncStorage.getItem('@skyrex:token'),
+        AsyncStorage.getItem('@skyrex:active_trip_id'),
       ]);
 
       await fetch(`${API_BASE}/tracking/driver/location`, {
@@ -99,7 +99,7 @@ export async function startBackgroundTracking(): Promise<void> {
     timeInterval: 10000,   // 10 seconds
     distanceInterval: 10,  // 10 metres
     foregroundService: {
-      notificationTitle: 'Safiri Haraka',
+      notificationTitle: 'SkyRex',
       notificationBody: 'Inafuatilia mahali pako kwa ajili ya safari',
       notificationColor: '#2e7d32',
     },

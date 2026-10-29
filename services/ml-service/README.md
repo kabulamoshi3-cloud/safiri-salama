@@ -1,4 +1,4 @@
-# Safiri Haraka ML Service
+# SkyRex ML Service
 
 Python-based ML microservice for traffic speed prediction using XGBoost.
 

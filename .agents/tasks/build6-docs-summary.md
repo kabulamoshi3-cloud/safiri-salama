@@ -86,7 +86,7 @@
 
 ## Notes
 
-- All files accurately reflect the **current implemented state** of the Safiri Haraka platform
+- All files accurately reflect the **current implemented state** of the SkyRex platform
 - Environment variables include all references found in the codebase (via comprehensive grep search)
 - SETUP.md provides practical, runnable commands with troubleshooting for common issues
 - README.md API Reference now documents all 30 route prefixes registered in `routes/index.ts`

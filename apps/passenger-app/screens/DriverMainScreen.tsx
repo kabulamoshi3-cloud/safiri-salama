@@ -41,7 +41,7 @@ export default function DriverMainScreen({ navigation }: any) {
   }, [isOnline]);
 
   const loadUser = async () => {
-    const data = await AsyncStorage.getItem('@safiriharaka:user');
+    const data = await AsyncStorage.getItem('@skyrex:user');
     if (data) setUser(JSON.parse(data));
   };
 
@@ -70,7 +70,7 @@ export default function DriverMainScreen({ navigation }: any) {
 
   const logout = async () => {
     closeDrawer();
-    await AsyncStorage.multiRemove(['@safiriharaka:token', '@safiriharaka:role', '@safiriharaka:user']);
+    await AsyncStorage.multiRemove(['@skyrex:token', '@skyrex:role', '@skyrex:user']);
     navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
   };
 

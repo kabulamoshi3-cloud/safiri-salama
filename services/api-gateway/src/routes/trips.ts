@@ -808,7 +808,7 @@ router.patch('/:tripId/complete', async (req: AuthRequest, res: Response) => {
     await notifyTrackingService('trip:completed', { tripId, final_fare });
 
     // Notify passenger that trip is complete (fire-and-forget)
-    sendPushNotification(trip.passenger_id, 'Safari Imekamilika 🎉', 'Safari yako imekamilika. Asante kwa kutumia Safiri Haraka!', { type: 'trip_completed', tripId, driverId: userId }).catch(() => {});
+    sendPushNotification(trip.passenger_id, 'Safari Imekamilika 🎉', 'Safari yako imekamilika. Asante kwa kutumia SkyRex!', { type: 'trip_completed', tripId, driverId: userId }).catch(() => {});
 
     // Insert driver earnings row (fire-and-forget — never block trip completion)
     const grossFare = trip.final_fare ?? trip.estimated_fare ?? 0;

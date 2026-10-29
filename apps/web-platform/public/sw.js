@@ -1,5 +1,5 @@
-// Service Worker for Safiri Haraka PWA
-const CACHE_NAME = 'safiri-haraka-v5';
+// Service Worker for SkyRex PWA
+const CACHE_NAME = 'skyrex-v5';
 const urlsToCache = [
   '/',
   '/index.html',

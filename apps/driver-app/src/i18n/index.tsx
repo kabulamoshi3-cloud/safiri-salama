@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import en from './locales/en.json';
 import sw from './locales/sw.json';
 
-const LANGUAGE_KEY = '@safiriharaka:language';
+const LANGUAGE_KEY = '@skyrex:language';
 
 i18n
   .use(initReactI18next)

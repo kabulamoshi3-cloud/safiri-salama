@@ -15,10 +15,10 @@ try {
   /* expo-notifications not installed — notification features disabled */
 }
 
-const PUSH_TOKEN_KEY = '@safiriharaka:push_token';
-const PENDING_NAV_KEY = '@safiriharaka:pending_nav';
+const PUSH_TOKEN_KEY = '@skyrex:push_token';
+const PENDING_NAV_KEY = '@skyrex:pending_nav';
 const PROJECT_ID = '5f7ad6c8-510e-4f1b-a526-2933af25b604';
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://safiriharaka-api.vercel.app/api/v1';
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://skyrex-api.vercel.app/api/v1';
 
 /**
  * Request notification permission and register the Expo push token with the backend.
@@ -50,7 +50,7 @@ export async function registerForPushNotifications(): Promise<void> {
 
     await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);
 
-    const authToken = await AsyncStorage.getItem('@safiriharaka:token');
+    const authToken = await AsyncStorage.getItem('@skyrex:token');
 
     await axios.post(
       `${API_BASE}/notifications/push-token`,

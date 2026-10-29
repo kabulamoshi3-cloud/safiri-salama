@@ -23,7 +23,7 @@ Target: `apps/operator-dashboard/` — React 18 + TypeScript + Vite SPA, matchin
 ## Implementation Plan
 
 - [ ] 1. **Install missing dependencies and create config files.**
-      Add to `package.json` deps: `axios`, `recharts`, `lucide-react`, `zustand`, `leaflet`, `react-leaflet`, `@types/leaflet`. Add to devDeps: `tailwindcss`, `autoprefixer`, `postcss`. Create `index.html` (Vite boilerplate, title "Safiri Haraka Operator Dashboard"), `vite.config.ts` (Vite+React plugin, port 5175), `tailwind.config.js` (content `['./index.html','./src/**/*.{ts,tsx}']`), `postcss.config.js`.
+      Add to `package.json` deps: `axios`, `recharts`, `lucide-react`, `zustand`, `leaflet`, `react-leaflet`, `@types/leaflet`. Add to devDeps: `tailwindcss`, `autoprefixer`, `postcss`. Create `index.html` (Vite boilerplate, title "SkyRex Operator Dashboard"), `vite.config.ts` (Vite+React plugin, port 5175), `tailwind.config.js` (content `['./index.html','./src/**/*.{ts,tsx}']`), `postcss.config.js`.
       Files: `apps/operator-dashboard/package.json`, `index.html`, `vite.config.ts`, `tailwind.config.js`, `postcss.config.js`
       Verify: `cd apps/operator-dashboard && npm install --legacy-peer-deps` exits 0.
 
@@ -51,7 +51,7 @@ Target: `apps/operator-dashboard/` — React 18 + TypeScript + Vite SPA, matchin
 - [ ] 6. **Create shared components: StatCard, AlertBadge, Sidebar, RequireAuth, VehicleCard, DriverCard.**
       `StatCard`: copy from `driver-dashboard/src/components/StatCard.tsx` exactly — props `{title, value, icon: React.ReactNode, color, trend?, subtext?}`.
       `AlertBadge`: `{status: string}` → colored badge span.
-      `Sidebar`: fixed `w-64 bg-gray-900` with Safiri Haraka logo, 5 nav links (Dashboard, Fleet, Drivers, Earnings, Reports), footer (Settings + Logout). Active = `bg-blue-600`. All text via `t()`. Shows operator name + fleet_name.
+      `Sidebar`: fixed `w-64 bg-gray-900` with SkyRex logo, 5 nav links (Dashboard, Fleet, Drivers, Earnings, Reports), footer (Settings + Logout). Active = `bg-blue-600`. All text via `t()`. Shows operator name + fleet_name.
       `RequireAuth`: reads `useAuthStore().isAuthenticated`, redirects to `/login`.
       `VehicleCard`, `DriverCard`: minimal card components.
       Files: `src/components/Sidebar.tsx`, `src/components/StatCard.tsx`, `src/components/AlertBadge.tsx`, `src/components/RequireAuth.tsx`, `src/components/VehicleCard.tsx`, `src/components/DriverCard.tsx`

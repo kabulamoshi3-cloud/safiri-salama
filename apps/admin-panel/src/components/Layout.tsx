@@ -65,7 +65,7 @@ export default function Layout() {
               letterSpacing: '-0.5px',
             }}
           >
-            🚕 Safiri Haraka
+            🚕 SkyRex
           </div>
           <div
             style={{

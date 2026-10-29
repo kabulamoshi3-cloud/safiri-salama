@@ -83,7 +83,7 @@ const ForgotPasswordPage: React.FC = () => {
             <div className="w-10 h-10 bg-[#2563EB] rounded-xl flex items-center justify-center">
               <span className="text-white font-black">SH</span>
             </div>
-            <span className="text-2xl font-black text-[#0F172A]">Safiri Haraka</span>
+            <span className="text-2xl font-black text-[#0F172A]">SkyRex</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Reset Password</h1>
           <p className="text-gray-600">

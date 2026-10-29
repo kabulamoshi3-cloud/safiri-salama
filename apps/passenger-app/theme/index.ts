@@ -55,7 +55,7 @@ export const themeManager = {
 
   async setMode(mode: ThemeMode) {
     currentTheme = mode;
-    await AsyncStorage.setItem('@safiriharaka:theme', mode);
+    await AsyncStorage.setItem('@skyrex:theme', mode);
     listeners.forEach(fn => fn());
   },
 
@@ -65,7 +65,7 @@ export const themeManager = {
   },
 
   async loadSaved() {
-    const saved = await AsyncStorage.getItem('@safiriharaka:theme');
+    const saved = await AsyncStorage.getItem('@skyrex:theme');
     if (saved === 'dark' || saved === 'light') currentTheme = saved;
   },
 

@@ -9,7 +9,7 @@
     "Create services/ml-service/main.py: a FastAPI app; GET /health -> {\"status\":\"ok\"}; POST /predict accepting JSON {segment_id, departure_time} and delegating to predictor.predict(...); load config from os.environ (DATABASE_URL, MODEL_PATH, MIN_TRAINING_SAMPLES).",
     "Create services/ml-service/trainer.py: connect to PostgreSQL via DATABASE_URL (psycopg2), SELECT segment_id, day_of_week, hour_of_day, observed_speed_kmh FROM segment_speed_observations; require >= MIN_TRAINING_SAMPLES rows else print a message and exit without training; build features (encode segment_id, day_of_week, hour_of_day), train an xgboost.XGBRegressor, evaluate MAE, save the model to MODEL_PATH, and INSERT/UPDATE an ml_model_versions row (model_type='traffic_speed', is_active=true) with training_samples and accuracy_mae.",
     "Create services/ml-service/predictor.py: load the model from MODEL_PATH (lazy/global), expose `predict(segment_id, departure_time) -> {segment_id, predicted_speed_kmh, confidence}`; if no model is trained/available, raise/return a clear unavailable signal so main.py can return 503 (Node then falls back to SQL baseline).",
-    "Create services/ml-service/.env.example with: DATABASE_URL=postgresql://postgres:postgres@localhost:5432/safiriharaka  MODEL_PATH=./models/traffic_speed_xgb.json  MIN_TRAINING_SAMPLES=500"
+    "Create services/ml-service/.env.example with: DATABASE_URL=postgresql://postgres:postgres@localhost:5432/skyrex  MODEL_PATH=./models/traffic_speed_xgb.json  MIN_TRAINING_SAMPLES=500"
   ],
   "acceptance_criteria": [
     "All six files exist: services/ml-service/{README.md,requirements.txt,main.py,trainer.py,predictor.py,.env.example}.",

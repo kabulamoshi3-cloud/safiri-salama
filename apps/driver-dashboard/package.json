@@ -1,7 +1,7 @@
 {
   "name": "driver-dashboard",
   "version": "1.0.0",
-  "description": "Advanced driver dashboard for Safiri Haraka",
+  "description": "Advanced driver dashboard for SkyRex",
   "private": true,
   "dependencies": {
     "react": "^18.2.0",

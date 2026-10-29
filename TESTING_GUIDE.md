@@ -1,4 +1,4 @@
-# 🧪 Safiri Haraka Testing Guide
+# 🧪 SkyRex Testing Guide
 
 ## Automated unit tests
 
@@ -49,7 +49,7 @@ psql --version
 # Check Redis (if installed)
 redis-cli ping
 # Should return: PONG
-# If not, use Docker: docker run --name safiriharaka-redis -p 6379:6379 -d redis:7
+# If not, use Docker: docker run --name skyrex-redis -p 6379:6379 -d redis:7
 ```
 
 ---
@@ -58,21 +58,21 @@ redis-cli ping
 
 ### Option A: Using Setup Script (Recommended)
 ```powershell
-cd "c:\project\INF 319\safiriharaka"
+cd "c:\project\INF 319\skyrex"
 .\setup-tracking.ps1
 ```
 
 ### Option B: Manual Installation
 ```powershell
 # Install tracking service dependencies
-cd "c:\project\INF 319\safiriharaka\services\tracking-service"
+cd "c:\project\INF 319\skyrex\services\tracking-service"
 npm install
 
 # Install web platform socket dependencies
-cd "c:\project\INF 319\safiriharaka\apps\web-platform"
+cd "c:\project\INF 319\skyrex\apps\web-platform"
 npm install socket.io-client
 
-cd "c:\project\INF 319\safiriharaka"
+cd "c:\project\INF 319\skyrex"
 ```
 
 ---
@@ -111,7 +111,7 @@ JWT_SECRET=your_jwt_secret_key_here
 GOOGLE_MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY
 
 # Database
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/safiriharaka
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/skyrex
 
 # Web App URL
 WEB_APP_URL=http://localhost:5174
@@ -139,8 +139,8 @@ npm run migrate
 ### **Option B: Fresh Database Setup**
 ```powershell
 # Create database (if not exists)
-createdb safiriharaka
-# Or: psql -U postgres -c "CREATE DATABASE safiriharaka;"
+createdb skyrex
+# Or: psql -U postgres -c "CREATE DATABASE skyrex;"
 
 # Run all migrations
 cd services\api-gateway
@@ -149,7 +149,7 @@ npm run db:setup
 
 ### **Verify Database**
 ```powershell
-psql -U postgres -d safiriharaka -c "\dt"
+psql -U postgres -d skyrex -c "\dt"
 # Should show 25+ tables including:
 # - trip_routes
 # - location_history
@@ -169,12 +169,12 @@ psql -U postgres -d safiriharaka -c "\dt"
 redis-server
 
 # OR using Docker:
-docker run --name safiriharaka-redis -p 6379:6379 -d redis:7
+docker run --name skyrex-redis -p 6379:6379 -d redis:7
 ```
 
 ### **Terminal 2: Start Tracking Service**
 ```powershell
-cd "c:\project\INF 319\safiriharaka\services\tracking-service"
+cd "c:\project\INF 319\skyrex\services\tracking-service"
 npm run dev
 ```
 
@@ -186,7 +186,7 @@ npm run dev
 
 ### **Terminal 3: Start API Gateway**
 ```powershell
-cd "c:\project\INF 319\safiriharaka\services\api-gateway"
+cd "c:\project\INF 319\skyrex\services\api-gateway"
 npm run dev
 ```
 
@@ -198,7 +198,7 @@ npm run dev
 
 ### **Terminal 4: Start Web Platform**
 ```powershell
-cd "c:\project\INF 319\safiriharaka\apps\web-platform"
+cd "c:\project\INF 319\skyrex\apps\web-platform"
 npm run dev
 ```
 
@@ -209,7 +209,7 @@ npm run dev
 
 ### **Optional Terminal 5: Start Driver Dashboard**
 ```powershell
-cd "c:\project\INF 319\safiriharaka\apps\driver-dashboard"
+cd "c:\project\INF 319\skyrex\apps\driver-dashboard"
 npm run dev
 ```
 
@@ -454,7 +454,7 @@ redis-cli ping
 # If not running, start it:
 redis-server
 # OR
-docker run --name safiriharaka-redis -p 6379:6379 -d redis:7
+docker run --name skyrex-redis -p 6379:6379 -d redis:7
 ```
 
 ### **Problem: "Database connection failed"**
@@ -465,10 +465,10 @@ docker run --name safiriharaka-redis -p 6379:6379 -d redis:7
 psql -U postgres -c "SELECT version();"
 
 # Check database exists
-psql -U postgres -c "\l" | findstr safiriharaka
+psql -U postgres -c "\l" | findstr skyrex
 
 # Create if not exists
-createdb safiriharaka
+createdb skyrex
 ```
 
 ### **Problem: "Route not showing on map"**

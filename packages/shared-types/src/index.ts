@@ -1,5 +1,5 @@
 /**
- * Shared Types for Safiri Haraka Platform
+ * Shared Types for SkyRex Platform
  * Used across all applications and services
  */
 

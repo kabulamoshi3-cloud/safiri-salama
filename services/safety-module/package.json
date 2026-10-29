@@ -1,7 +1,7 @@
 {
-  "name": "@safiriharaka/safety-module",
+  "name": "@skyrex/safety-module",
   "version": "1.0.0",
-  "description": "Safiri Haraka Safety Module — Node.js + TypeScript (emergency, incidents, trip sharing)",
+  "description": "SkyRex Safety Module — Node.js + TypeScript (emergency, incidents, trip sharing)",
   "private": true,
   "scripts": {
     "build": "tsc --project tsconfig.json",
@@ -12,7 +12,7 @@
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
-    "@safiriharaka/shared-types": "*",
+    "@skyrex/shared-types": "*",
     "express": "^4.21.0",
     "ioredis": "^5.4.1",
     "pg": "^8.12.0",

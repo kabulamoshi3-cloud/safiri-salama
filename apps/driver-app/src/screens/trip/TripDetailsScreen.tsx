@@ -246,7 +246,7 @@ const TripDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
       {/* Report Issue Button */}
       <TouchableOpacity
         style={[styles.reportButton, { borderColor: theme.colors.error }]}
-        onPress={() => Linking.openURL('mailto:support@safiriharaka.co.tz?subject=Trip%20Issue%20' + encodeURIComponent(trip.reference || trip.id))}
+        onPress={() => Linking.openURL('mailto:support@skyrex.co.tz?subject=Trip%20Issue%20' + encodeURIComponent(trip.reference || trip.id))}
       >
         <Icon name="flag-outline" size={18} color={theme.colors.error} />
         <Text style={[styles.reportButtonText, { color: theme.colors.error }]}>

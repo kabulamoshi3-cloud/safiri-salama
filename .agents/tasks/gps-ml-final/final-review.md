@@ -1,4 +1,4 @@
-# GPS & ML Traffic Pipeline for Safiri Haraka
+# GPS & ML Traffic Pipeline for SkyRex
 
 All four FEATs are implemented. The pipeline adds GPS validation at the driver update endpoints, populates per-segment speed observations, serves ML-backed traffic predictions with a SQL baseline fallback, and surfaces the result in a passenger-facing screen with departure-time selection and best-time recommendations.
 

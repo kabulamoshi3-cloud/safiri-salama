@@ -4,7 +4,7 @@
  * Findings: No dedicated GET/POST/DELETE /api/v1/passengers/places endpoint exists.
  * passenger_profiles.saved_places JSONB is in the DB schema but there is no REST
  * route for it. As a pragmatic fallback, saved places are persisted in AsyncStorage
- * under '@safiriharaka:saved_places'. A future backend endpoint (PATCH /auth/profile
+ * under '@skyrex:saved_places'. A future backend endpoint (PATCH /auth/profile
  * or GET|POST|DELETE /passengers/places) should replace this.
  */
 import React, { useState, useEffect, useCallback } from 'react';
@@ -15,7 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const STORAGE_KEY = '@safiriharaka:saved_places';
+const STORAGE_KEY = '@skyrex:saved_places';
 
 interface SavedPlace {
   id: string;

@@ -1,10 +1,10 @@
-# Safiri Haraka Public Website
+# SkyRex Public Website
 
-The public-facing website for Safiri Haraka, Tanzania's smart ride-hailing platform.
+The public-facing website for SkyRex, Tanzania's smart ride-hailing platform.
 
 ## Description
 
-This is a modern, responsive React website built with TypeScript, Vite, and Tailwind CSS. It provides information about Safiri Haraka services, allows users to view live traffic data, register as drivers or passengers, and access help and safety resources.
+This is a modern, responsive React website built with TypeScript, Vite, and Tailwind CSS. It provides information about SkyRex services, allows users to view live traffic data, register as drivers or passengers, and access help and safety resources.
 
 ## Setup Instructions
 
@@ -44,7 +44,7 @@ npm run preview
 
 Create a `.env` file in the root directory with the following variables:
 
-- `VITE_API_URL` - The base URL for the Safiri Haraka API (default: `https://simon-daladala-api.vercel.app/api/v1`)
+- `VITE_API_URL` - The base URL for the SkyRex API (default: `https://simon-daladala-api.vercel.app/api/v1`)
 
 Example:
 ```
@@ -117,5 +117,5 @@ src/
 
 ## License
 
-Copyright © 2024 Safiri Haraka. All rights reserved.
+Copyright © 2024 SkyRex. All rights reserved.
 # Trigger rebuild

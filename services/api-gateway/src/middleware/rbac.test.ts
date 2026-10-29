@@ -10,7 +10,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { UserType } from '@safiriharaka/shared-types';
+import { UserType } from '@skyrex/shared-types';
 
 import { requireRole, ALL_ROLES, MANAGEMENT_ROLES, ADMIN_ONLY, END_USER_ROLES } from './rbac';
 import { UserContext } from './auth';

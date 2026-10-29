@@ -21,8 +21,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const TOKEN_KEY = '@safiriharaka:token';
-const USER_KEY = '@safiriharaka:user';
+const TOKEN_KEY = '@skyrex:token';
+const USER_KEY = '@skyrex:user';
 
 interface AuthResponse {
   token: string;

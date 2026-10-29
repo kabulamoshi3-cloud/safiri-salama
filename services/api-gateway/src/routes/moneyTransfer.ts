@@ -1,7 +1,7 @@
 /**
  * Money Transfer API Routes
  * Peer-to-peer transfers, mobile money top-up/withdrawal,
- * and bill payments via Safiri Haraka wallet.
+ * and bill payments via SkyRex wallet.
  */
 
 import express, { Request, Response } from 'express';
@@ -79,7 +79,7 @@ moneyTransferRouter.post('/send', async (req: Request, res: Response) => {
 
     if (recipientResult.rowCount === 0) {
       db.release();
-      return res.status(404).json({ error: 'Recipient not found on Safiri Haraka' });
+      return res.status(404).json({ error: 'Recipient not found on SkyRex' });
     }
 
     const recipient = recipientResult.rows[0];

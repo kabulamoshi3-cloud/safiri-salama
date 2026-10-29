@@ -1,4 +1,4 @@
-# Implementation Plan — Safiri Haraka Admin Panel (build4)
+# Implementation Plan — SkyRex Admin Panel (build4)
 
 ## Codebase Findings Summary
 
@@ -83,7 +83,7 @@
       Verify: `cd apps/admin-panel && npm run typecheck` — 0 errors.
 
 - [ ] 7. Create the shared Layout component (dark sidebar + top bar).
-      - `src/components/Layout.tsx`: renders the dark sidebar with Safiri Haraka logo text, nav links (using `NavLink` from react-router-dom for active state highlighting), and an `<Outlet />` for the page content. Top bar shows current page title and a Logout button. The sidebar collapses the active link with the orange accent.
+      - `src/components/Layout.tsx`: renders the dark sidebar with SkyRex logo text, nav links (using `NavLink` from react-router-dom for active state highlighting), and an `<Outlet />` for the page content. Top bar shows current page title and a Logout button. The sidebar collapses the active link with the orange accent.
       - `src/components/StatusBadge.tsx`: renders a pill badge — green for `active`/`approved`/`online`/`available`, orange for `pending`, red for `banned`/`cancelled`/`rejected`, gray for `offline`/`inactive`.
       - `src/components/Table.tsx`: generic typed `<Table<T>>` component accepting `columns: { key, label, render? }[]` and `rows: T[]`, renders a styled `<table>`.
       - `src/components/Modal.tsx`: simple overlay modal with close button, accepts `title` + `children`.
@@ -165,4 +165,4 @@
 
 7. **react-i18next initialisation.** Must call `i18n.init(...)` before `ReactDOM.createRoot(...).render(...)`, or wrap in a suspense boundary since i18next may be async. The simplest approach: use `initReactI18next` with `resources` inline (no HTTP backend), which is synchronous. The `react-i18next` and `i18next` packages are already installed.
 
-8. **`@safiriharaka/shared-types` path alias.** The `tsconfig.json` already maps `@safiriharaka/shared-types` to `../../packages/shared-types/src/index.ts`. The admin panel can import shared types directly (e.g., `UserType`, `UserStatus`) without installing anything.
+8. **`@skyrex/shared-types` path alias.** The `tsconfig.json` already maps `@skyrex/shared-types` to `../../packages/shared-types/src/index.ts`. The admin panel can import shared types directly (e.g., `UserType`, `UserStatus`) without installing anything.

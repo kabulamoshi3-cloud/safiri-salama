@@ -1,7 +1,7 @@
-# Safiri Haraka Features Implementation & Deployment Guide
+# SkyRex Features Implementation & Deployment Guide
 
 ## Overview
-This guide covers the implementation of 11 critical missing features to bring Safiri Haraka to feature parity with Bolt.
+This guide covers the implementation of 11 critical missing features to bring SkyRex to feature parity with Bolt.
 
 **Total Features Implemented: 7**
 - ✅ Promo Code System (backend + API)
@@ -48,7 +48,7 @@ This guide covers the implementation of 11 critical missing features to bring Sa
 **Backend**: ✅ COMPLETE
 - Routes: GET /plans, /status, /benefits, POST /subscribe, /cancel, /upgrade
 - Database tables: subscription_plans, user_subscriptions, subscription_transactions
-- Plans: Safiri Haraka Plus (Sh10K/mo, 10% off), Pro (Sh20K/mo, 15% off), Business (Sh100K/mo, 20% off)
+- Plans: SkyRex Plus (Sh10K/mo, 10% off), Pro (Sh20K/mo, 15% off), Business (Sh100K/mo, 20% off)
 - Payment integration: Placeholder for Stripe/M-Pesa integration
 
 **Frontend**: Need subscription UI on settings
@@ -133,7 +133,7 @@ This guide covers the implementation of 11 critical missing features to bring Sa
 
 **Run migration**:
 ```bash
-psql safiriharaka_db < migrations/008_add_features.sql
+psql skyrex_db < migrations/008_add_features.sql
 ```
 
 ---
@@ -238,7 +238,7 @@ GET    /api/v1/food/stats                         - Admin: Get stats
 ### Required Environment Variables
 ```env
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/safiriharaka_db
+DATABASE_URL=postgresql://user:password@localhost:5432/skyrex_db
 
 # Payment Gateway (for subscriptions)
 STRIPE_SECRET_KEY=sk_test_...
@@ -270,10 +270,10 @@ FIREBASE_CLIENT_EMAIL=...
 ### Phase 1: Database Setup (Day 1)
 ```bash
 # 1. Run migration
-psql safiriharaka_db < migrations/008_add_features.sql
+psql skyrex_db < migrations/008_add_features.sql
 
 # 2. Seed initial data
-psql safiriharaka_db -c "INSERT INTO subscription_plans ..."
+psql skyrex_db -c "INSERT INTO subscription_plans ..."
 ```
 
 ### Phase 2: Backend Deployment (Day 2-3)
@@ -288,9 +288,9 @@ npm run build
 npm run test:features
 
 # 4. Deploy API Gateway
-docker build -t safiriharaka-api-gateway .
-docker push safiriharaka-api-gateway:latest
-kubectl set image deployment/api-gateway api-gateway=safiriharaka-api-gateway:latest
+docker build -t skyrex-api-gateway .
+docker push skyrex-api-gateway:latest
+kubectl set image deployment/api-gateway api-gateway=skyrex-api-gateway:latest
 ```
 
 ### Phase 3: Frontend Integration (Day 4-5)
@@ -396,7 +396,7 @@ If issues arise:
 
 2. **Rollback Database** (within 24 hours)
    ```bash
-   pg_restore -d safiriharaka_db backup_008_features.sql.bak
+   pg_restore -d skyrex_db backup_008_features.sql.bak
    ```
 
 3. **Rollback API** (within hours)
