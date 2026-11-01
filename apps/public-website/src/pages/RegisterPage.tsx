@@ -12,7 +12,7 @@ const RegisterPage: React.FC = () => {
   const [role, setRole] = useState<'passenger' | 'driver'>(defaultRole);
   const [formData, setFormData] = useState({
     name: '', phone: '', email: '', password: '', confirmPassword: '',
-    vehicleType: 'Car', licenseNumber: '', plateNumber: '',
+    vehicleType: 'car', licenseNumber: '', plateNumber: '',
   });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -48,10 +48,10 @@ const RegisterPage: React.FC = () => {
         payload.licenseNumber = formData.licenseNumber;
         payload.plateNumber = formData.plateNumber;
       }
-      await register(payload);
-      // Auto-login after successful registration
-      const loginRes = await api.post('/auth/login', { phone, password: formData.password });
-      localStorage.setItem('token', loginRes.data.token);
+      const regRes = await register(payload);
+      // Use token from registration response directly (no second round-trip needed)
+      const authToken = regRes.token || (await api.post('/auth/login', { phone, password: formData.password })).data.token;
+      localStorage.setItem('safiri_token', authToken);
       navigate('/');
     } catch (err: any) {
       const status = err.response?.status;
@@ -118,9 +118,9 @@ const RegisterPage: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{pubI18n.t('vehicle_type')}</label>
                   <select name="vehicleType" value={formData.vehicleType} onChange={handleChange} required className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500">
-                    <option value="Car">Car</option>
-                    <option value="Bajaji">Bajaji</option>
-                    <option value="Boda Boda">Boda Boda</option>
+                    <option value="car">Car</option>
+                    <option value="bajaji">Bajaji</option>
+                    <option value="boda-boda">Boda Boda</option>
                   </select>
                 </div>
                 <div>

@@ -66,7 +66,7 @@ const LoginPage: React.FC = () => {
           : '+255' + (digits.startsWith('0') ? digits.substring(1) : digits);
       }
       const data = await login({ phone: loginPhone, password });
-      localStorage.setItem('token', data.token);
+      localStorage.setItem('safiri_token', data.token);
       navigate('/');
     } catch (err: any) {
       const status = err.response?.status;
@@ -96,7 +96,7 @@ const LoginPage: React.FC = () => {
       const res = await api.post('/auth/firebase-verify', {
         id_token: idToken, name, email: userEmail,
       });
-      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('safiri_token', res.data.token);
       navigate('/');
     } catch (err: any) {
       if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') return;

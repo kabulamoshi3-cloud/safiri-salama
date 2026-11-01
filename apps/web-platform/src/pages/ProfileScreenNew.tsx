@@ -35,7 +35,7 @@ const ProfileScreenNew: React.FC = () => {
     { icon: Gift, label: 'Promotions & Rewards', path: '/promotions' },
     { icon: HelpCircle, label: 'Help & Support', path: '/support' },
     { icon: Settings, label: 'Settings', path: '/settings' },
-    { icon: Info, label: 'About SkyRex', path: '/about' },
+    { icon: Info, label: 'About SafiriHaraka', path: '/about' },
   ];
 
   const handleLogout = () => {

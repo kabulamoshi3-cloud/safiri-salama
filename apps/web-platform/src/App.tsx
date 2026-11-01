@@ -1,5 +1,5 @@
 /**
- * SkyRex Web Platform — SIMNOVA Redesign
+ * SafiriHaraka Web Platform — SIMNOVA Redesign
  * Complete ride-hailing app with live Leaflet maps
  */
 

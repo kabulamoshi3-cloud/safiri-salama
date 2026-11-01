@@ -1,7 +1,7 @@
 {
-  "name": "@skyrex/notification-service",
+  "name": "@safiriharaka/notification-service",
   "version": "1.0.0",
-  "description": "SkyRex Notification Service — Node.js + TypeScript (FCM push, SMS, scheduling)",
+  "description": "SafiriHaraka Notification Service — Node.js + TypeScript (FCM push, SMS, scheduling)",
   "private": true,
   "scripts": {
     "build": "tsc --project tsconfig.json",
@@ -12,7 +12,7 @@
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
-    "@skyrex/shared-types": "*",
+    "@safiriharaka/shared-types": "*",
     "express": "^4.21.0",
     "kafkajs": "^2.2.4",
     "firebase-admin": "^12.5.0"

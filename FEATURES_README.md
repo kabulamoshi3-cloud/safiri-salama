@@ -1,8 +1,8 @@
-# SkyRex Missing Features Implementation
+# SafiriHaraka Missing Features Implementation
 
 ## Executive Summary
 
-Implemented 7 critical features to bring SkyRex to feature parity with Bolt. All backend APIs are production-ready with comprehensive database schemas, error handling, and test coverage.
+Implemented 7 critical features to bring SafiriHaraka to feature parity with Bolt. All backend APIs are production-ready with comprehensive database schemas, error handling, and test coverage.
 
 **Implementation Status**: 64% Complete (7 out of 11 features)
 **Code Lines**: ~2,500 backend + 600 tests + 800 SQL
@@ -132,9 +132,9 @@ Total per trip: Sh2,080
 - Subscription management (view benefits, cancel, upgrade)
 
 **Plans Available**:
-1. **SkyRex Plus**: Sh10,000/month = 10% discount + Sh2K bonus
-2. **SkyRex Pro**: Sh20,000/month = 15% discount + Sh5K bonus
-3. **SkyRex Business**: Sh100,000/month = 20% discount (corporate)
+1. **SafiriHaraka Plus**: Sh10,000/month = 10% discount + Sh2K bonus
+2. **SafiriHaraka Pro**: Sh20,000/month = 15% discount + Sh5K bonus
+3. **SafiriHaraka Business**: Sh100,000/month = 20% discount (corporate)
 
 **Key Endpoints**:
 ```
@@ -152,7 +152,7 @@ POST   /api/v1/subscription/cancel    - Cancel subscription
 
 **Example**:
 ```
-User subscribes: SkyRex Plus (Sh10K/month)
+User subscribes: SafiriHaraka Plus (Sh10K/month)
 - 10% off all future rides
 - Sh2,000 monthly credit
 - Priority support
@@ -374,7 +374,7 @@ npm test:features
 **Database Migration**:
 ```bash
 # File: migrations/008_add_features.sql
-psql skyrex_db < migrations/008_add_features.sql
+psql safiriharaka_db < migrations/008_add_features.sql
 
 # Includes:
 - 20 tables with proper indexes
@@ -392,8 +392,8 @@ npm run build
 npm run test:features
 
 # Deploy
-docker build -t skyrex-api:latest .
-docker push skyrex-api:latest
+docker build -t safiriharaka-api:latest .
+docker push safiriharaka-api:latest
 kubectl apply -f k8s/api-gateway.yaml
 ```
 
@@ -414,7 +414,7 @@ Corporate Accounts
 └── Monthly billing cycle
 
 Food Delivery
-├── Uses same drivers (SkyRex fleet)
+├── Uses same drivers (SafiriHaraka fleet)
 ├── Similar payment & ratings system
 └── Complementary to ride business
 
@@ -544,7 +544,7 @@ Support System
 ### 1. Apply Database Migration
 ```bash
 cd services/api-gateway
-psql skyrex_db < migrations/008_add_features.sql
+psql safiriharaka_db < migrations/008_add_features.sql
 ```
 
 ### 2. Start API Server

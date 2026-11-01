@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "skyrex-tracking",
+  "name": "safiriharaka-tracking",
   "builds": [
     {
       "src": "src/index.ts",

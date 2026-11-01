@@ -79,7 +79,7 @@ export default function Login() {
               color: 'var(--color-accent)',
             }}
           >
-            SkyRex
+            SafiriHaraka
           </h1>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px' }}>
             {t('login_title')}

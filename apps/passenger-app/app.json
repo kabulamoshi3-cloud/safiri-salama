@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "SkyRex",
-    "slug": "skyrex-passenger",
+    "name": "SafiriHaraka",
+    "slug": "safiriharaka-passenger",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,7 +13,7 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.skyrex.passenger",
+      "bundleIdentifier": "com.safiriharaka.passenger",
       "config": {}
     },
     "android": {
@@ -21,7 +21,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1a73e8"
       },
-      "package": "com.skyrex.passenger",
+      "package": "com.safiriharaka.passenger",
       "config": {},
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
@@ -32,7 +32,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "SkyRex needs your location to find nearby drivers."
+          "locationAlwaysAndWhenInUsePermission": "SafiriHaraka needs your location to find nearby drivers."
         }
       ],
       [

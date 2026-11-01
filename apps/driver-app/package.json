@@ -1,7 +1,7 @@
 {
-  "name": "skyrex-driver",
+  "name": "safiriharaka-driver",
   "version": "1.0.0",
-  "description": "Safiri Haraka Driver App",
+  "description": "SafiriHaraka Driver App",
   "main": "index.js",
   "private": true,
   "scripts": {

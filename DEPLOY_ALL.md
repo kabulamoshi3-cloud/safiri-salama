@@ -1,4 +1,4 @@
-# Deploy SkyRex: web, API, database, tracking, Android, and iPhone
+# Deploy SafiriHaraka: web, API, database, tracking, Android, and iPhone
 
 This repository is prepared for a low-cost pilot. Provider dashboards still need to be connected to accounts you control. Do not use the sample values below as production credentials.
 

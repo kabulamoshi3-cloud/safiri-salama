@@ -7,7 +7,7 @@ import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-const API = 'https://simon-daladala-api.vercel.app/api/v1';
+const API = 'https://safiri-salama.vercel.app/api/v1';
 
 interface TrafficSegment {
   segment_id: string;
@@ -73,7 +73,7 @@ export default function TrafficScreen({ navigation }: any) {
     const segmentIds = segs.map((s) => s.segment_id);
     const departure_time = new Date(Date.now() + offset * 60000).toISOString();
     try {
-      const token = await AsyncStorage.getItem('@skyrex:token');
+      const token = await AsyncStorage.getItem('@safiriharaka:token');
       const res = await axios.post(
         `${API}/tracking/traffic/predict`,
         { segment_ids: segmentIds, departure_time },
@@ -111,7 +111,7 @@ export default function TrafficScreen({ navigation }: any) {
 
   const fetchTraffic = async () => {
     try {
-      const token = await AsyncStorage.getItem('@skyrex:token');
+      const token = await AsyncStorage.getItem('@safiriharaka:token');
       const res = await axios.get(`${API}/tracking/traffic/segments`, {
         headers: { Authorization: `Bearer ${token}` },
       });

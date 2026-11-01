@@ -1,4 +1,4 @@
-# 🚀 SkyRex Launch Checklist
+# 🚀 SafiriHaraka Launch Checklist
 
 ## ✅ Complete Pre-Launch Checklist
 
@@ -16,7 +16,7 @@
   - Email: your-email@example.com
   - Password: (secure password)
 - [ ] Create new cluster (FREE tier)
-  - Name: skyrex-production
+  - Name: safiriharaka-production
   - Region: Choose closest to Tanzania
   - Tier: Serverless (FREE - 5GB storage)
 - [ ] Get connection string
@@ -34,7 +34,7 @@
 
 - [ ] Create Upstash account at https://upstash.com
 - [ ] Create new Redis database
-  - Name: skyrex-cache
+  - Name: safiriharaka-cache
   - Region: Choose closest to Tanzania
   - Type: Regional (FREE)
 - [ ] Get Redis URL
@@ -60,7 +60,7 @@
   GOOGLE_MAPS_API_KEY=your_google_maps_key
   ```
 - [ ] Deploy backend: `vercel --prod`
-- [ ] Save deployment URL (e.g., https://skyrex-api.vercel.app)
+- [ ] Save deployment URL (e.g., https://safiriharaka-api.vercel.app)
 - [ ] Test API: `curl https://your-api-url.vercel.app/health`
 
 **Cost:** $0 forever (100GB bandwidth/month)  
@@ -131,7 +131,7 @@
 **Cost:** $0 forever (100GB bandwidth)  
 **Time:** 15 minutes
 
-**URL Example:** https://skyrex.vercel.app
+**URL Example:** https://safiriharaka.vercel.app
 
 ---
 
@@ -145,11 +145,11 @@
   ```json
   {
     "expo": {
-      "name": "SkyRex Driver",
-      "slug": "skyrex-driver",
+      "name": "SafiriHaraka Driver",
+      "slug": "safiriharaka-driver",
       "version": "1.0.0",
       "android": {
-        "package": "com.skyrex.driver",
+        "package": "com.safiriharaka.driver",
         "versionCode": 1
       }
     }
@@ -185,7 +185,7 @@
   - Pay registration fee
 
 - [ ] Create new app
-  - App name: SkyRex Driver
+  - App name: SafiriHaraka Driver
   - Default language: English
   - App type: App
   - Free/Paid: Free
@@ -232,7 +232,7 @@
 
 - [ ] App Icon (512x512)
   - Create professional icon
-  - Use SkyRex colors
+  - Use SafiriHaraka colors
   - Clear and recognizable
 
 - [ ] Feature Graphic (1024x500)
@@ -269,16 +269,16 @@
 
 - [ ] Short Description (80 chars):
   ```
-  Earn money driving with SkyRex. Tanzania's smart ride-hailing platform.
+  Earn money driving with SafiriHaraka. Tanzania's smart ride-hailing platform.
   ```
 
 - [ ] Full Description:
   ```
-  SkyRex Driver - Start Earning Today!
+  SafiriHaraka Driver - Start Earning Today!
   
   Join Tanzania's smartest ride-hailing platform and start earning money 
   as a professional driver. Whether you drive a car, bajaji (3-wheeler), 
-  or boda-boda (motorcycle), SkyRex connects you with passengers who 
+  or boda-boda (motorcycle), SafiriHaraka connects you with passengers who 
   need rides.
   
   ✨ KEY FEATURES:
@@ -350,13 +350,13 @@
   - Good driving record
   
   SUPPORT:
-  Email: support@skyrex.co.tz
+  Email: support@safiriharaka.co.tz
   Phone: +255 XXX XXX XXX
-  Website: www.skyrex.co.tz
+  Website: www.safiriharaka.co.tz
   
   Download now and start earning today!
   
-  SkyRex - Drive Smart, Earn Smart 🚗💨
+  SafiriHaraka - Drive Smart, Earn Smart 🚗💨
   ```
 
 **Time:** 30 minutes
@@ -368,7 +368,7 @@
 ### Google Maps API
 
 - [ ] Go to: https://console.cloud.google.com
-- [ ] Create new project: "SkyRex Production"
+- [ ] Create new project: "SafiriHaraka Production"
 - [ ] Enable APIs:
   - [ ] Maps JavaScript API
   - [ ] Directions API
@@ -652,7 +652,7 @@ vercel logs your-deployment-url
 ```
 
 ### Contact:
-- **Email:** support@skyrex.co.tz
+- **Email:** support@safiriharaka.co.tz
 - **GitHub:** [Your Repository]
 - **Documentation:** /docs folder
 

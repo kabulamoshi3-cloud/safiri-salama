@@ -1,6 +1,6 @@
-# SkyRex — Minibus / Daladala Ride-Hailing Platform
+# SafiriHaraka — Minibus / Daladala Ride-Hailing Platform
 
-SkyRex is a ride-hailing platform built for the **daladala** (minibus) transport ecosystem of Dar es Salaam, Tanzania. It connects passengers, daladala/bajaji/boda-boda drivers, fleet operators, and system administrators through dedicated mobile and web interfaces.
+SafiriHaraka is a ride-hailing platform built for the **daladala** (minibus) transport ecosystem of Dar es Salaam, Tanzania. It connects passengers, daladala/bajaji/boda-boda drivers, fleet operators, and system administrators through dedicated mobile and web interfaces.
 
 ---
 
@@ -163,7 +163,7 @@ The API requires specific environment variables to run. See `services/api-gatewa
 
 | Variable | Description | Example |
 |---|---|---|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:password@localhost:5432/skyrex` |
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:password@localhost:5432/safiriharaka` |
 | `JWT_SECRET` | 64-character random hex string | Generate: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"` |
 | `NODE_ENV` | Environment | `development` / `production` |
 | `PORT` | Server port | `3000` |
@@ -201,7 +201,7 @@ cp services/api-gateway/.env.example services/api-gateway/.env
 # Edit DATABASE_URL and JWT_SECRET in services/api-gateway/.env
 
 # 3. Create database and run migrations
-createdb skyrex
+createdb safiriharaka
 cd services/api-gateway && npm run migrate
 
 # 4. Start development server
@@ -244,7 +244,7 @@ Tests:       X passed, X total
 
 ## Deployment
 
-SkyRex API is designed for **Vercel serverless** deployment. The application exports `default app` without calling `app.listen()` — Vercel handles the HTTP server automatically.
+SafiriHaraka API is designed for **Vercel serverless** deployment. The application exports `default app` without calling `app.listen()` — Vercel handles the HTTP server automatically.
 
 ### Deployment Steps
 
@@ -302,7 +302,7 @@ See [SETUP.md](./SETUP.md#troubleshooting) for detailed troubleshooting steps. C
 - **Trip Management** — Complete state machine (REQUESTED → ACCEPTED → DRIVER_ARRIVING → ARRIVED → IN_PROGRESS → COMPLETED / CANCELLED)
 - **Real-time Tracking** — Driver location updates, in-memory store with PostgreSQL fallback, nearby driver search
 - **Route Calculation** — OpenRouteService integration with straight-line fallback
-- **Payments** — M-Pesa, Airtel Money, Tigo Pesa, Halotel STK push; SkyRex Wallet; Cash; QR Code payments
+- **Payments** — M-Pesa, Airtel Money, Tigo Pesa, Halotel STK push; SafiriHaraka Wallet; Cash; QR Code payments
 - **Payment Features** — Receipts, status polling, P2P transfers, bill payments (LUKU, DAWASCO, DSTV, NHIF)
 - **Ratings & Reviews** — Trip rating system
 - **Driver Earnings** — Earnings tracking and payout management

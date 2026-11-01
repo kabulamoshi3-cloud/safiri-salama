@@ -2,7 +2,7 @@ _format_version: "3.0"
 _transform: true
 
 # ---------------------------------------------------------------------------
-# DalaSmart API Gateway — Kong Declarative Configuration (deck format)
+# SafiriHaraka API Gateway — Kong Declarative Configuration (deck format)
 # ---------------------------------------------------------------------------
 # Covers: JWT auth, RBAC via consumer groups, rate limiting, CORS, and
 # routing for all six backend services.
@@ -205,8 +205,8 @@ plugins:
   - name: cors
     config:
       origins:
-        - "https://operator.dalasmart.co.tz"
-        - "https://admin.dalasmart.co.tz"
+        - "https://operator.safiriharaka.co.tz"
+        - "https://admin.safiriharaka.co.tz"
         - "http://localhost:3000"
         - "http://localhost:3001"
       methods:

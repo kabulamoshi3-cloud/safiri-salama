@@ -1,4 +1,4 @@
-app = "dalasmart-tracking"
+app = "safiriharaka-tracking"
 primary_region = "lhr"  # London — closest to Tanzania
 
 [build]

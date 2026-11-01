@@ -49,10 +49,10 @@ const Navbar: React.FC = () => {
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-secondary-500 rounded-lg flex items-center justify-center">
-              <span className="text-dark-900 font-black text-sm">SH</span>
+            <div className="w-8 h-8 bg-[#2563EB] rounded-lg flex items-center justify-center">
+              <span className="text-white font-black text-sm">SR</span>
             </div>
-            <span className="text-xl font-black text-white">Safiri <span className="text-secondary-400">Haraka</span></span>
+            <span className="text-xl font-black text-white">Sky<span className="text-[#f59e0b]">Rex</span></span>
           </Link>
 
           {/* Desktop Nav */}

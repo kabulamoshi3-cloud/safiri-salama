@@ -1,7 +1,7 @@
 {
-  "name": "@skyrex/operator-dashboard",
+  "name": "@safiriharaka/operator-dashboard",
   "version": "1.0.0",
-  "description": "SkyRex Operator Dashboard — React + TypeScript SPA",
+  "description": "SafiriHaraka Operator Dashboard — React + TypeScript SPA",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,7 @@
     "lint": "eslint src --ext .ts,.tsx"
   },
   "dependencies": {
-    "@skyrex/shared-types": "file:../../packages/shared-types",
+    "@safiriharaka/shared-types": "file:../../packages/shared-types",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^15.0.1",

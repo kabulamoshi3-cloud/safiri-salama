@@ -1,7 +1,7 @@
 version: "3.9"
 
 # =============================================================================
-# DalaSmart AI-Powered Mobility Platform — Local Development Stack
+# SafiriHaraka Platform — Local Development Stack
 #
 # Services:
 #   postgres      — PostgreSQL 16 + TimescaleDB 2.x + PostGIS
@@ -26,7 +26,7 @@ version: "3.9"
 # =============================================================================
 
 networks:
-  dalasmart-net:
+  safiriharaka-net:
     driver: bridge
 
 volumes:
@@ -42,12 +42,12 @@ services:
   # ---------------------------------------------------------------------------
   postgres:
     image: timescale/timescaledb-ha:pg16-latest
-    container_name: dalasmart-postgres
+    container_name: safiriharaka-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: dalasmart
-      POSTGRES_USER: dalasmart
-      POSTGRES_PASSWORD: dalasmart_dev_password
+      POSTGRES_DB: safiriharaka
+      POSTGRES_USER: safiriharaka
+      POSTGRES_PASSWORD: safiriharaka_dev_password
       # TimescaleDB telemetry off for local dev
       TIMESCALEDB_TELEMETRY: "off"
     ports:
@@ -59,13 +59,13 @@ services:
       - ./database/timescaledb/migrations:/docker-entrypoint-initdb.d/timescale:ro
       - ./database/postgres/seed.sql:/docker-entrypoint-initdb.d/zzz_seed.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dalasmart -d dalasmart"]
+      test: ["CMD-SHELL", "pg_isready -U safiriharaka -d safiriharaka"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 30s
     networks:
-      - dalasmart-net
+      - safiriharaka-net
     command: >
       postgres
         -c shared_preload_libraries=timescaledb
@@ -82,7 +82,7 @@ services:
   # ---------------------------------------------------------------------------
   redis:
     image: redis:7.2-alpine
-    container_name: dalasmart-redis
+    container_name: safiriharaka-redis
     restart: unless-stopped
     command: >
       redis-server
@@ -103,7 +103,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - dalasmart-net
+      - safiriharaka-net
 
   # ---------------------------------------------------------------------------
   # Elasticsearch 8
@@ -112,14 +112,14 @@ services:
   # ---------------------------------------------------------------------------
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
-    container_name: dalasmart-elasticsearch
+    container_name: safiriharaka-elasticsearch
     restart: unless-stopped
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - xpack.security.http.ssl.enabled=false
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
-      - cluster.name=dalasmart-local
+      - cluster.name=safiriharaka-local
       - node.name=es-node-1
       - bootstrap.memory_lock=true
     ulimits:
@@ -141,14 +141,14 @@ services:
       retries: 10
       start_period: 60s
     networks:
-      - dalasmart-net
+      - safiriharaka-net
 
   # ---------------------------------------------------------------------------
   # Kibana 8 (Elasticsearch UI)
   # ---------------------------------------------------------------------------
   kibana:
     image: docker.elastic.co/kibana/kibana:8.13.4
-    container_name: dalasmart-kibana
+    container_name: safiriharaka-kibana
     restart: unless-stopped
     depends_on:
       elasticsearch:
@@ -165,7 +165,7 @@ services:
       retries: 10
       start_period: 60s
     networks:
-      - dalasmart-net
+      - safiriharaka-net
 
   # ---------------------------------------------------------------------------
   # Elasticsearch index initialiser
@@ -173,7 +173,7 @@ services:
   # ---------------------------------------------------------------------------
   elasticsearch-init:
     image: curlimages/curl:8.7.1
-    container_name: dalasmart-es-init
+    container_name: safiriharaka-es-init
     restart: "no"
     depends_on:
       elasticsearch:
@@ -184,24 +184,24 @@ services:
     command:
       - |
         echo "Creating Elasticsearch indexes..."
-        curl -sf -X PUT "http://elasticsearch:9200/dalasmart-routes" \
+        curl -sf -X PUT "http://elasticsearch:9200/safiriharaka-routes" \
           -H "Content-Type: application/json" \
           -d @/mappings/routes.json && echo "routes index created"
-        curl -sf -X PUT "http://elasticsearch:9200/dalasmart-logs-000001" \
+        curl -sf -X PUT "http://elasticsearch:9200/safiriharaka-logs-000001" \
           -H "Content-Type: application/json" \
           -d @/mappings/logs.json && echo "logs index created"
-        curl -sf -X PUT "http://elasticsearch:9200/dalasmart-logs-000001/_alias/dalasmart-logs" \
+        curl -sf -X PUT "http://elasticsearch:9200/safiriharaka-logs-000001/_alias/safiriharaka-logs" \
           && echo "logs alias created"
         echo "Elasticsearch initialisation complete."
     networks:
-      - dalasmart-net
+      - safiriharaka-net
 
   # ---------------------------------------------------------------------------
   # MinIO (S3-compatible object storage)
   # ---------------------------------------------------------------------------
   minio:
     image: minio/minio:RELEASE.2024-05-10T01-41-38Z
-    container_name: dalasmart-minio
+    container_name: safiriharaka-minio
     restart: unless-stopped
     environment:
       MINIO_ROOT_USER: minioadmin
@@ -219,7 +219,7 @@ services:
       retries: 5
       start_period: 10s
     networks:
-      - dalasmart-net
+      - safiriharaka-net
 
   # ---------------------------------------------------------------------------
   # MinIO bucket initialiser
@@ -227,7 +227,7 @@ services:
   # ---------------------------------------------------------------------------
   minio-init:
     image: minio/mc:RELEASE.2024-05-09T17-04-24Z
-    container_name: dalasmart-minio-init
+    container_name: safiriharaka-minio-init
     restart: "no"
     depends_on:
       minio:
@@ -239,25 +239,25 @@ services:
         mc alias set local http://minio:9000 minioadmin minioadmin
 
         # Create buckets
-        mc mb --ignore-existing local/dalasmart-incident-media
-        mc mb --ignore-existing local/dalasmart-emergency-audio
-        mc mb --ignore-existing local/dalasmart-driver-documents
-        mc mb --ignore-existing local/dalasmart-exports
+        mc mb --ignore-existing local/safiriharaka-incident-media
+        mc mb --ignore-existing local/safiriharaka-emergency-audio
+        mc mb --ignore-existing local/safiriharaka-driver-documents
+        mc mb --ignore-existing local/safiriharaka-exports
 
         # Enforce private access (no anonymous reads/writes)
-        mc anonymous set none local/dalasmart-incident-media
-        mc anonymous set none local/dalasmart-emergency-audio
-        mc anonymous set none local/dalasmart-driver-documents
-        mc anonymous set none local/dalasmart-exports
+        mc anonymous set none local/safiriharaka-incident-media
+        mc anonymous set none local/safiriharaka-emergency-audio
+        mc anonymous set none local/safiriharaka-driver-documents
+        mc anonymous set none local/safiriharaka-exports
 
         # Enable versioning on sensitive buckets
-        mc version enable local/dalasmart-incident-media
-        mc version enable local/dalasmart-emergency-audio
-        mc version enable local/dalasmart-driver-documents
+        mc version enable local/safiriharaka-incident-media
+        mc version enable local/safiriharaka-emergency-audio
+        mc version enable local/safiriharaka-driver-documents
 
         echo "MinIO bucket initialisation complete."
     networks:
-      - dalasmart-net
+      - safiriharaka-net
 
   # ---------------------------------------------------------------------------
   # OSRM — Open Source Routing Machine (NEW from RoadPulse)
@@ -266,7 +266,7 @@ services:
   # ---------------------------------------------------------------------------
   osrm:
     image: osrm/osrm-backend:v5.27.1
-    container_name: dalasmart-osrm
+    container_name: safiriharaka-osrm
     restart: unless-stopped
     ports:
       - "5000:5000"
@@ -286,5 +286,5 @@ services:
       retries: 5
       start_period: 10s
     networks:
-      - dalasmart-net
+      - safiriharaka-net
 

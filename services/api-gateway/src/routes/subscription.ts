@@ -1,6 +1,6 @@
 /**
  * Subscription Service API Routes
- * Handles premium subscription plans (SkyRex Plus)
+ * Handles premium subscription plans (SafiriHaraka Plus)
  */
 
 import express, { Request, Response } from 'express';

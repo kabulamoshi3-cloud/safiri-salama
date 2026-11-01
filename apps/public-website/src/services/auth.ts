@@ -16,7 +16,7 @@ export const register = async (data: {
   plateNumber?: string;
 }) => {
   const response = await api.post('/auth/register', data);
-  return response.data;
+  return response.data; // includes { token, user, message }
 };
 
 export const logout = () => {
