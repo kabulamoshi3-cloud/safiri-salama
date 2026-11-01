@@ -353,8 +353,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
         json_build_object(
           'id',     d.id,
           'name',   d.name,
-          'phone',  d.phone,
-          'rating', d.rating
+          'phone',  d.phone
         ) AS driver,
         ${passengerCols} AS passenger
       FROM trips t
