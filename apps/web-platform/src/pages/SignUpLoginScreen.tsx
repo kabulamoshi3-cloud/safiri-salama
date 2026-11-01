@@ -33,21 +33,32 @@ const SignUpLoginScreen: React.FC = () => {
 
   const handleSubmit = async () => {
     setError('');
+
+    // Normalize phone: strip spaces, dashes, handle 0XXXXXXXXX and 7XXXXXXXXX formats
+    const rawPhone = phone.replace(/[\s\-]/g, '');
+    // Strip leading 0 (e.g. 0712345678 → 712345678) or leading 255
+    const normalizedPhone = rawPhone.startsWith('255')
+      ? rawPhone.slice(3)
+      : rawPhone.startsWith('0')
+      ? rawPhone.slice(1)
+      : rawPhone;
+    const fullPhone = `+255${normalizedPhone}`;
+
     if (mode === 'register') {
       if (!name.trim()) return setError(i18n.t('login.err_name'));
-      if (phone.length < 9) return setError(i18n.t('login.err_phone'));
+      if (normalizedPhone.length < 9) return setError(i18n.t('login.err_phone'));
       if (password.length < 6) return setError(i18n.t('login.err_password_short'));
       try {
-        await register(`+255${phone}`, password, name.trim(), email.trim() || undefined);
+        await register(fullPhone, password, name.trim(), email.trim() || undefined);
         navigate('/');
       } catch (err: any) {
         setError(err.message);
       }
     } else {
-      if (phone.length < 9) return setError(i18n.t('login.err_phone'));
+      if (normalizedPhone.length < 9) return setError(i18n.t('login.err_phone'));
       if (!password) return setError(i18n.t('login.err_password_required'));
       try {
-        await login(`+255${phone}`, password);
+        await login(fullPhone, password);
         navigate('/');
       } catch (err: any) {
         setError(err.message);
@@ -183,10 +194,10 @@ const SignUpLoginScreen: React.FC = () => {
               <Phone size={16} className="text-gray-400" />
               <input
                 type="tel"
-                placeholder="7XX XXX XXX"
+                placeholder="0712 345 678"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                maxLength={9}
+                onChange={(e) => setPhone(e.target.value.replace(/[^\d]/g, ''))}
+                maxLength={12}
                 className="flex-1 outline-none bg-transparent text-gray-900 font-medium"
               />
             </div>
