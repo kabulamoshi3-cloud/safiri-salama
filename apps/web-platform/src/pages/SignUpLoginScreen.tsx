@@ -22,6 +22,7 @@ const SignUpLoginScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [, forceUpdate] = React.useReducer(x => x + 1, 0);
 
@@ -50,7 +51,8 @@ const SignUpLoginScreen: React.FC = () => {
       if (password.length < 6) return setError(i18n.t('login.err_password_short'));
       try {
         await register(fullPhone, password, name.trim(), email.trim() || undefined);
-        navigate('/');
+        setSuccess('Registration successful! Welcome to SkyRex 🎉');
+        setTimeout(() => navigate('/'), 1500);
       } catch (err: any) {
         setError(err.message);
       }
@@ -156,7 +158,7 @@ const SignUpLoginScreen: React.FC = () => {
           {(['login', 'register'] as const).map((m) => (
             <button
               key={m}
-              onClick={() => { setMode(m); setError(''); }}
+              onClick={() => { setMode(m); setError(''); setSuccess(''); }}
               className={`flex-1 py-3 rounded-xl font-bold text-sm transition ${
                 mode === m ? 'bg-[#2563EB] text-white shadow' : 'text-gray-500'
               }`}
@@ -236,6 +238,13 @@ const SignUpLoginScreen: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {success && (
+          <div className="mt-4 bg-green-50 border border-green-400 rounded-xl px-4 py-3 flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0" />
+            <p className="text-green-700 text-sm font-semibold">{success}</p>
+          </div>
+        )}
 
         {error && (
           <div className="mt-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-center gap-2">
