@@ -78,6 +78,7 @@ router.get('/v1/status', (_req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     version: '2.0.0',
+    routes: router.stack.map((l: any) => l.regexp?.toString() || l.route?.path || 'unknown'),
     features: [
       'auth', 'trips', 'drivers', 'admin', 'promo', 'referral',
       'tracking', 'notifications', 'ratings', 'earnings', 'payments',
