@@ -55,7 +55,7 @@ const BottomNav: React.FC = () => {
       {/* Footer Links */}
       <div className="flex items-center justify-center gap-6 px-4 py-2 bg-gray-50">
         <a
-          href="https://admin-panel-pi-ebon.vercel.app"
+          href="https://skyrex-admin.vercel.app"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 text-xs text-gray-600 hover:text-[#2563EB] transition-colors"
@@ -65,13 +65,13 @@ const BottomNav: React.FC = () => {
         </a>
         <span className="text-gray-300">|</span>
         <a
-          href="https://operator-dashboard.vercel.app"
+          href="https://skyrex-web.vercel.app"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 text-xs text-gray-600 hover:text-[#2563EB] transition-colors"
         >
           <Building2 size={14} />
-          <span>Operator Dashboard</span>
+          <span>SkyRex Website</span>
         </a>
       </div>
     </nav>

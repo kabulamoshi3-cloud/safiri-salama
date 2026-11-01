@@ -28,7 +28,7 @@ const SplashScreen: React.FC = () => {
       <div className="relative z-10 flex flex-col items-center">
         <div className="w-32 h-32 bg-white/10 backdrop-blur-lg rounded-3xl flex items-center justify-center mb-6 shadow-2xl ring-2 ring-white/20">
           <div className="relative">
-            <div className="text-white font-black text-5xl">SH</div>
+            <div className="text-white font-black text-5xl">SR</div>
             <MapPin className="absolute -bottom-2 -right-2 text-[#7C3AED]" size={24} />
           </div>
         </div>

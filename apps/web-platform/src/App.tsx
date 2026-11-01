@@ -1,5 +1,5 @@
 /**
- * SafiriHaraka Web Platform — SIMNOVA Redesign
+ * SkyRex Web Platform
  * Complete ride-hailing app with live Leaflet maps
  */
 
@@ -37,7 +37,7 @@ const AppContent: React.FC = () => {
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#2563EB] to-[#1e40af]">
         <div className="text-center">
           <div className="w-20 h-20 bg-white/10 backdrop-blur rounded-3xl flex items-center justify-center mb-4 mx-auto">
-            <div className="text-white font-black text-3xl">SH</div>
+            <div className="text-white font-black text-3xl">SR</div>
           </div>
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
         </div>
