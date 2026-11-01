@@ -1,6 +1,6 @@
 /**
  * API Gateway — Route Registration
- * Static imports ensure all routes are bundled by Vercel.
+ * Direct imports ensure all routes are bundled by Vercel.
  */
 
 import { Router } from 'express';
@@ -40,48 +40,39 @@ import otp from './otp';
 
 const router = Router();
 
-function safeUse(path: string, mod: any) {
-  try {
-    router.use(path, mod.default || mod);
-  } catch (e: any) {
-    console.error(`Failed to mount route ${path}: ${e.message}`);
-  }
-}
+// Direct mounting — if any route fails to load, the entire module crashes
+// and we see the error in Vercel build logs (better than silent 404s)
+router.use('/v1/auth',              auth);
+router.use('/v1/trips',             trips);
+router.use('/v1/drivers',           drivers);
+router.use('/v1/admin',             admin);
 
-// ── Core ───────────────────────────────────────────────────
-safeUse('/v1/auth',              auth);
-safeUse('/v1/trips',             trips);
-safeUse('/v1/drivers',           drivers);
-safeUse('/v1/admin',             admin);
+router.use('/v1/promo',             promoCode);
+router.use('/v1/referral',          referral);
+router.use('/v1/driver-incentives',  driverIncentives);
+router.use('/v1/subscription',      subscription);
+router.use('/v1/support',           support);
+router.use('/v1/corporate',         corporateAccounts);
+router.use('/v1/food',              foodDelivery);
 
-// ── Business ──────────────────────────────────────────────
-safeUse('/v1/promo',             promoCode);
-safeUse('/v1/referral',          referral);
-safeUse('/v1/driver-incentives', driverIncentives);
-safeUse('/v1/subscription',      subscription);
-safeUse('/v1/support',           support);
-safeUse('/v1/corporate',         corporateAccounts);
-safeUse('/v1/food',              foodDelivery);
+router.use('/v1/tracking',          tracking);
+router.use('/v1/notifications',     notifications);
+router.use('/v1/ratings',           ratings);
+router.use('/v1/earnings',          earnings);
+router.use('/v1/payments',          payments);
+router.use('/v1/shop',              shopDelivery);
+router.use('/v1/advertising',       advertising);
+router.use('/v1/money',             moneyTransfer);
+router.use('/v1/insurance',         insurance);
+router.use('/v1/university',        universityMarket);
+router.use('/v1/upload',            upload);
+router.use('/v1/maps',              maps);
+router.use('/v1/chat',              chat);
+router.use('/v1/pricing',           pricing);
+router.use('/v1/features',          features);
+router.use('/v1/otp',               otp);
 
-// ── New features ───────────────────────────────────────────
-safeUse('/v1/tracking',          tracking);
-safeUse('/v1/notifications',     notifications);
-safeUse('/v1/ratings',           ratings);
-safeUse('/v1/earnings',          earnings);
-safeUse('/v1/payments',          payments);
-safeUse('/v1/shop',              shopDelivery);
-safeUse('/v1/advertising',       advertising);
-safeUse('/v1/money',             moneyTransfer);
-safeUse('/v1/insurance',         insurance);
-safeUse('/v1/university',        universityMarket);
-safeUse('/v1/upload',            upload);
-safeUse('/v1/maps',              maps);
-safeUse('/v1/chat',              chat);
-safeUse('/v1/pricing',           pricing);
-safeUse('/v1/features',          features);
-safeUse('/v1/otp',               otp);
-
-// ── Status ────────────────────────────────────────────────
+// Status endpoint
 router.get('/v1/status', (_req, res) => {
   res.json({
     status: 'ok',
