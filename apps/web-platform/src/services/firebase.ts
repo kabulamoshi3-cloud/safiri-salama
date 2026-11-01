@@ -1,85 +1,44 @@
 /**
- * Firebase Phone Auth — SafiriSalama
+ * Firebase — Google Sign-In for SkyRex Web Platform
+ * Reads config from VITE_ env vars, falls back to hardcoded values.
+ * Wrapped in try/catch so Firebase init failure never crashes the app.
  */
-import { initializeApp, getApps } from 'firebase/app';
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import {
   getAuth,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
   signInWithPopup,
   GoogleAuthProvider,
-  ConfirmationResult,
+  Auth,
 } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey:            'AIzaSyBkDgINXZ6talT1JByhytoTsiUNv8JVoo8',
-  authDomain:        'safiri-salama-838eb.firebaseapp.com',
-  projectId:         'safiri-salama-838eb',
-  storageBucket:     'safiri-salama-838eb.firebasestorage.app',
-  messagingSenderId: '820851879376',
-  appId:             '1:820851879376:web:e45eff1a284bc5cf0f5dd5',
+  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY            || 'AIzaSyBkDgINXZ6talT1JByhytoTsiUNv8JVoo8',
+  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN        || 'safiri-salama-838eb.firebaseapp.com',
+  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID         || 'safiri-salama-838eb',
+  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET     || 'safiri-salama-838eb.firebasestorage.app',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '820851879376',
+  appId:             import.meta.env.VITE_FIREBASE_APP_ID             || '1:820851879376:web:e45eff1a284bc5cf0f5dd5',
 };
 
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+let fbApp: FirebaseApp | null = null;
+let fbAuth: Auth | null = null;
 
-const CONTAINER_ID = 'firebase-recaptcha-root';
-let verifier: RecaptchaVerifier | null = null;
-
-function getContainer(): HTMLElement {
-  let el = document.getElementById(CONTAINER_ID);
-  if (!el) {
-    el = document.createElement('div');
-    el.id = CONTAINER_ID;
-    document.body.appendChild(el);
-  }
-  return el;
+try {
+  fbApp  = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+  fbAuth = getAuth(fbApp);
+} catch (e) {
+  console.warn('[firebase] init failed:', e);
 }
 
-function clearVerifier(): void {
-  if (verifier) {
-    try { verifier.clear(); } catch { /* ignore */ }
-    verifier = null;
-  }
-  // Also clear the container innerHTML so reCAPTCHA can re-render
-  const el = document.getElementById(CONTAINER_ID);
-  if (el) el.innerHTML = '';
-}
+export const auth = fbAuth;
 
-export async function sendOTP(phoneNumber: string): Promise<ConfirmationResult> {
-  // Always start fresh
-  clearVerifier();
-  getContainer();
-
-  verifier = new RecaptchaVerifier(auth, CONTAINER_ID, {
-    size: 'invisible',
-    callback: () => {},
-    'expired-callback': clearVerifier,
-  });
-
-  try {
-    const result = await signInWithPhoneNumber(auth, phoneNumber, verifier);
-    return result;
-  } catch (err) {
-    clearVerifier();
-    throw err;
-  }
-}
-
-export async function verifyOTP(
-  confirmation: ConfirmationResult,
-  otp: string,
-): Promise<string> {
-  const result = await confirmation.confirm(otp);
-  return result.user.getIdToken();
-}
-
-// ── Google Sign-In ────────────────────────────────────────────────────────────
+// ── Google Sign-In ─────────────────────────────────────────────────────────
 const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('email');
 googleProvider.addScope('profile');
 
 export async function signInWithGoogle(): Promise<string> {
-  const result = await signInWithPopup(auth, googleProvider);
+  if (!fbAuth) throw new Error('Firebase is not configured. Please contact support.');
+  const result = await signInWithPopup(fbAuth, googleProvider);
   return result.user.getIdToken();
 }

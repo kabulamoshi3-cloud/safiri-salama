@@ -4,9 +4,12 @@
 
 import axios from 'axios';
 
+// Always use skyrex-api as fallback — never the old safiri-salama URL
+const API_URL = import.meta.env.VITE_API_URL || 'https://skyrex-api.vercel.app/api/v1';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://skyrex-api.vercel.app/api/v1',
-  timeout: 10000,
+  baseURL: API_URL,
+  timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -20,7 +23,7 @@ api.interceptors.response.use(
   (res) => res,
   (error) => {
     const requestUrl = error.config?.url || '';
-    const isAuthRequest = /\/auth\/(login|register|firebase-verify)$/.test(requestUrl);
+    const isAuthRequest = /\/auth\/(login|register|firebase-verify)/.test(requestUrl);
     if (error.response?.status === 401 && !isAuthRequest) {
       localStorage.removeItem('safiri_token');
       window.location.href = '/login';

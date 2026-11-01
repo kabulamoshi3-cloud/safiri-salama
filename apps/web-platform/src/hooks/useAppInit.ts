@@ -1,7 +1,6 @@
 /**
- * App Init Hook
- * Implements startup flow:
- * Open → check token → load profile → check active trip → route
+ * App Init Hook — SkyRex Web Platform
+ * On startup: check token → load profile → check active trip → route
  */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -11,76 +10,83 @@ import api from '../services/api';
 
 export function useAppInit() {
   const navigate = useNavigate();
-  const { fetchProfile } = useAuthStore();
-  const { restoreFromStorage, activeTrip } = useTripStore();
+  const { fetchProfile, isAuthenticated } = useAuthStore();
+  const { restoreFromStorage } = useTripStore();
   const [initialized, setInitialized] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]         = useState(true);
 
   useEffect(() => {
     async function init() {
-      let destination = '/splash';
+      const token = localStorage.getItem('safiri_token');
+
+      if (!token) {
+        // No session — show splash
+        setLoading(false);
+        setInitialized(true);
+        navigate('/splash', { replace: true });
+        return;
+      }
+
       try {
-        const token = localStorage.getItem('safiri_token');
-
-        if (!token) {
-          // No session → show splash
-          destination = '/splash';
-          return;
-        }
-
-        // Load user profile
+        // Load user profile (also validates token)
         await fetchProfile();
 
-        // Restore any saved active trip from localStorage
+        // Restore any saved trip from localStorage
         restoreFromStorage();
 
-        // Check backend for active trip
+        // Check for an active trip on the server
         try {
-          const res = await api.get('/trips/active');
-          if (res.data?.trip) {
-            const trip = res.data.trip;
+          const res = await api.get('/trips?limit=1&status=IN_PROGRESS');
+          const trips = res.data;
+          const activeTrip = Array.isArray(trips) ? trips[0] : null;
+
+          if (activeTrip && ['REQUESTED','ACCEPTED','DRIVER_ARRIVING','ARRIVED','IN_PROGRESS'].includes(activeTrip.status)) {
             const { setActiveTrip } = useTripStore.getState();
             setActiveTrip({
-              id: trip.id,
-              status: trip.status,
-              pickup: {
-                lat: trip.pickup_lat,
-                lng: trip.pickup_lng,
-                address: trip.pickup_location,
+              id:          activeTrip.id,
+              status:      activeTrip.status.toLowerCase(),
+              pickup:  {
+                lat:     activeTrip.pickup_lat,
+                lng:     activeTrip.pickup_lng,
+                address: activeTrip.pickup_location,
               },
               dropoff: {
-                lat: trip.dropoff_lat,
-                lng: trip.dropoff_lng,
-                address: trip.dropoff_location,
+                lat:     activeTrip.dropoff_lat,
+                lng:     activeTrip.dropoff_lng,
+                address: activeTrip.dropoff_location,
               },
-              driver: trip.driver,
-              fare: trip.fare || 0,
-              vehicleType: trip.vehicle_type || 'economy',
+              fare:        activeTrip.fare || 0,
+              vehicleType: activeTrip.vehicle_type || 'economy',
             });
-            destination = '/active-trip';
+            setLoading(false);
+            setInitialized(true);
+            navigate('/active-trip', { replace: true });
             return;
           }
         } catch {
-          // No active trip endpoint or no trip — continue to home
+          // No active trip or endpoint error — continue to home
         }
 
         // Check locally stored active trip
         const localTrip = useTripStore.getState().activeTrip;
-        if (localTrip && ['searching', 'driver_assigned', 'driver_en_route', 'in_progress'].includes(localTrip.status)) {
-          destination = '/active-trip';
+        if (localTrip && ['searching','driver_assigned','driver_en_route','in_progress'].includes(localTrip.status)) {
+          setLoading(false);
+          setInitialized(true);
+          navigate('/active-trip', { replace: true });
           return;
         }
 
-        // All good — go to home
-        destination = '/';
-      } catch {
-        // Auth failed — clear token and send to splash
-        localStorage.removeItem('safiri_token');
-        destination = '/splash';
-      } finally {
+        // All good — go home
         setLoading(false);
         setInitialized(true);
-        navigate(destination, { replace: true });
+        navigate('/', { replace: true });
+
+      } catch {
+        // Token invalid — clear and go to splash
+        localStorage.removeItem('safiri_token');
+        setLoading(false);
+        setInitialized(true);
+        navigate('/splash', { replace: true });
       }
     }
 

@@ -1,17 +1,14 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://safiri-salama.vercel.app/api/v1',
-  timeout: 10000,
+  baseURL: import.meta.env.VITE_API_URL || 'https://skyrex-api.vercel.app/api/v1',
+  timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 });
 
 api.interceptors.request.use((config) => {
-  // Use same key as web-platform so tokens are shared across both apps on same domain
   const token = localStorage.getItem('safiri_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
