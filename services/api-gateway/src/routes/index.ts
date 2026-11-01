@@ -1,56 +1,87 @@
 /**
  * API Gateway — Route Registration
- * Mounts all feature routers with safe imports
+ * Static imports ensure all routes are bundled by Vercel.
  */
 
 import { Router } from 'express';
 
+// Core
+import auth from './auth';
+import trips from './trips';
+import drivers from './drivers';
+import admin from './admin';
+
+// Business
+import promoCode from './promoCode';
+import referral from './referral';
+import driverIncentives from './driverIncentives';
+import subscription from './subscription';
+import support from './support';
+import corporateAccounts from './corporateAccounts';
+import foodDelivery from './foodDelivery';
+
+// New features
+import tracking from './tracking';
+import notifications from './notifications';
+import ratings from './ratings';
+import earnings from './earnings';
+import payments from './payments';
+import shopDelivery from './shopDelivery';
+import advertising from './advertising';
+import moneyTransfer from './moneyTransfer';
+import insurance from './insurance';
+import universityMarket from './universityMarket';
+import upload from './upload';
+import maps from './maps';
+import chat from './chat';
+import pricing from './pricing';
+import features from './features';
+import otp from './otp';
+
 const router = Router();
 
-// Safe route loader — if a module fails to import, skip it instead of crashing everything
-function safeUse(path: string, importFn: () => any) {
+function safeUse(path: string, mod: any) {
   try {
-    const mod = importFn();
     router.use(path, mod.default || mod);
   } catch (e: any) {
-    console.error(`Failed to load route ${path}: ${e.message}`);
+    console.error(`Failed to mount route ${path}: ${e.message}`);
   }
 }
 
-// ── Core Features ─────────────────────────────────────────
-safeUse('/v1/auth',              () => require('./auth'));
-safeUse('/v1/trips',             () => require('./trips'));
-safeUse('/v1/drivers',           () => require('./drivers'));
-safeUse('/v1/admin',             () => require('./admin'));
+// ── Core ───────────────────────────────────────────────────
+safeUse('/v1/auth',              auth);
+safeUse('/v1/trips',             trips);
+safeUse('/v1/drivers',           drivers);
+safeUse('/v1/admin',             admin);
 
-// ── Business Features ─────────────────────────────────────
-safeUse('/v1/promo',             () => require('./promoCode'));
-safeUse('/v1/referral',          () => require('./referral'));
-safeUse('/v1/driver-incentives', () => require('./driverIncentives'));
-safeUse('/v1/subscription',      () => require('./subscription'));
-safeUse('/v1/support',           () => require('./support'));
-safeUse('/v1/corporate',         () => require('./corporateAccounts'));
-safeUse('/v1/food',              () => require('./foodDelivery'));
+// ── Business ──────────────────────────────────────────────
+safeUse('/v1/promo',             promoCode);
+safeUse('/v1/referral',          referral);
+safeUse('/v1/driver-incentives', driverIncentives);
+safeUse('/v1/subscription',      subscription);
+safeUse('/v1/support',           support);
+safeUse('/v1/corporate',         corporateAccounts);
+safeUse('/v1/food',              foodDelivery);
 
-// ── New Features ──────────────────────────────────────────
-safeUse('/v1/tracking',          () => require('./tracking'));
-safeUse('/v1/notifications',     () => require('./notifications'));
-safeUse('/v1/ratings',           () => require('./ratings'));
-safeUse('/v1/earnings',          () => require('./earnings'));
-safeUse('/v1/payments',          () => require('./payments'));
-safeUse('/v1/shop',              () => require('./shopDelivery'));
-safeUse('/v1/advertising',       () => require('./advertising'));
-safeUse('/v1/money',             () => require('./moneyTransfer'));
-safeUse('/v1/insurance',         () => require('./insurance'));
-safeUse('/v1/university',        () => require('./universityMarket'));
-safeUse('/v1/upload',            () => require('./upload'));
-safeUse('/v1/maps',              () => require('./maps'));
-safeUse('/v1/chat',              () => require('./chat'));
-safeUse('/v1/pricing',           () => require('./pricing'));
-safeUse('/v1/features',          () => require('./features'));
-safeUse('/v1/otp',               () => require('./otp'));
+// ── New features ───────────────────────────────────────────
+safeUse('/v1/tracking',          tracking);
+safeUse('/v1/notifications',     notifications);
+safeUse('/v1/ratings',           ratings);
+safeUse('/v1/earnings',          earnings);
+safeUse('/v1/payments',          payments);
+safeUse('/v1/shop',              shopDelivery);
+safeUse('/v1/advertising',       advertising);
+safeUse('/v1/money',             moneyTransfer);
+safeUse('/v1/insurance',         insurance);
+safeUse('/v1/university',        universityMarket);
+safeUse('/v1/upload',            upload);
+safeUse('/v1/maps',              maps);
+safeUse('/v1/chat',              chat);
+safeUse('/v1/pricing',           pricing);
+safeUse('/v1/features',          features);
+safeUse('/v1/otp',               otp);
 
-// ── Features list endpoint ────────────────────────────────
+// ── Status ────────────────────────────────────────────────
 router.get('/v1/status', (_req, res) => {
   res.json({
     status: 'ok',

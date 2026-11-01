@@ -46,7 +46,12 @@ export const authMiddleware = async (
       userType: string;
     };
 
-    (req as any).user = { userId: decoded.userId, userType: decoded.userType };
+    (req as any).user = {
+      id: decoded.userId,
+      type: decoded.userType,
+      userId: decoded.userId,
+      userType: decoded.userType,
+    };
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
