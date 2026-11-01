@@ -44,7 +44,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-3 text-sm">
               <li>
                 <a
-                  href="https://admin.skyrex.vercel.app"
+                  href="https://admin-panel-dwxav7t61-no-team-8707.vercel.app"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 hover:text-white transition-colors group"
@@ -92,7 +92,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <a
-                  href="https://app.skyrex.vercel.app"
+                  href="https://safiriharaka-apps.vercel.app"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 hover:text-white transition-colors group"
