@@ -37,13 +37,13 @@ const SplashScreen: React.FC = () => {
       </div>
       <div className="relative z-10 w-full max-w-md space-y-4">
         <button
-          onClick={() => navigate('/login?mode=register')}
+          onClick={() => window.location.href = 'https://skyrex-web.vercel.app/register'}
           className="w-full bg-white hover:bg-white/90 text-[#2563EB] font-black py-4 rounded-2xl text-lg shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2"
         >
           {i18n.t('get_started')} <Zap size={20} />
         </button>
         <button
-          onClick={() => navigate('/login')}
+          onClick={() => window.location.href = 'https://skyrex-web.vercel.app/login'}
           className="w-full text-white/80 hover:text-white text-sm font-semibold transition-all"
         >
           {i18n.t('have_account')}

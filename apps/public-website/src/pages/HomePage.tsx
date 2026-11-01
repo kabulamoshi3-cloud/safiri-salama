@@ -8,7 +8,7 @@ import {
 } from 'react-icons/fa';
 import { pubI18n } from '../i18n';
 
-const APP_URL = 'https://safiriharaka-apps.vercel.app';
+const APP_URL = 'https://skyrex-app.vercel.app';
 
 const HomePage: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);

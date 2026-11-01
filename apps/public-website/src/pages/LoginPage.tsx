@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Circle } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -37,7 +37,6 @@ try {
 }
 
 const LoginPage: React.FC = () => {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [role, setRole] = useState<'passenger' | 'driver'>('passenger');
   const [email, setEmail] = useState('');
@@ -67,7 +66,8 @@ const LoginPage: React.FC = () => {
       }
       const data = await login({ phone: loginPhone, password });
       localStorage.setItem('safiri_token', data.token);
-      navigate('/');
+      // Redirect to the passenger app with token
+      window.location.href = `https://skyrex-app.vercel.app/auth?token=${encodeURIComponent(data.token)}`;
     } catch (err: any) {
       const status = err.response?.status;
       if (!err.response) {
@@ -97,7 +97,7 @@ const LoginPage: React.FC = () => {
         id_token: idToken, name, email: userEmail,
       });
       localStorage.setItem('safiri_token', res.data.token);
-      navigate('/');
+      window.location.href = `https://skyrex-app.vercel.app/auth?token=${encodeURIComponent(res.data.token)}`;
     } catch (err: any) {
       if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') return;
       if (err?.code === 'auth/unauthorized-domain') {

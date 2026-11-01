@@ -82,7 +82,7 @@ const Navbar: React.FC = () => {
                 {pubI18n.t('nav_sign_in')}
               </button>
             </Link>
-            <Link to="/login?intent=book">
+            <Link to="/login">
               <button className="px-4 py-2 rounded-lg bg-secondary-500 hover:bg-secondary-600 text-dark-900 transition-colors text-sm font-black shadow-lg">
                 {pubI18n.t('nav_book_ride')}
               </button>

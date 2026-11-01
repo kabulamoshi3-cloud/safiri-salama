@@ -49,10 +49,14 @@ const RegisterPage: React.FC = () => {
         payload.plateNumber = formData.plateNumber;
       }
       const regRes = await register(payload);
-      // Use token from registration response directly (no second round-trip needed)
       const authToken = regRes.token || (await api.post('/auth/login', { phone, password: formData.password })).data.token;
       localStorage.setItem('safiri_token', authToken);
-      navigate('/');
+      // Redirect to the app with token — passengers go to app, drivers stay on website
+      if (role === 'passenger') {
+        window.location.href = `https://skyrex-app.vercel.app/auth?token=${encodeURIComponent(authToken)}`;
+      } else {
+        navigate('/login?registered=true&role=driver');
+      }
     } catch (err: any) {
       const status = err.response?.status;
       if (!err.response) {
