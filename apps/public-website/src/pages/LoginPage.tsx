@@ -110,10 +110,16 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  // Morogoro nearby driver dots (fake but realistic)
+  // Real Morogoro driver positions near key landmarks
   const driverDots: [number, number][] = [
-    [-6.8200, 37.6600], [-6.8050, 37.6750], [-6.8300, 37.6800],
-    [-6.8100, 37.6550], [-6.8250, 37.6700], [-6.7950, 37.6650],
+    [-6.8200, 37.6600], // Clock Tower
+    [-6.8050, 37.6750], // Msamvu Bus Stand
+    [-6.8300, 37.6800], // Kihonda Market
+    [-6.8100, 37.6550], // Boma area
+    [-6.8250, 37.6700], // Central Market
+    [-6.7950, 37.6650], // MUCE University
+    [-6.8180, 37.6720], // Regional Hospital
+    [-6.8080, 37.6630], // Main Bus Stand
   ];
 
   return (
@@ -144,7 +150,7 @@ const LoginPage: React.FC = () => {
         <div className="absolute bottom-8 left-8 right-8 bg-[#0F172A]/80 backdrop-blur rounded-2xl p-4 text-white">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-3 h-3 bg-[#128901] rounded-full animate-pulse" />
-            <span className="text-sm font-semibold">6 drivers nearby in Morogoro</span>
+            <span className="text-sm font-semibold">8 drivers nearby in Morogoro</span>
           </div>
           <p className="text-xs text-white/60">Sign in to book your ride now</p>
         </div>

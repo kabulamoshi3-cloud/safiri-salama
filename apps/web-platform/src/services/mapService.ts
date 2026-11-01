@@ -35,7 +35,7 @@ export async function geocode(query: string): Promise<SearchResult[]> {
 
   try {
     const res = await fetch(url, {
-      headers: { 'Accept-Language': 'en', 'User-Agent': 'SafiriHaraka/1.0' },
+      headers: { 'Accept-Language': 'en', 'User-Agent': 'SkyRex/1.0' },
     });
     const data = await res.json();
     return data.map((item: any) => ({
@@ -57,7 +57,7 @@ export async function reverseGeocode(lat: number, lng: number): Promise<string> 
   const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
   try {
     const res = await fetch(url, {
-      headers: { 'Accept-Language': 'en', 'User-Agent': 'SafiriHaraka/1.0' },
+      headers: { 'Accept-Language': 'en', 'User-Agent': 'SkyRex/1.0' },
     });
     const data = await res.json();
     const parts = data.display_name?.split(',') ?? [];
