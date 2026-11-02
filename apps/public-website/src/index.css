@@ -10,3 +10,24 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Contain Leaflet z-index so it never overlaps the navbar */
+.leaflet-container {
+  z-index: 0 !important;
+}
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-pane,
+.leaflet-overlay-pane,
+.leaflet-shadow-pane,
+.leaflet-marker-pane,
+.leaflet-popup-pane,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: auto !important;
+}
+/* Keep popups above map tiles but still inside the container */
+.leaflet-popup-pane { z-index: 700 !important; }
+.leaflet-top, .leaflet-bottom { z-index: 800 !important; }

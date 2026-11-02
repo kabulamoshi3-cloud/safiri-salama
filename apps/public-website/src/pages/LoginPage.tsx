@@ -124,12 +124,12 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Left: Live Map */}
-      <div className="hidden md:block md:w-1/2 relative">
+      {/* Left: Live Map — fixed height, no overflow */}
+      <div className="hidden md:block md:w-1/2 relative" style={{ height: '100vh', position: 'sticky', top: 0 }}>
         <MapContainer
           center={[-6.8160, 37.6677]}
           zoom={13}
-          style={{ height: '100%', width: '100%', minHeight: '100vh' }}
+          style={{ height: '100%', width: '100%' }}
           zoomControl={false}
           dragging={false}
           scrollWheelZoom={false}
